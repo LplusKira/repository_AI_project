@@ -1,8 +1,21 @@
 %module player
+%include "std_vector.i"
+namespace std {
+  %template(Intvector) vector<int>;
+ }
+
 %{
-  /* Put headers and other declarations here */
-  extern void fifo_test();
+  #include <vector>
+  using namespace std;
+  void fifo_test(vector<int> a);  
 %}
 
-  extern void fifo_test();
+void fifo_test(std::vector<int> a);
+
+/*
+%{
+   void fifo_test(Intvector);
+   %}*/
+
+
 
