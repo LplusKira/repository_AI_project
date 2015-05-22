@@ -144,9 +144,9 @@ Intvector_swigregister = _player.Intvector_swigregister
 Intvector_swigregister(Intvector)
 
 
-def fifo_test(*args):
-  return _player.fifo_test(*args)
-fifo_test = _player.fifo_test
+def make_struct():
+  return _player.make_struct()
+make_struct = _player.make_struct
 # This file is compatible with both classic and new-style classes.
 
 
