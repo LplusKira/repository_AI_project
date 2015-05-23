@@ -69,3 +69,8 @@ void Judge::GameStart()
 		if(player_List[current_player].getAction(current_player, player_state[current_player]) == _IamDead_)
 	}
 }
+
+bool Judge::checkRule(state s, action a){//where's judge's database?
+  possible_comb 
+
+}

@@ -46,8 +46,8 @@ typedef struct PossibleCombination{
 
 typedef struct State{
 	vector<action> one_run_history;
-	vector<possible_comb> what_player_can_do;
-	vector<int> what_player_canNOT_do;
+	vector<possible_comb> what_player_can_do;  //should this be action?
+        vector<int> what_player_canNOT_do; // action?
 	int 1st, 2nd, 3rd, 4th, mountain_remaining, points, clock_wise;
 }state;
 
@@ -59,7 +59,8 @@ class Judge
 		void GameStart();
 		//void TellAgent(int which_agent, state what_happened);
 		void giveCard(int changeMode, int user, int cards_user[5], int victim, int cards_victim[5]);
-		state player_state[_TotalPlayerNum_];		
+		state player_state[_TotalPlayerNum_];
+		bool checkRule(state, action);
 	private:
 };
 
