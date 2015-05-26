@@ -59,10 +59,25 @@ void Judge::GameStart()
 	
 }
 
+bool nextbool(vector<bool>& vb, int n){
+  int nowv = 0;
+  for(int i = n-1; i >= 0; i--){
+    nowv += (vb[i])?;
+  }
+}
+
 vector<action> Judge::getAction(){
   vector<int> card = card[current_player];
   int n = card.length();
   vector<bool> isuse(n);
+  vector<action> a;
+  for(int i = 0; i < n; i++){
+    isuse[i] = false;
+  }
+  while(nextbool(a, n)){
+    
+
+  }
 }
 
 bool Judge::checkRule(action a){//assume cards exist
