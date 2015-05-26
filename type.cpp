@@ -10,6 +10,7 @@
 //constructor
 Judge::Judge()
 {
+  this.GameStart();
 }
 
 Judge::rand4Cards(int p1_cards[], int p2_cards[], int p3_cards[], int p4_cards[], vector<int> mountain)
@@ -51,26 +52,54 @@ Judge::rand4Cards(int p1_cards[], int p2_cards[], int p3_cards[], int p4_cards[]
 	}
 }
 
-void Judge::giveCard(int changeMode, int user, int cards_user[5], int victim, int cards_victim[5])
-{
-}
-
 void Judge::GameStart()
 {
 	srand(time(NULL));
-	Player player_List[_TotalPlayerNum_];
-
-	int current_player = 1;
-	int next_player[_TotalPlayerNum_ + 1];
-	for(i = 1; i< _TotalPlayerNum_ +1; i++)
-		next_player[i] = i % _TotalPlayerNum_;
-	while(next_player != 0)
-	{
-		if(player_List[current_player].getAction(current_player, player_state[current_player]) == _IamDead_)
-	}
+	current_player = 1;
+	
 }
 
-bool Judge::checkRule(state s, action a){//where's judge's database?
-  possible_comb 
+vector<action> Judge::getAction(){
+  vector<int> card = card[current_player];
+  int n = card.length();
+  vector<bool> isuse(n);
+}
 
+bool Judge::checkRule(action a){//assume cards exist
+  int cardValue = 0;
+  for(int i = 0; i < _MaxCombCardNum_; i++){
+    cardValue += a.cards_used[i];
+    if(a.cards_used[i] == 1){//space one
+      iszero = true;
+    }
+  }
+  if(iszero && cardValue == 1){
+    return true;
+  }
+  switch(cardValue%13){
+  case 7:
+    if (a.victim > 0 && a.victim <= 4 && a.victim != a.user && this.card[a.victim-1].length() >= 1)//now user id?
+      return true;
+    break;
+  case 9:
+    if (a.victim > 0 && a.victim <= 4 && a.victim != a.user)//now user id?
+      return true;
+    break;
+  case 5:
+    if (a.victim > 0 && a.victim <= 4)
+      return true;
+    break;
+  case 4:  case 11:  case 13:
+    return true;
+    break;
+  case 12: case 10:
+    int value = (cardValue % 13 == 12)?20:10;
+    if(a.victim == -1 && this.point + value <= 99 || a.victim == -2 && this.point - value >= 0)
+      return true;
+    break;
+  default:
+    if(this.point+cardValue <= 99)
+      return true;
+  }
+  return false;
 }
