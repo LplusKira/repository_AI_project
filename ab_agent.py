@@ -129,8 +129,6 @@ class ScoutAgent(Agent):
       else:
          return False
          
-
-   
 class HumanAgent(Agent):
    def __init__(self, index = 0):
       self.index = index
