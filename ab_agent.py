@@ -130,16 +130,25 @@ class ScoutAgent(Agent):
          return False
          
 class HumanAgent(Agent):
-   def __init__(self, index = 0):
-      self.index = index
-      print "Constructing Human Agent, id = ", self.index
+   """
+   The human agent, action decided by human.
+   """
+   def __init__(self, i = 0):
+      self.i = i
+      print "Constructing Human Agent, id = ", self.i
 
-   def getAction(self, state):
-      print "The card you have: ", state.leg, state.illeg
-      cards = raw_input("pick the card: ")
-      act = 0
-      action = Action(self.index, cards, act)
-      return action
+   def genmove(self, state):
+      return self.humanGenmove(state)
+
+   def humanGenmove(self, state):
+      print "The card you have: ", state.myCard.cards
+      print "The legal move you can take: ", state.myCard.moves
+      print "The point now is: ", state.board.nowPoint
+      move = raw_input("pick the move by input the move index: ")   
+      while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
+         move = raw_input("The move index value is illegal, try again: ")                   
+      return state.myCard.moves[int(move)]
+   
 
 if __name__ == "__main__":
    cards1 = [4, 5, 13, 16, 24]
@@ -153,5 +162,7 @@ if __name__ == "__main__":
    state2 = State(record, [7, 9, 18, 27], [2], 3, 4, 0, 2, 33, 99, 1)
    a = Action(1, [16, 24], 13)
    print a
+   b = human.genmove(state)
+   print b
    #print "Simple agent's action " + ai.genmove(state)
    #print "Human player's action ", human.genmove(state2)
