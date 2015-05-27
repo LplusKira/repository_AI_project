@@ -17,5 +17,9 @@ Judge(using C++) and Players(agent)(Python)
 
 ## Worksheet
 
+## Research
 
+consider to construct an UI for demo
 
+- [SimpleGUI](https://pypi.python.org/pypi/SimpleGUITk)
+- [Pygame](http://www.pygame.org/tags/card)
