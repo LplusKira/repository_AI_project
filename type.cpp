@@ -55,29 +55,122 @@ Judge::rand4Cards(int p1_cards[], int p2_cards[], int p3_cards[], int p4_cards[]
 void Judge::GameStart()
 {
 	srand(time(NULL));
-	current_player = 1;
-	
+	initBoard();
+	while(!isGameFinished()){
+	  this.writeFile();//write state
+	  //call python agent
+	  //wait it complete
+	  action a = this.readFile();
+	  this.doAction(a);
+	}
+	//maybe judge need more precise history for debug usage
+}
+
+void Judge::initBoard(){
+  current_player = 1;
+  clock_wise = 1;//1 and -1
+  //cards
+}
+
+bool Judge::isGameFinished(){
+  //return this.card[0].length() == 0...;
+}
+
+void Judge::writeFile(){
+  generateStateData();
+
+}
+
+void generateStateData(){
+  //including legal actions, history, ...
+  //different from judge data, only have partial information
+  vector<action> possibleActions = getAction();
+  
+}
+
+action Judge::readFile(){
+
+}
+
+void Judge::doAction(){
+  
+
+  
+  current_player += clock_wise;
 }
 
 bool nextbool(vector<bool>& vb, int n){
   int nowv = 0;
-  for(int i = n-1; i >= 0; i--){
-    nowv += (vb[i])?;
+  for(int i = 0; i < n; i++){
+    nowv *= 2;
+    nowv += (vb[i])?1:0;
   }
+  nowv++;
+  if(nowv >= power(2, n)){
+    return false;
+  }
+  for(int i = n;i >= 0; i--){
+    vb[i] = (nowv%2)?true:false;
+    nowv /= 2;
+  }
+  return true;
 }
 
 vector<action> Judge::getAction(){
   vector<int> card = card[current_player];
   int n = card.length();
   vector<bool> isuse(n);
-  vector<action> a;
-  for(int i = 0; i < n; i++){
+  vector<action> av;
+  for(int i = 0; i < n; i++)
     isuse[i] = false;
+  action a;
+  a.user = current_player;
+  while(nextbool(av, n)){
+    int nowv = 0;
+    a.cards.clear();
+    for(int i = 0; i < n; i++)
+      if(isuse[i]){
+	nowv += card[i]%13;
+	a.cards.push_back(card[i]);
+      }
+    if(nowv > 13)
+      continue;
+    else
+      nowv %= 13;
+    switch(nowv){
+    case 7: case 9:
+      for(int i = 0; i < _TotalPlayerNum_; i++){
+	if(i == current_player || this.card[i].length() == 0)//todo: isdead?
+	  continue;
+	a.victim = i;
+	av.push_back(a);
+      }
+      break;
+    case 5:
+      for(int i = 0; i < _TotalPlayerNum_; i++){
+	if(this.card[i].length() == 0)//can use to user itself
+	  continue;
+	a.victim = i;
+	av.push_back(a);
+      }
+      break;
+    case 10: case 12:
+      int value = (nowv == 10)?10:20;
+	if(this.point + value <= 99){
+	  a.victim = -1;
+	  av.push_back(a);
+	}
+	if(this.point - value >= 0){
+	  a.victim = -2;
+	  av.push_back(a);
+	}
+      break;
+    case 4: case 11: case 13: default:
+      av.push_back(a);//do not consider victim
+      break;
+    }
   }
-  while(nextbool(a, n)){
-    
-
-  }
+  return av;
 }
 
 bool Judge::checkRule(action a){//assume cards exist

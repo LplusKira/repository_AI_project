@@ -64,10 +64,10 @@ class Judge
 		vector<action> getAction();
 	private:
 		vector<action> history;
-		vector< vector<int> > card;
+		vector< vector<int> > card;//sort big->small
 		vector<int> mountain;
 		int point;
-		bool clock_wise;
+		int clock_wise;
 		int current_player;
 		
 		
