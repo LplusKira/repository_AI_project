@@ -1,3 +1,0 @@
-hello world~~~
-Hello!!, This is Frank speaking...
-Hello!!
