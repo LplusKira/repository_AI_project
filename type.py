@@ -112,13 +112,11 @@ class Judge:
     
     def doAction(self, a):
         #   TODO: add effect by the returning action a
-        if a.cards_used[1] == 0:
+        if len(a.cards_used) == 1:
             actual_card = a.cards_used[0]
         else:
             actual_card = 0
-            for i in range(0, _MaxCombCardNum_, 1):
-                if a.cards_used[i] % 13 == 0:
-                    break
+            for i in range(0, len(a.cards_used), 1):
                 actual_card += a.cards_used[i] % 13
         if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
             self.point += actual_card
