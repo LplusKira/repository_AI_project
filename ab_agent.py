@@ -88,8 +88,6 @@ class ScoutAgent(Agent):
       
    def randomGenmove(self, state):
       i = random.randint(0, len(state.myCard.moves)-1)
-      f = open("playerlog", "w")
-      f.write(str(state.myCard.moves[i]))
       return state.myCard.moves[i]
 
    def abGenmove(self, state, depth = 5, maxTime = 10):
@@ -153,8 +151,6 @@ class HumanAgent(Agent):
       while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
          move = raw_input("The move index value is illegal, try again: ")                   
       print "The move you take is: ", state.myCard.moves[int(move)]
-      f = open("playerlog", "w")
-      f.write(str(state.myCard.moves[int(move)]))
       return state.myCard.moves[int(move)]
    
 
@@ -176,14 +172,10 @@ class MonteAgent(Agent):
    # TODO: Can use other heuristic here
    def randomGenmove(self, state):
       i = random.randint(0, len(state.myCard.moves)-1)
-      f = open("playerlog", "w")
-      f.write(str(state.myCard.moves[i]))
       return state.myCard.moves[i]
 
    def monteGenmove(self, state):
       i = MontecaroSearch(state)
-      f = open("playerlog", "w")
-      f.write(str(state.myCard.moves[i]))
       return state.myCard.moves[i]
       
 
