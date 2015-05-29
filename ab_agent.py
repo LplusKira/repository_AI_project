@@ -206,7 +206,7 @@ class HeuristicAgent(Agent):
                p = power
                move = a
       if len(state.myCard.cards) == 3:
-         move = self.pickBest()
+         move = self.pickBest(state)
       if len(state.myCard.cards) > 3:         
          for a in state.myCard.moves:
             m = 0
@@ -215,10 +215,10 @@ class HeuristicAgent(Agent):
             handCards = len(state.myCard.cards) - len(a.cards_used)
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
-         move = self.pickBest()
+         move = self.pickBest(state)
       return move
 
-   def pickBest(self):
+   def pickBest(self, state):
    # choose 1-card action only, by the card-power in class PlayerState
       p = 0
       for a in state.myCard.moves:
@@ -248,16 +248,16 @@ if __name__ == "__main__":
    cards1 = [4, 5, 13, 16, 24]
    cards2 = [2, 7, 9, 18, 27]
    idx = 1
-   act = [Action(idx+2, [4, 18], 1)]
-   act.append(Action(idx+2, [8], 0))
-   act.append(Action(idx+2, [9], 0))
+   act = [Action(idx+2, [8], 1)]
+   act.append(Action(idx+2, [4], 0))
+   act.append(Action(idx+2, [4, 8], 0))
    ai = ScoutAgent(idx)
    human = HumanAgent(idx+1)
    heu = HeuristicAgent(idx+2)
    record = "1 ChangeCard 9 2"
    state = PlayerState(record, [1, 3, 4, 12], [1,3, 16,24], 3, 4, 0, 2, 33, 99, 1)
    # record, legal, mycard
-   state2 = PlayerState(record, act,[4, 8, 9, 18], 3, 4, 0, 2, 33, 99, 1)
+   state2 = PlayerState(record, act,[4, 8], 3, 4, 0, 2, 33, 99, 1)
    b = human.genmove(state)
    c = heu.genmove(state2)
    print c

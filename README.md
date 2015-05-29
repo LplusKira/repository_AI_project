@@ -15,6 +15,7 @@
 
 1. Monte Carlo method
 2. Alpha-Beta Search
+3. Hard-coded rule
 
 ## Worksheet
 
