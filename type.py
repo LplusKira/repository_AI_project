@@ -148,7 +148,7 @@ class Judge:
                 c[a.user - 1].push(c[a.victim - 1][i])
             for i in range(0, len(c[a.victim - 1]), 1):
                 c[a.victim - 1].pop()
-            for i in range(0, len(temp), 1)
+            for i in range(0, len(temp), 1):
                 c[a.victim - 1].push(temp[i])
         #   TODO: push action a into history
         self.history.append(a)
@@ -157,8 +157,8 @@ class Judge:
             self.current_player = 4
         elif self.current_player == 5:
             self.current_player = 1
-    
-        self.current_player += self.clock_wise
+        while self.isDead[self.current_player - 1]:
+            self.current_player += self.clock_wise
 
         
     def getAction(self): # get legal action list
