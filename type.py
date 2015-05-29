@@ -13,10 +13,8 @@ _MaxComb_ = 32
 
 import random
 import time
-import math
 from action import Action
 from ab_agent import ScoutAgent
-from ab_agent import PlayerState
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -58,11 +56,12 @@ class Judge:
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
-        self._possibleActions_ = self.getAction()
-
+        av = self.getAction()
+        print av
+        
         while not self.isGameFinished():
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
-            a = self.player[self.current_player-1].genmove(state)
+            state = ab_agent.PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+            a = self.player[self.current_player].genmove(state)
             self.doAction(a)
 
         winner = 0
@@ -115,9 +114,6 @@ class Judge:
         #   TODO: add effect by the returning action a
         if a.cards_used[1] == 0:
             actual_card = a.cards_used[0]
-        else
-        if c[1] == 0:
-            actual_card = c[0]
         else:
             actual_card = 0
             for i in range(0, _MaxCombCardNum_, 1):
@@ -166,12 +162,11 @@ class Judge:
 
         
     def getAction(self): # get legal action list
-        card = self.card[self.current_player-1]
+        card = self.card[self.current_player];
         isuse = [False]*len(card) # size = card
         av = list()
         a = Action(self.current_player)
-        nowv = 0
-        while nextbool(isuse, len(card)):
+        while nextbool(av, len(card)):
             nowv = 0
             a.cards = []
             for i in range(len(card)):
@@ -183,29 +178,28 @@ class Judge:
                 continue
             else:
                 nowv %= 13 
-
-            if nowv == 7 or nowv == 9:
-                for i in range(_TotalPlayerNum_):
-                    if i == self.current_player or self.isDead[i]:
-                        continue
-                    a.victim = i
-                    av.append(a)
-            elif nowv == 5:
-                for i in range(_TotalPlayerNum_):
-                    if self.isDead[i] == 0:
-                        continue
-                    a.victim = i
-                    av.append(a)
-            elif nowv == 10 or nowv == 12:
-                value = 10 if (nowv == 10) else 20
-                if self.point + value <= 99:
-                    a.victim = -1
-                    av.append(a)
-                if self.point - value >= 0:
-                    a.victim = -2
-                    av.append(a)
-            else:
-                av.append(a)#do not consider victim
+        if nowv == 7 or nowv == 9:
+            for i in range(_TotalPlayerNum_):
+                if i == self.current_player or self.isDead[i]:
+                    continue
+                a.victim = i
+                av.append(a)
+        elif nowv == 5:
+            for i in range(_TotalPlayerNum_):
+                if self.isDead[i] == 0:
+                    continue
+                a.victim = i
+                av.append(a)
+        elif nowv == 10 or nowv == 12:
+            value = 10 if (nowv == 10) else 20
+            if self.point + value <= 99:
+                a.victim = -1
+                av.append(a)
+            if self.point - value >= 0:
+                a.victim = -2
+                av.append(a)
+        else:
+            av.append(a)#do not consider victim
         return av
 
     def checkRule(self, a): #assume cards exist #a=action
@@ -245,11 +239,13 @@ def nextbool(vb, n):
         nowv *= 2
         nowv += 1 if (vb[i]) else 0
     nowv = nowv +1
-    if nowv >= math.pow(2, n):
+    print "nowv in nextbool:" + str(nowv)
+    if nowv >= power(2, n):
         return False
-    for i in range(n-1, -1, -1):
+    for i in range(n, 0, -1):
         vb[i] = True if (nowv%2) else False
         nowv /= 2
+    print vb
     return True
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
