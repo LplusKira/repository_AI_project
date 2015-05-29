@@ -18,12 +18,12 @@
 
 ## Worksheet
 
-Name|Work|Progress
---|--|--
-LplusKira||
-playif1||
-kkmanWilliam||
-gitqwerty777||
+Name | Work | Progress
+--|--|--  
+LplusKira|.|.
+playif1|.|.
+kkmanWilliam|.|.
+gitqwerty777|.|.
 
 ## Research
 
