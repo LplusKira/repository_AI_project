@@ -3,6 +3,10 @@ _InitCardsPerPlayer_ = 5
 _TotalPlayerNum_ = 4
 _IamDead_ = -1
 _MaxCombCardNum_ = 5
+_Adding_ = -1
+_Minus_ = -2
+_ClockWise_ = 1
+_MaxPoint_ = 99
 _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
@@ -69,7 +73,7 @@ class Judge:
     def rand4Cards(self):
         original_cards = list()
         random.seed(time.time())
-	for i in range(_cardNum_):
+    	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
@@ -87,6 +91,7 @@ class Judge:
         self.clock_wise = 1 #1 and -1
         self.playerNum = 4
         self.isDead = [False]*self.playerNum
+        self.clock_wise = _ClockWise_ #1 and -1
 
     def isGameFinished(self):
         deadcount = 0
@@ -106,12 +111,53 @@ class Judge:
             + "West(id = 4):" + (getCardsString(self.card[3])) 
     
     def doAction(self, a):
+        #   TODO: add effect by the returning action a
+        if c[1] == 0:
+            actual_card = c[0]
+        else
+            actual_card = 0
+            for i in range(0, _MaxCombCardNum_, 1):
+                if c[i] % 13 == 0:
+                    break
+                actual_card += c[i] % 13
+        if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
+            self.point += actual_card
+        elif a.victim == _Minus_:
+            self.point -= actual_card           
+        elif actual_card == 1:    #   else if the action is Spade 1 or 4, 5, 11, 13 
+            self.point = 0
+        elif actual_card % 13 == 4:
+            self.clock_wise *= -1
+        elif actual_card % 13 == 5:
+            self.current_player = a.victim
+        elif actual_card % 13 == 11:
+            pass
+        elif actual_card % 13 == 0:
+            self.point = _MaxPoint_
+        elif actual_card % 13 == 7: #   else if the action is 7, 9
+            pick = random.randint(1, len(c[a.victim - 1]))
+            c[a.user - 1].push(c[a.victim - 1][pick])
+            c[a.victim - 1][pick].pop()
+        elif actual_card % 13 == 9:
+            temp = list()
+            for i in range(0, len(c[a.user - 1]), 1):
+                temp.append(c[a.user - 1][i])
+            for i in range(0, len(c[a.user - 1]), 1):
+                c[a.user - 1].pop()
+            for i in range(0, len(c[a.victim - 1]), 1):
+                c[a.user - 1].push(c[a.victim - 1][i])
+            for i in range(0, len(c[a.victim - 1]), 1):
+                c[a.victim - 1].pop()
+            for i in range(0, len(temp), 1)
+                c[a.victim - 1].push(temp[i])
+        #   TODO: push action a into history
         self.history.append(a)
         self.current_player += self.clock_wise
         if self.current_player == 0:
             self.current_player = 4
         elif self.current_player == 5:
             self.current_player = 1
+    
         self.current_player += self.clock_wise
 
         
