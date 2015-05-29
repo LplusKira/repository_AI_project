@@ -14,6 +14,7 @@ _MaxComb_ = 32
 import random
 import time
 import math
+import copy
 from action import Action
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
@@ -35,6 +36,9 @@ class State:
 class Judge:
     def __init__(self, h = list(), c = [[0 for x in range(5)] for x in range(4)], m=list(), p=0, cw=1, cp=1):
         players = list()
+        players.append(ScoutAgent())
+        players.append(ScoutAgent())
+        players.append(ScoutAgent())
         players.append(ScoutAgent())
         #fake action
         self._possibleActions_ = list()
@@ -61,7 +65,7 @@ class Judge:
         self._possibleActions_ = self.getAction()
         
         while not self.isGameFinished():
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
 
@@ -105,7 +109,7 @@ class Judge:
         return False
 
     def printBoard(self):
-        print "mountnum = " + str(len(self.mountain)) + ".Now %dth Move. Player %d" % (len(self.history), self.current_player) + "\n" \
+        print "mountnum = %d, point = %d" % (len(self.mountain), self.point) + ".Now %dth Move. Player %d" % (len(self.history), self.current_player) + "\n" \
             + "North(id = 1):" + (getCardsString(self.card[0])) \
             + "East(id = 2):" + (getCardsString(self.card[1])) \
             + "South(id = 3):" + (getCardsString(self.card[2])) \
@@ -113,11 +117,11 @@ class Judge:
     
     def doAction(self, a):
         #   TODO: add effect by the returning action a
-        if a.cards_used[1] == 0:
+        if len(a.cards_used) == 1:
             actual_card = a.cards_used[0]
         else:
             actual_card = 0
-            for i in range(0, _MaxCombCardNum_, 1):
+            for i in range(0, len(a.cards_used), 1):
                 if a.cards_used[i] % 13 == 0:
                     break
                 actual_card += a.cards_used[i] % 13
@@ -146,11 +150,11 @@ class Judge:
             for i in range(0, len(self.card[a.user - 1]), 1):
                 self.card[a.user - 1].pop()
             for i in range(0, len(self.card[a.victim - 1]), 1):
-                self.card[a.user - 1].push(self.card[a.victim - 1][i])
+                self.card[a.user - 1].append(self.card[a.victim - 1][i])
             for i in range(0, len(self.card[a.victim - 1]), 1):
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
-                self.card[a.victim - 1].push(temp[i])
+                self.card[a.victim - 1].append(temp[i])
         #   TODO: push action a into history
         self.history.append(a)
         self.current_player += self.clock_wise
@@ -160,20 +164,22 @@ class Judge:
             self.current_player = 1
         while self.isDead[self.current_player - 1]:
             self.current_player += self.clock_wise
+        self.printBoard()
 
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
         isuse = [False]*len(card) # size = card
         av = list()
-        a = Action(self.current_player)
+        a_template = Action(self.current_player)
         while nextbool(isuse, len(card)):
+            a = copy.deepcopy(a_template)
             nowv = 0
-            a.cards = []
+            a.cards_used = []
             for i in range(len(card)):
                 if isuse[i]:
                     nowv += card[i]%13
-                    a.cards.append(card[i])
+                    a.cards_used.append(card[i])
                     
             if nowv > 13:
                 continue
@@ -206,7 +212,7 @@ class Judge:
     def checkRule(self, a): #assume cards exist #a=action
         cardValue = 0
         for i in range(_MaxCombCardNum_):
-            cardValue += a.cards_used[i]
+            cardValue += a.cards_used_used[i]
             if(a.cards_used[i] == 1):#space one
                 iszero = True
         if iszero and cardValue == 1:
