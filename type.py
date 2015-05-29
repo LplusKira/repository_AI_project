@@ -13,10 +13,8 @@ _MaxComb_ = 32
 
 import random
 import time
-import math
 from action import Action
 from ab_agent import ScoutAgent
-from ab_agent import PlayerState
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -58,11 +56,12 @@ class Judge:
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
-        self._possibleActions_ = self.getAction()
+        av = self.getAction()
+        print av
         
         while not self.isGameFinished():
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
-            a = self.player[self.current_player-1].genmove(state)
+            state = ab_agent.PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+            a = self.player[self.current_player].genmove(state)
             self.doAction(a)
 
         winner = 0
@@ -114,15 +113,23 @@ class Judge:
     def doAction(self, a):
         #   TODO: add effect by the returning action a
         if len(a.cards_used) == 1:
-            actual_card = a.cards_used[0]
+            actual_card = a.cards_used[0] % 13
+            if actual_card == 0:
+                actual_card = 13
         else:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
                 actual_card += a.cards_used[i] % 13
         if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
-            self.point += actual_card
+            if actual_card == 12:
+                self.point += 20
+            elif actual_card == 10:
+                self.point += 10
         elif a.victim == _Minus_:
-            self.point -= actual_card           
+            if actual_card == 12:
+                self.point -= 20
+            elif actual_card == 10:
+                self.point -= 10           
         elif actual_card == 1:    #   else if the action is Spade 1 or 4, 5, 11, 13 
             self.point = 0
         elif actual_card % 13 == 4:
@@ -149,6 +156,11 @@ class Judge:
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].push(temp[i])
+        #   TODO: pop mountain, assign the card to current user
+        if not(actual_card % 13 == 7 or actual_card % 13 == 9):
+            self.card[a.user - 1].push(self.mountain[len(self.mountain) - 1])
+            self.mountain.pop()
+
         #   TODO: push action a into history
         self.history.append(a)
         self.current_player += self.clock_wise
@@ -161,11 +173,11 @@ class Judge:
 
         
     def getAction(self): # get legal action list
-        card = self.card[self.current_player-1]
+        card = self.card[self.current_player];
         isuse = [False]*len(card) # size = card
         av = list()
         a = Action(self.current_player)
-        while nextbool(isuse, len(card)):
+        while nextbool(av, len(card)):
             nowv = 0
             a.cards = []
             for i in range(len(card)):
@@ -177,28 +189,28 @@ class Judge:
                 continue
             else:
                 nowv %= 13 
-            if nowv == 7 or nowv == 9:
-                for i in range(_TotalPlayerNum_):
-                    if i == self.current_player or self.isDead[i]:
-                        continue
-                    a.victim = i
-                    av.append(a)
-            elif nowv == 5:
-                for i in range(_TotalPlayerNum_):
-                    if self.isDead[i] == 0:
-                        continue
-                    a.victim = i
-                    av.append(a)
-            elif nowv == 10 or nowv == 12:
-                value = 10 if (nowv == 10) else 20
-                if self.point + value <= 99:
-                    a.victim = -1
-                    av.append(a)
-                if self.point - value >= 0:
-                    a.victim = -2
-                    av.append(a)
-            else:
-                av.append(a)#do not consider victim
+        if nowv == 7 or nowv == 9:
+            for i in range(_TotalPlayerNum_):
+                if i == self.current_player or self.isDead[i]:
+                    continue
+                a.victim = i
+                av.append(a)
+        elif nowv == 5:
+            for i in range(_TotalPlayerNum_):
+                if self.isDead[i] == 0:
+                    continue
+                a.victim = i
+                av.append(a)
+        elif nowv == 10 or nowv == 12:
+            value = 10 if (nowv == 10) else 20
+            if self.point + value <= 99:
+                a.victim = -1
+                av.append(a)
+            if self.point - value >= 0:
+                a.victim = -2
+                av.append(a)
+        else:
+            av.append(a)#do not consider victim
         return av
 
     def checkRule(self, a): #assume cards exist #a=action
@@ -238,11 +250,13 @@ def nextbool(vb, n):
         nowv *= 2
         nowv += 1 if (vb[i]) else 0
     nowv = nowv +1
-    if nowv >= math.pow(2, n):
+    print "nowv in nextbool:" + str(nowv)
+    if nowv >= power(2, n):
         return False
-    for i in range(n-1, -1, -1):
+    for i in range(n, 0, -1):
         vb[i] = True if (nowv%2) else False
         nowv /= 2
+    print vb
     return True
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
