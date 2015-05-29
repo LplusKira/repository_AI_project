@@ -30,8 +30,26 @@ class PlayerState:
    def checkLose(self):
       return len(self.myCard.moves) == 0
 
+   # TODO
    def simulateMove(self, action):
-      pass
+      move = 0
+      for c in action.cards_used:
+         self.myCard.cards.remove(c)
+         move = move + getCardValue(c)
+      if len(action.cards_used) == 1 and action.cards_used[0] == 1:
+         self.board.nowPoint = 0
+      elif move == 13:
+         self.board.nowPoint = 99
+      elif move == 1 or move == 2 or move == 3 or move == 6 or move == 8:
+         self.board.nowPoint += move  
+      elif move == 10 or move == 12:
+         if action.victim == -1:
+            self.board.nowPoint += move
+         elif action.victim == -2:
+            self.board.nowPoint -= move
+      elif move == 4:
+         self.order *= -1
+      self.myCard.moves.remove(action)
 
    def Eval(self, userid):
       score = 0
@@ -42,22 +60,6 @@ class PlayerState:
       score = score + 2*self.board.cardNum[userid]
       return score
 
-def parseHistory(history):
-   h = history.split()
-   return History(h[0], h[1], h[2], h[3])
-   
-class History:
-   def __init__(self, i, m, c, t):
-      self.index = i
-      self.move = m
-      self.cards = c
-      self.target = t
-
-   def __str__(self):
-      s = ""
-      for card in self.cards:
-         s = s + getCardString(card) + ", "
-      return "index = " + str(self.index) + "\ncard = " + s + "\nact = " + str(self.move) + "target = " + str(self.target)
 
 class MyCard:
    def __init__(self, moves, cards):
@@ -87,21 +89,17 @@ class ScoutAgent(Agent):
       a = self.abGenmove(state)
       print a
       return a
-      
-   def randomGenmove(self, state):
-      i = random.randint(0, len(state.myCard.moves)-1)
-      return state.myCard.moves[i]
 
    def abGenmove(self, state, depth = 5, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       if state.board.nowPoint < 90: # do easy heuristic
-         return self.randomGenmove(state)
+         return randomGenmove(state)
       else:
          score = self.search(state, -INF, INF, depth)
          #print "search best move = " + action + "score = " + score
          print "use " + str(time.time()-startTime) + "time"
-         return self.randomGenmove(state) #temp
+         return randomGenmove(state) #temp
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
       if state.checkLose():
@@ -165,32 +163,103 @@ class MonteAgent(Agent):
       print "Constructing Montecaro Agent, id = ", self.i
 
    def genmove(self, state):
-      knownCard = 0
+      othersCard = 0
+      for cardNum in state.cardNum:
+          othersCard = othersCard + len(cardNum)
+      knownCard = 52 - (state.board.restNum + othersCard - state.cardNum[self.i])
       if knownCard < 17:
-          return randGenmove(state)
+          return randomGenmove(state)
       else:
-          return monteGenmove(state)
+          return self.monteGenmove(state)
 
    # TODO: Can use other heuristic here
-   def randomGenmove(self, state):
-      i = random.randint(0, len(state.myCard.moves)-1)
-      return state.myCard.moves[i]
-
    def monteGenmove(self, state):
       i = MontecaroSearch(state)
       return state.myCard.moves[i]
       
+class HeuristicAgent(Agent):
+   """
+   Only use heuristics.
+   """
+   def __init__(self, i = 0):
+      self.i = i
+      print "Constructing Heuristic Agent, id = ", self.i
+
+   # Totally by heuristic...
+   def genmove(self, state):
+      move = state.myCard.moves[0]     
+      if len(state.myCard.cards) == 1 or len(state.myCard.moves) == 1:
+         return move
+      if len(state.myCard.cards) == 2:
+         p = 0
+         for a in state.myCard.moves:
+            m = 0
+            for c in a.cards_used:
+               m = m + getCardValue(c)
+            if len(a.cards_used) == 2:
+               if m == 9:
+                  return a
+               else:
+                  continue
+            power = state.power[m-1]
+            if power > p:
+               p = power
+               move = a
+      if len(state.myCard.cards) == 3:
+         move = self.pickBest()
+      if len(state.myCard.cards) > 3:         
+         for a in state.myCard.moves:
+            m = 0
+            for c in a.cards_used:
+               m = m + getCardValue(c)
+            handCards = len(state.myCard.cards) - len(a.cards_used)
+            if handCards == 3 and m != 9: # try to reduce cards to 3
+               return a            
+         move = self.pickBest()
+      return move
+
+   def pickBest(self):
+   # choose 1-card action only, by the card-power in class PlayerState
+      p = 0
+      for a in state.myCard.moves:
+         if len(a.cards_used) > 1:
+            continue
+         m = 0
+         for c in a.cards_used:
+            m = m + getCardValue(c)
+         power = state.power[m-1]
+         if power > p:
+            p = power
+            best = a         
+      return best
+
+def randomGenmove(self, state):
+   a = len(state.myCard.moves)
+   if a == 0:
+      return []
+   else:
+      i = random.randint(0, len(state.myCard.moves)-1)
+      print state.myCard.moves[i]
+      return state.myCard.moves[i]
+
 
 if __name__ == "__main__":
+   from action import Action
    cards1 = [4, 5, 13, 16, 24]
    cards2 = [2, 7, 9, 18, 27]
    idx = 1
+   act = [Action(idx+2, [4, 18], 1)]
+   act.append(Action(idx+2, [8], 0))
+   act.append(Action(idx+2, [9], 0))
    ai = ScoutAgent(idx)
    human = HumanAgent(idx+1)
+   heu = HeuristicAgent(idx+2)
    record = "1 ChangeCard 9 2"
-   state = State(record, [1, 3, 4, 12], [1, 16,24], 3, 4, 0, 2, 33, 99, 1)
+   state = PlayerState(record, [1, 3, 4, 12], [1,3, 16,24], 3, 4, 0, 2, 33, 99, 1)
    # record, legal, mycard
-   state2 = State(record, [2, 7, 9], [2,7], 3, 4, 0, 2, 33, 99, 1)
+   state2 = PlayerState(record, act,[4, 8, 9, 18], 3, 4, 0, 2, 33, 99, 1)
    b = human.genmove(state)
+   c = heu.genmove(state2)
+   print c
    #print "Simple agent's action " + ai.genmove(state)
    #print "Human player's action ", human.genmove(state2)
