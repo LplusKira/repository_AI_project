@@ -2,8 +2,14 @@ _InitCardsPerPlayer_ = 5
 _TotalPlayerNum_ = 4
 _IamDead_ = -1
 _MaxCombCardNum_ = 5
+_cardNum_ = 52
+_MaxActionLength_ = 20
+_MaxComb_ = 32
+
 import random
 import time
+import action
+import ab_agent
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -20,7 +26,7 @@ class State:
         self.clock_wise = cw
 
 class Judge:
-    def __init__(self, h = list(), c = [[]], m=list(), p=0, cw=1, cp=1):
+    def __init__(self, h = list(), c = [[0 for x in range(5)] for x in range(4)], m=list(), p=0, cw=1, cp=1):
         #self.player_state = ps #what is this
         self.history = h #action list
         self.card = c # need to sort by cardvalue,two dimension list
@@ -30,17 +36,21 @@ class Judge:
         self.current_player = cp
         self.GameStart()
         
-    def TellAgent(self, int which_agent, state what_happened):
-        pass
-
     def GameStart(self):
-        ourBuf[_MaxActionLength_]
-        parsingBuf_possibleActions[_MaxComb_ * _MaxActionLength_]
-        int i, status;
-        self.initBoard();
-        self.rand4Cards();
-        while(!self.isGameFinished()):
-            '''this.writeFile()
+        self._possibleActions_ = list()
+        self.initBoard()
+        self.rand4Cards()
+        self.player = ab_agent.ScoutAgent()
+        self._possibleActions_.append(action.Action())
+        self._possibleActions_.append(action.Action())
+        self._possibleActions_.append(action.Action())
+        self._possibleActions_.append(action.Action())
+        state = ab_agent.PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+        self.player.genmove(state)
+
+        
+        '''while(not self.isGameFinished()):
+        this.writeFile()
             for i in range(_MaxComb_ * _MaxActionLength_):
                 parsingBuf_possibleActions[i] = '\0';
             for i in range(_possibleActions_.size()):
@@ -56,10 +66,8 @@ class Judge:
     //  TODO: wait for your child to be dead...
     waitpid(-1, &status, 0);'''
 
-    action a = this.readFile();
-    this.doAction(a);
-#maybe judge need more precise history for debug usage
-    
+        a = self.readFile()
+        self.doAction(a)
     def rand4Cards(self):
         original_cards = list()
         random.seed(time.time())
@@ -67,26 +75,29 @@ class Judge:
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
-                pick = random.randint(0,1024) % original_cards.size()
-                Player_cards[i][counter] = original_cards[pick]
-                swap(original_cards[pick], original_cards[original_cards.size() - 1])
+                pick = random.randint(0,1024) % len(original_cards)
+                self.card[i][counter] = original_cards[pick]
+                swap(original_cards[pick], original_cards[len(original_cards) - 1])
                 original_cards.pop()
         #//	TODO:	set mountain
-        for i in range(original_cards.size()):
-            pick = random.randint(0, 1024) % original_cards.size();
-            mountain.append(original_cards[pick])
-            swap(original_cards[pick], original_cards[original_cards.size() - 1])
+        for i in range(len(original_cards)):
+            pick = random.randint(0, 1024) % len(original_cards);
+            self.mountain.append(original_cards[pick])
+            swap(original_cards[pick], original_cards[len(original_cards) - 1])
             original_cards.pop()
     
     def initBoard(self):
         self.current_player = 1
-        clock_wise = 1 #1 and -1
+        self.clock_wise = 1 #1 and -1
     #cards
 
     def isGameFinished(self):
         pass
     #return this.card[0].length() == 0...;
 
+    def printBoard(self):
+        pass
+    
     def writeFile(self):
         pass
     #generateStateData();
@@ -105,7 +116,10 @@ class Judge:
         elif self.current_player == 5:
             self.current_player = 1
         self.current_player += self.clock_wise
-    
+
+    def TellAgent(self, which_agent, what_happened):
+        pass
+        
     def getAction(self): # get legal action list
         card = self.card[current_player];
         isuse = [False]*len(card) # size = card
@@ -192,6 +206,11 @@ def nextbool(vb, n):
         nowv /= 2
     print vb
     return True, vb
+
+def swap(a, b):
+    c = a
+    a = b
+    b = c
 
 if __name__ == "__main__" :
     j = Judge()

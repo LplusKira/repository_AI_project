@@ -12,7 +12,7 @@ class Agent:
    def genmove(self, state):
       pass
 
-class State:
+class PlayerState:
    def __init__(self, history, leg, card, cardNum1, cardNum2, cardNum3, cardNum4, mountNum, point, order):
       self.myCard = MyCard(leg, card)# var card non exist
       cardNum = list()
@@ -66,7 +66,7 @@ class MyCard:
 
 class Board:
    def __init__(self, r, rn, p, o, c):
-      self.record = parseHistory(r)
+      self.record = r
       self.restNum = rn
       self.nowPoint = p
       self.order = o
@@ -84,7 +84,9 @@ class ScoutAgent(Agent):
       print "Constructing Simple Agent, player id = ", self.i
 
    def genmove(self, state):
-      return self.abGenmove(state)
+      a = self.abGenmove(state)
+      print a
+      return a
       
    def randomGenmove(self, state):
       i = random.randint(0, len(state.myCard.moves)-1)
