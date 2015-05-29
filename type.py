@@ -158,8 +158,8 @@ class Judge:
             self.current_player = 4
         elif self.current_player == 5:
             self.current_player = 1
-    
-        self.current_player += self.clock_wise
+        while self.isDead[self.current_player - 1]:
+            self.current_player += self.clock_wise
 
         
     def getAction(self): # get legal action list
