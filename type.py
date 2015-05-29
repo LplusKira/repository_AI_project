@@ -156,6 +156,7 @@ class Judge:
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].push(temp[i])
+                
         #   TODO: pop mountain, assign the card to current user
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             self.card[a.user - 1].push(self.mountain[len(self.mountain) - 1])
