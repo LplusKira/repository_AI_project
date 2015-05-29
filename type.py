@@ -2,12 +2,8 @@ _InitCardsPerPlayer_ = 5
 _TotalPlayerNum_ = 4
 _IamDead_ = -1
 _MaxCombCardNum_ = 5
-
-class Action:
-    def __init__(self, u = 0, c = list(), v = 0):
-        self.user = u
-        self.cards_used = c #_MaxCombCardNum_
-        self.victim = v
+import random
+import time
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -34,25 +30,54 @@ class Judge:
         self.current_player = cp
         self.GameStart()
         
-    '''def rand4Cards(int p1_cards[], int p2_cards[], int p3_cards[], int p4_cards[], vector<int> mountain):
-        pass
     def TellAgent(self, int which_agent, state what_happened):
-        pass'''
+        pass
 
     def GameStart(self):
-        pass
-    '''        srand(time(NULL));
-    initBoard();
-    while(!isGameFinished()):
-    this.writeFile();//write state
-    //call python agent
-    //wait it complete
+        ourBuf[_MaxActionLength_]
+        parsingBuf_possibleActions[_MaxComb_ * _MaxActionLength_]
+        int i, status;
+        self.initBoard();
+        self.rand4Cards();
+        while(!self.isGameFinished()):
+            '''this.writeFile()
+            for i in range(_MaxComb_ * _MaxActionLength_):
+                parsingBuf_possibleActions[i] = '\0';
+            for i in range(_possibleActions_.size()):
+                sprintf(ourBuf, "%d %d %d %d %d %d %d;", _possibleActions_[i].user, _possibleActions_[i].cards_used[0], _possibleActions_[i].cards_used[1], _possibleActions_[i].cards_used[2], _possibleActions_[i].cards_used[3], _possibleActions_[i].cards_used[4], _possibleActions_[i].victim);
+                strncat(parsingBuf_possibleActions, ourBuf, strlen(ourBuf));
+
+    if((pid = fork()) == 0) //  child
+    {
+      //  TODO: transmit history, _possibleActions_
+      execlp(_PlayerExecName_, _PlayerExecName_, parsingBuf_possibleActions ,(char*)0);
+    }
+
+    //  TODO: wait for your child to be dead...
+    waitpid(-1, &status, 0);'''
+
     action a = this.readFile();
     this.doAction(a);
-    }
-    //maybe judge need more precise history for debug usage
-    }'''
-
+#maybe judge need more precise history for debug usage
+    
+    def rand4Cards(self):
+        original_cards = list()
+        random.seed(time.time())
+	for i in range(_cardNum_):
+            original_cards.append(i + 1)
+        for i in range(_TotalPlayerNum_):
+            for counter in range(_InitCardsPerPlayer_):
+                pick = random.randint(0,1024) % original_cards.size()
+                Player_cards[i][counter] = original_cards[pick]
+                swap(original_cards[pick], original_cards[original_cards.size() - 1])
+                original_cards.pop()
+        #//	TODO:	set mountain
+        for i in range(original_cards.size()):
+            pick = random.randint(0, 1024) % original_cards.size();
+            mountain.append(original_cards[pick])
+            swap(original_cards[pick], original_cards[original_cards.size() - 1])
+            original_cards.pop()
+    
     def initBoard(self):
         self.current_player = 1
         clock_wise = 1 #1 and -1
@@ -67,16 +92,19 @@ class Judge:
     #generateStateData();
 
     def generateStateData(self):
-        pass
-    '''//including legal actions, history, ...
-    //different from judge data, only have partial information
-    vector<action> possibleActions = getAction();'''
+        _possibleActions_ = self.getAction()
 
     def readFile(self):
         pass
 
-    def doAction(self):
-        current_player += clock_wise;
+    def doAction(self, a):
+        self.history.append(a)
+        self.current_player += self.clock_wise
+        if self.current_player == 0:
+            self.current_player = 4
+        elif self.current_player == 5:
+            self.current_player = 1
+        self.current_player += self.clock_wise
     
     def getAction(self): # get legal action list
         card = self.card[current_player];
@@ -141,12 +169,12 @@ class Judge:
                 return true
         elif cardValue == 12 or cardValue == 10:
             value = 20 if (cardValue % 13 == 12) else 10
-            if a.victim == -1 and this.point + value <= 99 or a.victim == -2 and this.point - value >= 0:
+            if a.victim == -1 and self.point + value <= 99 or a.victim == -2 and self.point - value >= 0:
                 return true
         elif cardValue == 4 or cardValue == 11 or cardValue == 13:
             return true
         else:
-            if this.point+cardValue <= 99:
+            if self.point+cardValue <= 99:
                 return true
         return false
 
