@@ -85,7 +85,24 @@ class Judge:
             pick = random.randint(0, 1024) % len(original_cards);
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
-    
+
+    def randMountain(self):
+        original_cards = list()
+        for i in range(_cardNum_):
+            is_inHands = 0
+            for j in range(0, 4, 1):
+                for k in range(0, len(self.card[j], 1)):
+                    if i == self.card[j][k]:
+                        is_inHands = 1
+                        break
+            if is_inHands == 1:
+            original_cards.append(i+1)
+        #   TODO: set mountain again
+        for i in range(len(original_cards)):
+            pick = random.randint(0, 1024) % len(original_cards);
+            self.mountain.append(original_cards[pick])
+            original_cards.pop(pick)
+
     def initBoard(self):
         self.current_player = 1
         self.clock_wise = 1 #1 and -1
@@ -142,7 +159,7 @@ class Judge:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
             pick = random.randint(1, len(self.card[a.victim - 1]))
-            self.card[a.user - 1].push(self.card[a.victim - 1][pick])
+            self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             self.card[a.victim - 1][pick].pop()
         elif actual_card % 13 == 9:
             temp = list()
@@ -151,16 +168,20 @@ class Judge:
             for i in range(0, len(self.card[a.user - 1]), 1):
                 self.card[a.user - 1].pop()
             for i in range(0, len(self.card[a.victim - 1]), 1):
-                self.card[a.user - 1].push(self.card[a.victim - 1][i])
+                self.card[a.user - 1].append(self.card[a.victim - 1][i])
             for i in range(0, len(self.card[a.victim - 1]), 1):
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
-                self.card[a.victim - 1].push(temp[i])
-                
+                self.card[a.victim - 1].append(temp[i])
+
         #   TODO: pop mountain, assign the card to current user
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
-            self.card[a.user - 1].push(self.mountain[len(self.mountain) - 1])
-            self.mountain.pop()
+            self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
+            if len(self.mountain) ~= 0:
+                self.mountain.pop()
+            else:
+                self.randMountain()
+
 
         #   TODO: push action a into history
         self.history.append(a)
