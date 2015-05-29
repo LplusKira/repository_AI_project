@@ -1,7 +1,3 @@
-;; This buffer is for notes you don't want to save, and for Lisp evaluation.
-;; If you want to create a file, visit that file with C-x C-f,
-;; then enter the text in that file's own buffer.
-
 # -*- coding: utf-8 -*-
 _InitCardsPerPlayer_ = 5
 _TotalPlayerNum_ = 4
@@ -100,12 +96,12 @@ class Judge:
         for i in range(_cardNum_):
             is_inHands = 0
             for j in range(0, 4, 1):
-                for k in range(0, len(self.card[j], 1)):
+                for k in range(0, len(self.card[j]), 1):
                     if i == self.card[j][k]:
                         is_inHands = 1
                         break
             if is_inHands == 1:
-            original_cards.append(i+1)
+                original_cards.append(i+1)
         #   TODO: set mountain again
         for i in range(len(original_cards)):
             pick = random.randint(0, 1024) % len(original_cards);
@@ -167,9 +163,9 @@ class Judge:
         elif actual_card % 13 == 0:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
-            pick = random.randint(1, len(self.card[a.victim - 1]))
+            pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
-            self.card[a.victim - 1][pick].pop()
+            self.card[a.victim - 1].pop(pick)
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -185,11 +181,12 @@ class Judge:
 
         #   TODO: pop mountain, assign the card to current user
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
-            self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
-            if len(self.mountain) ~= 0:
-                self.mountain.pop()
-            else:
+            if len(self.mountain) == 0:
                 self.randMountain()
+            self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
+            self.mountain.pop()
+
+
 
 
         #   TODO: push action a into history
