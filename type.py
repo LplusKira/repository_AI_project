@@ -13,8 +13,10 @@ _MaxComb_ = 32
 
 import random
 import time
+import math
 from action import Action
 from ab_agent import ScoutAgent
+from ab_agent import PlayerState
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -56,12 +58,11 @@ class Judge:
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
-        av = self.getAction()
-        print av
+        self._possibleActions_ = self.getAction()
         
         while not self.isGameFinished():
-            state = ab_agent.PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
-            a = self.player[self.current_player].genmove(state)
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+            a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
 
         winner = 0
@@ -162,11 +163,11 @@ class Judge:
 
         
     def getAction(self): # get legal action list
-        card = self.card[self.current_player];
+        card = self.card[self.current_player-1]
         isuse = [False]*len(card) # size = card
         av = list()
         a = Action(self.current_player)
-        while nextbool(av, len(card)):
+        while nextbool(isuse, len(card)):
             nowv = 0
             a.cards = []
             for i in range(len(card)):
@@ -239,13 +240,11 @@ def nextbool(vb, n):
         nowv *= 2
         nowv += 1 if (vb[i]) else 0
     nowv = nowv +1
-    print "nowv in nextbool:" + str(nowv)
-    if nowv >= power(2, n):
+    if nowv >= math.pow(2, n):
         return False
-    for i in range(n, 0, -1):
+    for i in range(n-1, -1, -1):
         vb[i] = True if (nowv%2) else False
         nowv /= 2
-    print vb
     return True
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
