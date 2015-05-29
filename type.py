@@ -36,17 +36,17 @@ class State:
 class Judge:
     def __init__(self, h = list(), c = [[0 for x in range(5)] for x in range(4)], m=list(), p=0, cw=1, cp=1):
         players = list()
-        players.append(ScoutAgent())
-        players.append(ScoutAgent())
-        players.append(ScoutAgent())
-        players.append(ScoutAgent())
+        players.append(ScoutAgent(1))
+        players.append(ScoutAgent(2))
+        players.append(ScoutAgent(3))
+        players.append(ScoutAgent(4))
         #fake action
         self._possibleActions_ = list()
         self._possibleActions_.append(Action())
         self._possibleActions_.append(Action())
         self._possibleActions_.append(Action())
         self._possibleActions_.append(Action())
-        random.shuffle(players)
+        #random.shuffle(players)
         self.player = players
 
         self.history = h #action list
@@ -62,9 +62,17 @@ class Judge:
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
-        self._possibleActions_ = self.getAction()
         
         while not self.isGameFinished():
+            self._possibleActions_ = self.getAction()
+            #for a in self._possibleActions_:
+            #print "   " + str(a)
+            if len(self._possibleActions_) == 0:
+                print "%d is dead(cannot move). next one." % self.current_player
+                self.setDead(self.current_player)
+                self.changeNextPlayer()
+                continue
+                
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
@@ -73,7 +81,7 @@ class Judge:
         for i in range(4):
             if len(self.card[i]) > 0:
                 winner = i
-        print "winner is " + i
+        print "winner is " + str(i+1)
 
     def rand4Cards(self):
         original_cards = list()
@@ -121,7 +129,6 @@ class Judge:
             if self.isDead[i]:
                 deadcount += 1
         if deadcount == self.playerNum -1:
-            print(gamefinished)
             return True
         return False
 
@@ -142,6 +149,8 @@ class Judge:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
                 actual_card += a.cards_used[i] % 13
+        for c in a.cards_used:
+            self.card[a.user-1].remove(c)
         if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
             if actual_card == 12:
                 self.point += 20
@@ -183,63 +192,85 @@ class Judge:
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:
                 self.randMountain()
+                print "randmountain, now len = %d" % len(self.mountain)
+                time.sleep(4)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
-
-
-
+        # check dead
+        for i in range(4):
+            if len(self.card[i]) == 0 and not self.isDead[i]:
+                print "%d is dead(no card). next one." % self.current_player
+                self.setDead(i+1) # id
+            
         #   TODO: push action a into history
         self.history.append(a)
-        self.current_player += self.clock_wise
-        if self.current_player == 0:
-            self.current_player = 4
-        elif self.current_player == 5:
-            self.current_player = 1
-        while self.isDead[self.current_player - 1]:
-            self.current_player += self.clock_wise    
+        self.changeNextPlayer()
         self.printBoard()
 
+    def setDead(self, playerid):
+        self.isDead[playerid-1] = True
+        self.card[playerid-1] = []
+        time.sleep(3)
+
+
+        
+    def changeNextPlayer(self):
+        self.current_player += self.clock_wise
+        if self.current_player < 0:
+            self.current_player += 4
+        while self.isDead[self.current_player%4 - 1]:
+            self.current_player += self.clock_wise
+            if self.current_player < 0:
+                self.current_player += 4
+        self.current_player %= 4
+        print "next player is %d" % self.current_player
+        
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
+        #print "now player's card" + str(card)
         isuse = [False]*len(card) # size = card
         av = list()
         a_template = Action(self.current_player)
         while nextbool(isuse, len(card)):
-            a = copy.deepcopy(a_template)
+            a_card = copy.deepcopy(a_template)
             nowv = 0
-            a.cards_used = []
+            a_card.cards_used = []
             for i in range(len(card)):
                 if isuse[i]:
-                    nowv += card[i]%13
-                    a.cards_used.append(card[i])
+                    nowv += (card[i])%13
+                    a_card.cards_used.append(card[i])
                     
             if nowv > 13:
                 continue
-            else:
-                nowv %= 13 
+
             if nowv == 7 or nowv == 9:
                 for i in range(_TotalPlayerNum_):
-                    if i == self.current_player or self.isDead[i]:
+                    if i == self.current_player-1 or self.isDead[i]:
                         continue
-                    a.victim = i
+                    a = copy.deepcopy(a_card)
+                    a.victim = i+1
                     av.append(a)
             elif nowv == 5:
                 for i in range(_TotalPlayerNum_):
-                    if self.isDead[i] == 0:
+                    if self.isDead[i]:
                         continue
-                    a.victim = i
+                    a = copy.deepcopy(a_card)
+                    a.victim = i+1
                     av.append(a)
             elif nowv == 10 or nowv == 12:
                 value = 10 if (nowv == 10) else 20
                 if self.point + value <= 99:
+                    a = copy.deepcopy(a_card)
                     a.victim = -1
                     av.append(a)
                 if self.point - value >= 0:
+                    a = copy.deepcopy(a_card)
                     a.victim = -2
                     av.append(a)
             else:
+                a = copy.deepcopy(a_card)
                 av.append(a)#do not consider victim
         return av
 

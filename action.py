@@ -6,7 +6,7 @@ class Action:
         self.victim = v
 
     def __str__(self):
-        return "user = " + str(self.user) \
+        return "user id: " + str(self.user) \
              + " card" + str(self.cards_used) \
-             + " victim " + str(self.victim)
+             + " victim id: " + str(self.victim)
         

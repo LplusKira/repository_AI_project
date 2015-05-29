@@ -86,9 +86,8 @@ class ScoutAgent(Agent):
       print "Constructing Simple Agent, player id = ", self.i
 
    def genmove(self, state):
-      a = self.abGenmove(state)
-      print a
-      return a
+      return randomGenmove(state)
+
 
    def abGenmove(self, state, depth = 5, maxTime = 10):
       startTime = time.time()
@@ -103,7 +102,7 @@ class ScoutAgent(Agent):
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
       if state.checkLose():
-         return -INFORMATION
+         return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
          return s.Eval(self.i) if depth%2 == 0 else -s.Eval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
@@ -233,7 +232,7 @@ class HeuristicAgent(Agent):
             best = a         
       return best
 
-def randomGenmove(self, state):
+def randomGenmove(state):
    a = len(state.myCard.moves)
    if a == 0:
       return []
