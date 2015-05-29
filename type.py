@@ -179,28 +179,28 @@ class Judge:
                 continue
             else:
                 nowv %= 13 
-        if nowv == 7 or nowv == 9:
-            for i in range(_TotalPlayerNum_):
-                if i == self.current_player or self.isDead[i]:
-                    continue
-                a.victim = i
-                av.append(a)
-        elif nowv == 5:
-            for i in range(_TotalPlayerNum_):
-                if self.isDead[i] == 0:
-                    continue
-                a.victim = i
-                av.append(a)
-        elif nowv == 10 or nowv == 12:
-            value = 10 if (nowv == 10) else 20
-            if self.point + value <= 99:
-                a.victim = -1
-                av.append(a)
-            if self.point - value >= 0:
-                a.victim = -2
-                av.append(a)
-        else:
-            av.append(a)#do not consider victim
+            if nowv == 7 or nowv == 9:
+                for i in range(_TotalPlayerNum_):
+                    if i == self.current_player or self.isDead[i]:
+                        continue
+                    a.victim = i
+                    av.append(a)
+            elif nowv == 5:
+                for i in range(_TotalPlayerNum_):
+                    if self.isDead[i] == 0:
+                        continue
+                    a.victim = i
+                    av.append(a)
+            elif nowv == 10 or nowv == 12:
+                value = 10 if (nowv == 10) else 20
+                if self.point + value <= 99:
+                    a.victim = -1
+                    av.append(a)
+                if self.point - value >= 0:
+                    a.victim = -2
+                    av.append(a)
+            else:
+                av.append(a)#do not consider victim
         return av
 
     def checkRule(self, a): #assume cards exist #a=action
