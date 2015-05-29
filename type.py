@@ -112,14 +112,14 @@ class Judge:
     
     def doAction(self, a):
         #   TODO: add effect by the returning action a
-        if c[1] == 0:
-            actual_card = c[0]
+        if a.cards_used[1] == 0:
+            actual_card = a.cards_used[0]
         else
             actual_card = 0
             for i in range(0, _MaxCombCardNum_, 1):
-                if c[i] % 13 == 0:
+                if a.cards_used[i] % 13 == 0:
                     break
-                actual_card += c[i] % 13
+                actual_card += a.cards_used[i] % 13
         if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
             self.point += actual_card
         elif a.victim == _Minus_:
@@ -135,21 +135,21 @@ class Judge:
         elif actual_card % 13 == 0:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
-            pick = random.randint(1, len(c[a.victim - 1]))
-            c[a.user - 1].push(c[a.victim - 1][pick])
-            c[a.victim - 1][pick].pop()
+            pick = random.randint(1, len(self.card[a.victim - 1]))
+            self.card[a.user - 1].push(self.card[a.victim - 1][pick])
+            self.card[a.victim - 1][pick].pop()
         elif actual_card % 13 == 9:
             temp = list()
-            for i in range(0, len(c[a.user - 1]), 1):
-                temp.append(c[a.user - 1][i])
-            for i in range(0, len(c[a.user - 1]), 1):
-                c[a.user - 1].pop()
-            for i in range(0, len(c[a.victim - 1]), 1):
-                c[a.user - 1].push(c[a.victim - 1][i])
-            for i in range(0, len(c[a.victim - 1]), 1):
-                c[a.victim - 1].pop()
+            for i in range(0, len(self.card[a.user - 1]), 1):
+                temp.append(self.card[a.user - 1][i])
+            for i in range(0, len(self.card[a.user - 1]), 1):
+                self.card[a.user - 1].pop()
+            for i in range(0, len(self.card[a.victim - 1]), 1):
+                self.card[a.user - 1].push(self.card[a.victim - 1][i])
+            for i in range(0, len(self.card[a.victim - 1]), 1):
+                self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
-                c[a.victim - 1].push(temp[i])
+                self.card[a.victim - 1].push(temp[i])
         #   TODO: push action a into history
         self.history.append(a)
         self.current_player += self.clock_wise
