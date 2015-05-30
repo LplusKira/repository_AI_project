@@ -15,7 +15,7 @@ import random
 import time
 import math
 import copy
-from action import Action
+from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
 
@@ -79,7 +79,7 @@ class Judge:
 
         winner = 0
         for i in range(4):
-            if len(self.card[i]) > 0:
+            if self.isDead[i] == False:
                 winner = i
         print "winner is " + str(i+1)
 
@@ -200,21 +200,19 @@ class Judge:
         # check dead
         for i in range(4):
             if len(self.card[i]) == 0 and not self.isDead[i]:
-                print "%d is dead(no card). next one." % self.current_player
+                print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
             
         #   TODO: push action a into history
         self.history.append(a)
-        self.changeNextPlayer()
         self.printBoard()
+        self.changeNextPlayer()
 
     def setDead(self, playerid):
         self.isDead[playerid-1] = True
         self.card[playerid-1] = []
         time.sleep(3)
 
-
-        
     def changeNextPlayer(self):
         self.current_player += self.clock_wise
         if self.current_player < 0:
@@ -224,8 +222,10 @@ class Judge:
             if self.current_player < 0:
                 self.current_player += 4
         self.current_player %= 4
+        if self.current_player == 0:
+            self.current_player += 4
         print "next player is %d" % self.current_player
-        
+        #time.sleep(1)
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
@@ -271,6 +271,7 @@ class Judge:
                     av.append(a)
             else:
                 a = copy.deepcopy(a_card)
+                a.victim = 0
                 av.append(a)#do not consider victim
         return av
 
@@ -317,16 +318,6 @@ def nextbool(vb, n):
         vb[i] = True if (nowv%2) else False
         nowv /= 2
     return True
-
-cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
-def getCardsString(l):
-    s = ""
-    for card in l:
-        s += getCardString(card) + ", "
-    s += "\n"
-    return s
-def getCardString(cardIndex):
-    return str(cardIndex % 13 + 1) + cardType[(cardIndex-1)/13]
 
 if __name__ == "__main__" :
     j = Judge()
