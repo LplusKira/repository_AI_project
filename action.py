@@ -12,14 +12,13 @@ class Action:
              + " victim id: " + str(self.victim)
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
-
 def getCardsString(l):
     s = ""
     for card in l:
         s += getCardString(card) + ", "
-    s += "\n"
     return s
 def getCardString(cardIndex):
-    return str(cardIndex % 13 + 1) + cardType[(cardIndex-1)/13]
+    cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+    return str(cardvalue) + cardType[(cardIndex-1)/13]
 
 

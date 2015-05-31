@@ -65,9 +65,9 @@ class Judge:
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
-            print getCardsString(self.card[self.current_player-1])
-            for a in self._possibleActions_:
-                print "   " + str(a)
+            #print getCardsString(self.card[self.current_player-1])
+            #for a in self._possibleActions_:
+            #print "   " + str(a)
             if len(self._possibleActions_) == 0:
                 print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
@@ -76,7 +76,7 @@ class Judge:
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
-            time.sleep(10)
+            #time.sleep(10)
 
         winner = 0
         for i in range(4):
@@ -142,6 +142,9 @@ class Judge:
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
+        if not self.checkRule(a):
+            print "illegal move"
+            exit()
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
             if actual_card == 0:
@@ -238,12 +241,20 @@ class Judge:
             a_card = copy.deepcopy(a_template)
             nowv = 0
             a_card.cards_used = []
+            iszero = False
             for i in range(len(card)):
                 if isuse[i]:
+                    if card[i] == 1:
+                        iszero = True
                     cv = 13 if (card[i]%13 == 0) else card[i]%13
                     nowv += cv
                     a_card.cards_used.append(card[i])
-                    
+
+            if len(a_card.cards_used) == 1 and iszero:#special case, space one
+                a = copy.deepcopy(a_card)
+                a.victim = 0
+                av.append(a)
+                continue
             if nowv > 13:
                 continue
 
@@ -271,16 +282,23 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = -2
                     av.append(a)
-            else:
+            elif nowv == 4 or nowv == 11 or nowv == 13:
                 a = copy.deepcopy(a_card)
                 a.victim = 0
                 av.append(a)#do not consider victim
+            else:
+                if self.point + nowv <= 99:
+                    a = copy.deepcopy(a_card)
+                    a.victim = 0
+                    av.append(a)#do not consider victim
+
         return av
 
     def checkRule(self, a): #assume cards exist #a=action
         cardValue = 0
-        for i in range(_MaxCombCardNum_):
-            cardValue += a.cards_used_used[i]
+        iszero = False
+        for i in range(len(a.cards_used)):
+            cardValue += a.cards_used[i]
             if(a.cards_used[i] == 1):#space one
                 iszero = True
         if iszero and cardValue == 1:
@@ -288,7 +306,7 @@ class Judge:
 
         cardValue = cardValue % 13
         if cardValue == 7:
-            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(card[a.victim-1]) >= 1:#//now user id?
+            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(self.card[a.victim-1]) >= 1:#//now user id?
                 return True
         elif cardValue == 9:
             if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user:#//now user id?
