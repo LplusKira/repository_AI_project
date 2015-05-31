@@ -65,17 +65,18 @@ class Judge:
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
-            #for a in self._possibleActions_:
-            #print "   " + str(a)
+            print getCardsString(self.card[self.current_player-1])
+            for a in self._possibleActions_:
+                print "   " + str(a)
             if len(self._possibleActions_) == 0:
                 print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
-                
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
+            time.sleep(10)
 
         winner = 0
         for i in range(4):
@@ -134,9 +135,9 @@ class Judge:
 
     def printBoard(self):
         print "mountnum = %d, point = %d" % (len(self.mountain), self.point) + ".Now %dth Move. Player %d" % (len(self.history), self.current_player) + "\n" \
-            + "North(id = 1):" + (getCardsString(self.card[0])) \
-            + "East(id = 2):" + (getCardsString(self.card[1])) \
-            + "South(id = 3):" + (getCardsString(self.card[2])) \
+            + "North(id = 1):" + (getCardsString(self.card[0])) + "\n" \
+            + "East(id = 2):" + (getCardsString(self.card[1])) + "\n"\
+            + "South(id = 3):" + (getCardsString(self.card[2])) + "\n"\
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
     def doAction(self, a):
@@ -198,7 +199,7 @@ class Judge:
             self.mountain.pop()
 
         # check dead
-        for i in range(4):
+        for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
                 print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
@@ -216,14 +217,14 @@ class Judge:
     def changeNextPlayer(self):
         self.current_player += self.clock_wise
         if self.current_player < 0:
-            self.current_player += 4
-        while self.isDead[self.current_player%4 - 1]:
+            self.current_player += self.playerNum
+        while self.isDead[self.current_player%self.playerNum - 1]:
             self.current_player += self.clock_wise
             if self.current_player < 0:
-                self.current_player += 4
-        self.current_player %= 4
+                self.current_player += self.playerNum
+        self.current_player %= self.playerNum
         if self.current_player == 0:
-            self.current_player += 4
+            self.current_player += self.playerNum
         print "next player is %d" % self.current_player
         #time.sleep(1)
         
@@ -239,7 +240,8 @@ class Judge:
             a_card.cards_used = []
             for i in range(len(card)):
                 if isuse[i]:
-                    nowv += (card[i])%13
+                    cv = 13 if (card[i]%13 == 0) else card[i]%13
+                    nowv += cv
                     a_card.cards_used.append(card[i])
                     
             if nowv > 13:
@@ -286,13 +288,13 @@ class Judge:
 
         cardValue = cardValue % 13
         if cardValue == 7:
-            if a.victim > 0 and a.victim <= 4 and a.victim != a.user and len(card[a.victim-1]) >= 1:#//now user id?
+            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(card[a.victim-1]) >= 1:#//now user id?
                 return True
         elif cardValue == 9:
-            if a.victim > 0 and a.victim <= 4 and a.victim != a.user:#//now user id?
+            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user:#//now user id?
                 return True
         elif cardValue == 5:
-            if a.victim > 0 and a.victim <= 4:
+            if a.victim > 0 and a.victim <= self.playerNum:
                 return True
         elif cardValue == 12 or cardValue == 10:
             value = 20 if (cardValue % 13 == 12) else 10
