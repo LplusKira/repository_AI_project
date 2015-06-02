@@ -94,26 +94,31 @@ class Judge:
                 pick = random.randint(0,1024) % len(original_cards)
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
-        #//	TODO:	set mountain
+        #	TODO:	set mountain
         for i in range(len(original_cards)):
-            pick = random.randint(0, 1024) % len(original_cards);
+            pick = random.randint(0, 1024) % len(original_cards)
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
     def randMountain(self):
+        #   TODO:   collecting remained cards into cards_remained
+        cards_remained = list()
+        for player in range(_TotalPlayerNum_):
+            for which_card in range(len(self.card[player])):
+                 cards_remained.append(self.card[player][which_card])
+
+        #   TODO:   collecting cards which should be the new moutain
+        cards_remained.append(53)
+        cards_remained.append(0)
+        cards_remained.sort()
         original_cards = list()
-        for i in range(_cardNum_):
-            is_inHands = 0
-            for j in range(0, 4, 1):
-                for k in range(0, len(self.card[j]), 1):
-                    if i == self.card[j][k]:
-                        is_inHands = 1
-                        break
-            if is_inHands == 1:
-                original_cards.append(i+1)
-        #   TODO: set mountain again
+        for grid_num in range(len(cards_remained) - 1):
+            for between_grid in range(cards_remained[grid_num] + 1, cards_remained[grid_num + 1], 1):
+                original_cards.append(between_grid)  
+
+        #   TODO:   set mountain
         for i in range(len(original_cards)):
-            pick = random.randint(0, 1024) % len(original_cards);
+            pick = random.randint(0, 1024) % len(original_cards)
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
@@ -155,7 +160,7 @@ class Judge:
                 actual_card += a.cards_used[i] % 13
         for c in a.cards_used:
             self.card[a.user-1].remove(c)
-        if a.victim == _Adding_:    #   if the action is NO harmful: e.g. +- 10; +- 20    
+        if a.victim == _Adding_:    #   if the action is NO harmful: 10, 12(e.g. +- 10; +- 20)    
             if actual_card == 12:
                 self.point += 20
             elif actual_card == 10:
@@ -191,13 +196,15 @@ class Judge:
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
+        else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
+            self.point += actual_card
 
         #   TODO: pop mountain, assign the card to current user
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:
                 self.randMountain()
                 print "randmountain, now len = %d" % len(self.mountain)
-                time.sleep(4)
+                #time.sleep(2)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
@@ -215,7 +222,7 @@ class Judge:
     def setDead(self, playerid):
         self.isDead[playerid-1] = True
         self.card[playerid-1] = []
-        time.sleep(3)
+        #time.sleep(3)
 
     def changeNextPlayer(self):
         self.current_player += self.clock_wise
