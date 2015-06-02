@@ -19,6 +19,7 @@ from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
 from ab_agent import HeuristicAgent, HumanAgent
+from logger import Game, logger
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -39,7 +40,8 @@ class Judge:
         players = list()
         players.append(ScoutAgent(1))
 #        players.append(ScoutAgent(2))
-        players.append(HumanAgent(2))
+#        players.append(HumanAgent(2))
+        players.append(HeuristicAgent(2))
         players.append(ScoutAgent(3))
         players.append(ScoutAgent(4))
         #fake action
@@ -57,7 +59,6 @@ class Judge:
         self.point = p
         self.clock_wise = cw
         self.current_player = cp
-        self.GameStart()
         
     def GameStart(self):
         self._possibleActions_ = list()
@@ -85,6 +86,7 @@ class Judge:
             if self.isDead[i] == False:
                 winner = i
         print "winner is " + str(winner+1)
+        return self.player, str(winner+1)
 
     def rand4Cards(self):
         original_cards = list()
@@ -349,4 +351,10 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
+    i = 1
+    log = logger() 
     j = Judge()
+    players, winner = j.GameStart()
+    g = Game(i, players, winner)
+    log.logGame(g)
+    print log
