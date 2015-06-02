@@ -76,7 +76,8 @@ class Board:
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
 def getCardString(cardIndex):
-   return str(cardIndex % 13) + " " + cardType[cardIndex/13]
+    cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+    return str(cardvalue) + cardType[(cardIndex-1)/13]
 def getCardValue(cardIndex):
    return cardIndex % 13
 def getMoveString(move):
