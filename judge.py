@@ -36,7 +36,7 @@ class State:
         self.clock_wise = cw
 
 class Judge:
-    def __init__(self, h = list(), c = [[0 for x in range(5)] for x in range(4)], m=list(), p=0, cw=1, cp=1):
+    def __init__(self, h = list(), c = None, m=list(), p=0, cw=1, cp=1):
         players = list()
         players.append(ScoutAgent(1))
 #        players.append(ScoutAgent(2))
@@ -54,7 +54,12 @@ class Judge:
         self.player = players
 
         self.history = h #action list
-        self.card = c # need to sort by cardvalue,two dimension list
+        # because this attribute is mutable, use this way
+        # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
+        if c == None:
+            self.card = [[0 for x in range(5)] for x in range(4)]
+        else:
+            self.card = c # need to sort by cardvalue,two dimension list
         self.mountain = m
         self.point = p
         self.clock_wise = cw
@@ -96,6 +101,8 @@ class Judge:
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
                 pick = random.randint(0,1024) % len(original_cards)
+                print len(self.card)
+                print len(self.card[i])
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
         #	TODO:	set mountain
@@ -353,8 +360,10 @@ def nextbool(vb, n):
 if __name__ == "__main__" :
     i = 1
     log = logger() 
-    j = Judge()
-    players, winner = j.GameStart()
-    g = Game(i, players, winner)
-    log.logGame(g)
+    for k in range(100):
+        print "game: " + str(k)
+        j = Judge()
+        players, winner = j.GameStart()
+        g = Game(i, players, winner)
+        log.logGame(g)
     print log
