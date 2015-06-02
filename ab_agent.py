@@ -79,6 +79,8 @@ def getCardString(cardIndex):
    return str(cardIndex % 13) + " " + cardType[cardIndex/13]
 def getCardValue(cardIndex):
    return cardIndex % 13
+def getMoveString(move):
+   return str(move)
       
 class ScoutAgent(Agent):
    def __init__(self, i = 0, cards = list()): # only need to know id
@@ -143,8 +145,13 @@ class HumanAgent(Agent):
       s = ""
       for card in state.myCard.cards:
          s = s + getCardString(card) + ", "
+      moves = list()
+      for m in state.myCard.moves:
+         moves.append(getMoveString(m) + ",\n")
       print "The card you have: ", s
-      print "The legal move you can take: ", state
+      print "The legal move you can take: "
+      for i in range(0, len(moves)):
+         print "move index:", i, moves[i], 
       print "The point now is: ", state.board.nowPoint
       move = raw_input("pick the move by input the move index: ")   
       while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):

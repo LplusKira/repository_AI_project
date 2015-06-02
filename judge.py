@@ -18,6 +18,7 @@ import copy
 from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
+from ab_agent import HeuristicAgent, HumanAgent
 
 class PossibleCombination:
     def __init__(self, comb = list()):
@@ -37,7 +38,8 @@ class Judge:
     def __init__(self, h = list(), c = [[0 for x in range(5)] for x in range(4)], m=list(), p=0, cw=1, cp=1):
         players = list()
         players.append(ScoutAgent(1))
-        players.append(ScoutAgent(2))
+#        players.append(ScoutAgent(2))
+        players.append(HumanAgent(2))
         players.append(ScoutAgent(3))
         players.append(ScoutAgent(4))
         #fake action
@@ -82,7 +84,7 @@ class Judge:
         for i in range(4):
             if self.isDead[i] == False:
                 winner = i
-        print "winner is " + str(i+1)
+        print "winner is " + str(winner+1)
 
     def rand4Cards(self):
         original_cards = list()

@@ -8,7 +8,7 @@ class Action:
 
     def __str__(self):
         return "user id: " + str(self.user) \
-             + " card" + getCardsString(self.cards_used) \
+             + " card: " + getCardsString(self.cards_used) \
              + " victim id: " + str(self.victim)
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
