@@ -36,7 +36,7 @@ class State:
         self.clock_wise = cw
 
 class Judge:
-    def __init__(self, h = list(), c = None, m=list(), p=0, cw=1, cp=1):
+    def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
         players = list()
         players.append(ScoutAgent(1))
 #        players.append(ScoutAgent(2))
@@ -53,14 +53,21 @@ class Judge:
         #random.shuffle(players)
         self.player = players
 
-        self.history = h #action list
+
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
-        if c == None:
+        if h is None:
+            self.history = list()
+        else:
+            self.history = h #action list
+        if c is None:
             self.card = [[0 for x in range(5)] for x in range(4)]
         else:
             self.card = c # need to sort by cardvalue,two dimension list
-        self.mountain = m
+        if m is None:
+            self.mountain = list()
+        else:
+            self.mountain = m
         self.point = p
         self.clock_wise = cw
         self.current_player = cp
