@@ -27,7 +27,6 @@ class logger:
       self.addReport()
 
    def addReport(self):
-      print self.wingames
       g = self.games[-1]
       self.wingames[g.players[int(g.winner)-1]] += 1
       

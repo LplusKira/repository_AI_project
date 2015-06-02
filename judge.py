@@ -15,6 +15,7 @@ import random
 import time
 import math
 import copy
+import sys
 from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
@@ -28,8 +29,8 @@ class PossibleCombination:
 class State:
     def __init__(self, c, h, l, pcn, m, p, cw):
         self.card = c
-        self.one_run_history = h #list of actions
-        self.what_player_can_do = l #list of actions
+        self.one_run_history = h
+        self.what_player_can_do = l
         self.playersCardNum = pcn
         self.mountain_remaining = m
         self.points = p
@@ -44,15 +45,8 @@ class Judge:
         players.append(HeuristicAgent(2))
         players.append(ScoutAgent(3))
         players.append(ScoutAgent(4))
-        #fake action
-        self._possibleActions_ = list()
-        self._possibleActions_.append(Action())
-        self._possibleActions_.append(Action())
-        self._possibleActions_.append(Action())
-        self._possibleActions_.append(Action())
         #random.shuffle(players)
         self.player = players
-
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
@@ -80,9 +74,6 @@ class Judge:
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
-            #print getCardsString(self.card[self.current_player-1])
-            #for a in self._possibleActions_:
-            #print "   " + str(a)
             if len(self._possibleActions_) == 0:
                 print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
@@ -91,7 +82,6 @@ class Judge:
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
-            #time.sleep(10)
 
         winner = 0
         for i in range(4):
@@ -102,14 +92,12 @@ class Judge:
 
     def rand4Cards(self):
         original_cards = list()
-        random.seed(time.time())
+        random.seed(time.clock())
     	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
                 pick = random.randint(0,1024) % len(original_cards)
-                print len(self.card)
-                print len(self.card[i])
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
         #	TODO:	set mountain
@@ -222,7 +210,6 @@ class Judge:
             if len(self.mountain) == 0:
                 self.randMountain()
                 print "randmountain, now len = %d" % len(self.mountain)
-                #time.sleep(2)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
@@ -240,7 +227,6 @@ class Judge:
     def setDead(self, playerid):
         self.isDead[playerid-1] = True
         self.card[playerid-1] = []
-        #time.sleep(3)
 
     def changeNextPlayer(self):
         self.current_player += self.clock_wise
@@ -254,12 +240,10 @@ class Judge:
         if self.current_player == 0:
             self.current_player += self.playerNum
         print "next player is %d" % self.current_player
-        #time.sleep(1)
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
-        #print "now player's card" + str(card)
-        isuse = [False]*len(card) # size = card
+        isuse = [False]*len(card)
         av = list()
         a_template = Action(self.current_player)
         while nextbool(isuse, len(card)):
@@ -310,16 +294,16 @@ class Judge:
             elif nowv == 4 or nowv == 11 or nowv == 13:
                 a = copy.deepcopy(a_card)
                 a.victim = 0
-                av.append(a)#do not consider victim
+                av.append(a)
             else:
                 if self.point + nowv <= 99:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
-                    av.append(a)#do not consider victim
+                    av.append(a)
 
         return av
 
-    def checkRule(self, a): #assume cards exist #a=action
+    def checkRule(self, a): #assume cards in action exist
         cardValue = 0
         iszero = False
         for i in range(len(a.cards_used)):
@@ -331,10 +315,10 @@ class Judge:
 
         cardValue = cardValue % 13
         if cardValue == 7:
-            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(self.card[a.victim-1]) >= 1:#//now user id?
+            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(self.card[a.victim-1]) >= 1:
                 return True
         elif cardValue == 9:
-            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user:#//now user id?
+            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user:
                 return True
         elif cardValue == 5:
             if a.victim > 0 and a.victim <= self.playerNum:
@@ -365,10 +349,13 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    i = 1
+    if len(sys.argv) == 2: # usage: judge.py [gamenum]
+        totalgamenum = int(sys.argv[1]) # [0] is scriptname
+    else:
+        totalgamenum = 100
+    i = 1 # no iterate?
     log = logger() 
-    for k in range(100):
-        print "game: " + str(k)
+    for k in range(totalgamenum):
         j = Judge()
         players, winner = j.GameStart()
         g = Game(i, players, winner)
