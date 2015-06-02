@@ -229,6 +229,7 @@ class HeuristicAgent(Agent):
    # choose 1-card action only, by the card-power in class PlayerState
       p = 0
       for a in state.myCard.moves:
+         best = a
          if len(a.cards_used) > 1:
             continue
          m = 0
