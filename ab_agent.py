@@ -82,28 +82,32 @@ def getCardValue(cardIndex):
    return cardIndex % 13
 def getMoveString(move):
    return str(move)
+
+class RandomAgent(Agent):
+   def __init__(self, i = 0):
+      self.i = i
+      print "Constructing Random Agent, player id = ", self.i
+
+   def genmove(self, state):
+      return randomGenmove(state)
       
 class ScoutAgent(Agent):
-   def __init__(self, i = 0, cards = list()): # only need to know id
+   def __init__(self, i = 0): # only need to know id
       self.i = i
       print "Constructing Simple Agent, player id = ", self.i
 
    def genmove(self, state):
-      return randomGenmove(state)
-
+      return self.abGenmove(state)
 
    def abGenmove(self, state, depth = 5, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
-      if state.board.nowPoint < 90: # do easy heuristic
-         return randomGenmove(state)
-      else:
-         score = self.search(state, -INF, INF, depth)
-         #print "search best move = " + action + "score = " + score
-         print "use " + str(time.time()-startTime) + "time"
-         return randomGenmove(state) #temp
+      score = self.search(state, -INF, INF, depth)
+      print "use " + str(time.time()-startTime) + "time"
+      return randomGenmove(state) #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
+      # todo: update bestmove, 
       if state.checkLose():
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
