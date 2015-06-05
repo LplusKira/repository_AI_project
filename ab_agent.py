@@ -4,6 +4,7 @@ import time
 import copy
 import action
 import math
+from simJudge import *
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
@@ -69,10 +70,16 @@ class PlayerState:
       score = score + 2*self.board.cardNum[userid]
       return score
 
+   def mySimulate(self, a):
+      pass
+      for i in range(times):
+         simulateAction(s, a)
+      
+      
+   
    def myEval(self, userid):
       self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
       #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
-      
       score = 0
       nine = 0
       for card in self.myCard.cards:
@@ -303,9 +310,11 @@ class ScoutAgent(Agent):
          return s.myEval(self.i) if depth%2 == 0 else -s.myEval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      for a in s.myCard.moves:
+      #moves = getAction(s) #todo:
+      moves = self.myCard.moves
+      for a in moves:
          news = copy.deepcopy(s)
-         #news.simulateMove(a)
+         news.mySimulate(a)
          
          tmp = -self.search(news, -n, -max(alpha, m), depth-1)
          if tmp > m: #todo:check

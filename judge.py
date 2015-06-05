@@ -24,12 +24,6 @@ from ab_agent import PlayerState
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent
 from logger import Game, logger
 
-def simulateAction(self,s,a):# state, action # I skip, let monte carlo do it
-    '''myjudge = Judge(s) # todo: build new init function for (judge) state
-    myjudge.doAction(a)
-    return judge.getJudgeState()
-    '''
-    
 class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
