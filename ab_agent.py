@@ -3,9 +3,13 @@ import random
 import time
 import copy
 import action
+import math
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
+_UpperBd_ = 100
+_HotThresh_ = 10
+_Step_ = 2
 
 class Agent:
    def __init__(self, index = 0):
@@ -24,6 +28,7 @@ class PlayerState:
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
       self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
+      self.counter = 0
       #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
 
    def __str__(self):
@@ -35,8 +40,8 @@ class PlayerState:
    # TODO
    def simulateMove(self, action):
       move = 0
-      print  "mycard: " + str(self.myCard.cards)
-      print "card used: " + str(action.cards_used) 
+      #print  "mycard: " + str(self.myCard.cards)
+      #print "card used: " + str(action.cards_used) 
       for c in action.cards_used:
          self.myCard.cards.remove(c)
          move = move + getCardValue(c)
@@ -105,11 +110,7 @@ class PlayerState:
             if temp_ordery[ind] == which_one:
                self.power.append(power_here[len(power_here) - 1])
                which_one += 1 
-               break
-      """print which_one
-                        print """
-
-      
+               break     
       #                 1, 2,  3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
       #    ordery:      10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2
       score = 0
@@ -127,6 +128,28 @@ class PlayerState:
             diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
          score = score - 60*diff
          #score = score + 60*abs(3 - self.board.cardNum[userid])
+      return score
+
+   def expEval(self, userid):
+      seven = _UpperBd_*math.atan(self.counter - _HotThresh_)
+      self.power = [0, _UpperBd_/5, _UpperBd_/5, _UpperBd_/4, _UpperBd_ *3/4, _UpperBd_*4/5, -_UpperBd_/2, seven, -_UpperBd_, _UpperBd_, _UpperBd_/2, _UpperBd_ *2/3, _UpperBd_/2, _UpperBd_]
+      #                 1,                   2,       3,           4,                5,             6,          7,      8,         9,         10,               j,         q,          k
+      score = 0
+      nine = 0
+      for card in self.myCard.cards:
+         if getCardValue(card) == 9:      # todo: specialcase9
+            nine += 1
+         score = score + self.power[getCardValue(card)-1]
+
+      if nine >= 1: 
+         pass
+      else: # no nine, compare cardnumber
+         diff = 0
+         for cnum in self.board.cardNum:
+            diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
+         score = score - 60*diff
+         #score = score + 60*abs(3 - self.board.cardNum[userid])
+      self.counter += _Step_
       return score
 
 class MyCard:
@@ -155,15 +178,15 @@ def getMoveString(move):
 class RandomAgent(Agent):
    def __init__(self, i = 0):
       self.i = i
-      print "Constructing Random Agent, player id = ", self.i
+      #print "Constructing Random Agent, player id = ", self.i
 
    def genmove(self, state):
       return randomGenmove(state)
 
-class ScoutTestAgent(Agent):
+class ExpAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      print "Constructing Test-Alpha-Beta Agent, player id = ", self.i
+      #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
       return self.abGenmove(state)
@@ -173,7 +196,55 @@ class ScoutTestAgent(Agent):
       self.endTime = startTime + maxTime
       self.depth = depth
       score = self.search(state, -INF, INF, depth)
-      print "use " + str(time.time()-startTime) + "time"
+      #print "use " + str(time.time()-startTime) + "time"
+      return self.bestmove #todo:
+
+   def search(self, s, alpha, beta, depth): # fail soft negascout
+      # todo: simulate move, 
+      if s.checkLose():
+         return -INF
+      if depth == 0 or self.timeUp(): # or some heuristic
+         return s.expEval(self.i) if depth%2 == 0 else -s.expEval(self.i) #todo:check
+      m = -INF # current lower bound, fail soft
+      n = beta # current upper bound
+      for a in s.myCard.moves:
+         news = copy.deepcopy(s)
+         #news.simulateMove(a)
+         
+         tmp = -self.search(news, -n, -max(alpha, m), depth-1)
+         if tmp > m: #todo:check
+            if depth == self.depth:
+               self.bestmove = a               
+            if n == beta or depth < 3 or tmp >= beta:
+               m = tmp
+            else:
+               m = -self.search(news, -beta, -tmp, depth-1) #research
+         if m >= beta: # cut off
+            return m 
+         n = max(alpha, m) + 1 # set up null window
+      return m
+
+   def timeUp(self):
+      nowTime = time.time()
+      if nowTime > self.endTime:
+         return True
+      else:
+         return False
+
+class ScoutTestAgent(Agent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      #print "Constructing Test-Alpha-Beta Agent, player id = ", self.i
+
+   def genmove(self, state):
+      return self.abGenmove(state)
+
+   def abGenmove(self, state, depth = 1, maxTime = 10):
+      startTime = time.time()
+      self.endTime = startTime + maxTime
+      self.depth = depth
+      score = self.search(state, -INF, INF, depth)
+      #print "use " + str(time.time()-startTime) + "time"
       return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
@@ -211,7 +282,7 @@ class ScoutTestAgent(Agent):
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      print "Constructing Alpha-Beta Agent, player id = ", self.i
+      #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
       return self.abGenmove(state)
@@ -221,7 +292,7 @@ class ScoutAgent(Agent):
       self.endTime = startTime + maxTime
       self.depth = depth
       score = self.search(state, -INF, INF, depth)
-      print "use " + str(time.time()-startTime) + "time"
+      #print "use " + str(time.time()-startTime) + "time"
       return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
@@ -292,7 +363,7 @@ class MonteAgent(Agent):
    """
    def __init__(self, i = 0):
       self.i = i
-      print "Constructing Montecaro Agent, id = ", self.i
+      #print "Constructing Montecaro Agent, id = ", self.i
 
    def genmove(self, state):
       othersCard = 0
@@ -315,7 +386,7 @@ class HeuristicAgent(Agent):
    """
    def __init__(self, i = 0):
       self.i = i
-      print "Constructing Heuristic Agent, id = ", self.i
+      #print "Constructing Heuristic Agent, id = ", self.i
 
    # Totally by heuristic...
    def genmove(self, state):
@@ -400,7 +471,7 @@ def randomGenmove(state):
       return []
    else:
       i = random.randint(0, len(state.myCard.moves)-1)
-      print state.myCard.moves[i]
+      #print state.myCard.moves[i]
       return state.myCard.moves[i]
 
 
@@ -421,6 +492,6 @@ if __name__ == "__main__":
    state2 = PlayerState(record, act,[4, 8], 3, 4, 0, 2, 33, 99, 1)
    b = human.genmove(state)
    c = heu.genmove(state2)
-   print c
+   #print c
    #print "Simple agent's action " + ai.genmove(state)
    #print "Human player's action ", human.genmove(state2)
