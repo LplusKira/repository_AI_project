@@ -4,7 +4,8 @@ import time
 import copy
 import action
 import math
-from simJudge import *
+from simJudge import simulateAction
+from simJudge import JudgeState
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
@@ -70,32 +71,12 @@ class PlayerState:
       score = score + 2*self.board.cardNum[userid]
       return score
 
-   def mySimulate(self, a):
+   def mySimulate(self, s, a):
+      simulateAction(s, a)
       pass
-      for i in range(times):
-         simulateAction(s, a)
    
-   def myEval(self, userid):
-      self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
-      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
-      score = 0
-      nine = 0
-      for card in self.myCard.cards:
-         if getCardValue(card) == 9:      
-            nine += 1
-         score = score + self.power[getCardValue(card)-1]
+   
 
-      # todo: specialcase9
-      if nine >= 1: 
-         pass
-      else: # no nine, compare cardnumber
-         score -= 500
-         diff = 0
-         for cnum in self.board.cardNum:
-            diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
-         score = score - 60*diff
-         #score = score + 60*abs(3 - self.board.cardNum[userid])
-      return score
 
    def myTestEval(self, userid):
       power_here = list()
@@ -292,36 +273,85 @@ class ScoutAgent(Agent):
    def genmove(self, state):
       return self.abGenmove(state)
 
+   def fillstate(self, s):
+    #fill other's card, mountain
+      restcard = []
+      for i in range(52):
+         restcard.append(i+1)
+      for c in s.myCard.cards:
+         restcard.remove(c)
+      lastrand = False
+      for a in s.board.record:
+         if not lastrand:#todo: get lastest rand record
+            if a.user == 0:
+               lastrand = True
+            continue
+         for c in a.cards_used:
+            restcard.remove(c)
+      random.shuffle(restcard)
+      cards = []
+      mountain = []
+      for i in range(4):
+         if self.i == i+1:
+            cards.append(s.myCard.cards)
+         else:
+            playercard = []
+            for j in range(s.board.cardNum[i]):
+               playercard.append(restcard[-1])
+               restcard.pop()
+            cards.append(playercard)
+            
+      mountain = restcard # rest
+      js = JudgeState(None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
+      return js
+   
    def abGenmove(self, state, depth = 1, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
+<<<<<<< HEAD
       score = self.search(state, -INF, INF, depth)
       #print "use " + str(time.time()-startTime) + "time"
+=======
+      # todo: transform to judgestate
+      js = self.fillstate(state)
+      score = self.search(js, -INF, INF, depth, 0)
+      print "use " + str(time.time()-startTime) + "time"
+>>>>>>> need to add getaction in simjudge
       return self.bestmove #todo:
 
-   def search(self, s, alpha, beta, depth): # fail soft negascout
+
+
+
+   
+   def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
       # todo: simulate move, 
-      if s.checkLose():
+      if s.checkLose(self.i):
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
-         return s.myEval(self.i) if depth%2 == 0 else -s.myEval(self.i) #todo:check
+         return s.myEval() if depth%2 == 0 else -s.myEval() #todo:not depth = 2
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      #moves = getAction(s) #todo:
-      moves = self.myCard.moves
+      moves = s.getAction()
+      #moves = s.myCard.moves
       for a in moves:
          news = copy.deepcopy(s)
-         news.mySimulate(a)
-         
-         tmp = -self.search(news, -n, -max(alpha, m), depth-1)
+         news.mySimulate(news, a)
+         if nowdepth%4 == 0 or nowdepth%4 == 1: # change to maxnode
+            tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
+         else: #minnode
+            tmp = -self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
          if tmp > m: #todo:check
-            if depth == self.depth:
-               self.bestmove = a               
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
-               m = -self.search(news, -beta, -tmp, depth-1) #research
+               if nowdepth%4 == 0 or nowdepth%4 == 1: # change to maxnode
+                  m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
+               else: #minnode
+                  m = -self.search(news, tmp, beta, depth-1, nowdepth+1) #research
+            if depth == self.depth:
+               print str(a)  + "  score = " + str(tmp)
+               self.bestmove = a               
          if m >= beta: # cut off
             return m 
          n = max(alpha, m) + 1 # set up null window
