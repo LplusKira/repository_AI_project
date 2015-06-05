@@ -10,6 +10,7 @@ _MaxPoint_ = 99
 _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
+_TestGameNum_ = 100
 
 import random
 import time
@@ -20,7 +21,7 @@ from action import *
 from ab_agent import ScoutAgent
 from ab_agent import RandomAgent
 from ab_agent import PlayerState
-from ab_agent import HeuristicAgent, HumanAgent
+from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent
 from logger import Game, logger
 
 def simulateAction(self,s,a):# state, action # I skip, let monte carlo do it
@@ -37,11 +38,11 @@ class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
         if playerList is None:
             players = list()
-            players.append(ScoutAgent(1))
+            players.append(HeuristicAgent(1))
         #        players.append(HumanAgent(2))
-            players.append(HeuristicAgent(2))
-            players.append(RandomAgent(3))
-            players.append(HeuristicAgent(4))
+            players.append(ScoutTestAgent(2))
+            players.append(ScoutAgent(3))
+            players.append(RandomAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -354,7 +355,7 @@ if __name__ == "__main__" :
     if len(sys.argv) == 2: # usage: judge.py [gamenum]
         totalgamenum = int(sys.argv[1]) # [0] is scriptname
     else:
-        totalgamenum = 100
+        totalgamenum = _TestGameNum_
     i = 1 # no iterate? # i dont know
     log = logger() 
     for k in range(totalgamenum):
