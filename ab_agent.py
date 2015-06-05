@@ -4,6 +4,8 @@ import time
 import copy
 import action
 INF = 2147483647
+_CardNumPerType_ = 13
+_Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
 
 class Agent:
    def __init__(self, index = 0):
@@ -85,6 +87,48 @@ class PlayerState:
          #score = score + 60*abs(3 - self.board.cardNum[userid])
       return score
 
+   def myTestEval(self, userid):
+      power_here = list()
+      temp_ordery = list()
+      for card in range(_CardNumPerType_):
+         power_here.append(random.randint(0,1024))
+
+      # TODO: reconstruct power due to the ordery in _Ordery_
+      for card in range(len(power_here)):
+         power_here.sort()
+         temp_ordery.append(_Ordery_[card])
+
+      self.power = [0]
+      which_one = 1
+      for run in range(_CardNumPerType_):
+         for ind in range(_CardNumPerType_):
+            if temp_ordery[ind] == which_one:
+               self.power.append(power_here[len(power_here) - 1])
+               which_one += 1 
+               break
+      """print which_one
+                        print """
+
+      
+      #                 1, 2,  3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+      #    ordery:      10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2
+      score = 0
+      nine = 0
+      for card in self.myCard.cards:
+         if getCardValue(card) == 9:      # todo: specialcase9
+            nine += 1
+         score = score + self.power[getCardValue(card)-1]
+
+      if nine >= 1: 
+         pass
+      else: # no nine, compare cardnumber
+         diff = 0
+         for cnum in self.board.cardNum:
+            diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
+         score = score - 60*diff
+         #score = score + 60*abs(3 - self.board.cardNum[userid])
+      return score
+
 class MyCard:
    def __init__(self, moves, cards):
       self.moves = moves
@@ -115,6 +159,54 @@ class RandomAgent(Agent):
 
    def genmove(self, state):
       return randomGenmove(state)
+
+class ScoutTestAgent(Agent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      print "Constructing Test-Alpha-Beta Agent, player id = ", self.i
+
+   def genmove(self, state):
+      return self.abGenmove(state)
+
+   def abGenmove(self, state, depth = 1, maxTime = 10):
+      startTime = time.time()
+      self.endTime = startTime + maxTime
+      self.depth = depth
+      score = self.search(state, -INF, INF, depth)
+      print "use " + str(time.time()-startTime) + "time"
+      return self.bestmove #todo:
+
+   def search(self, s, alpha, beta, depth): # fail soft negascout
+      # todo: simulate move, 
+      if s.checkLose():
+         return -INF
+      if depth == 0 or self.timeUp(): # or some heuristic
+         return s.myTestEval(self.i) if depth%2 == 0 else -s.myTestEval(self.i) #todo:check
+      m = -INF # current lower bound, fail soft
+      n = beta # current upper bound
+      for a in s.myCard.moves:
+         news = copy.deepcopy(s)
+         #news.simulateMove(a)
+         
+         tmp = -self.search(news, -n, -max(alpha, m), depth-1)
+         if tmp > m: #todo:check
+            if depth == self.depth:
+               self.bestmove = a               
+            if n == beta or depth < 3 or tmp >= beta:
+               m = tmp
+            else:
+               m = -self.search(news, -beta, -tmp, depth-1) #research
+         if m >= beta: # cut off
+            return m 
+         n = max(alpha, m) + 1 # set up null window
+      return m
+
+   def timeUp(self):
+      nowTime = time.time()
+      if nowTime > self.endTime:
+         return True
+      else:
+         return False
       
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
@@ -261,8 +353,9 @@ class HeuristicAgent(Agent):
    def pickBest(self, state):
    # choose 1-card action only, by the card-power in class PlayerState
       p = 0
+      best = list()
       for a in state.myCard.moves:
-         best = a
+         best.append(a)         
          if len(a.cards_used) > 1:
             continue
          m = 0
@@ -270,9 +363,12 @@ class HeuristicAgent(Agent):
             m = m + getCardValue(c)
          power = state.power[m-1]
          if power > p:
+            best[:] = []
             p = power
-            best = a         
-      return best
+            best.append(a)
+         if power == p:
+            best.append(a)
+      return random.choice(best)
 
 def randomGenmove(state):
    a = len(state.myCard.moves)
