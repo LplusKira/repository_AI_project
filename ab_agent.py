@@ -323,20 +323,25 @@ class HeuristicAgent(Agent):
       if len(state.myCard.cards) == 1 or len(state.myCard.moves) == 1:
          return move
       if len(state.myCard.cards) == 2:
-         p = 0
-         for a in state.myCard.moves:
+         for a in range(0, len(state.myCard.moves)):
             m = 0
-            for c in a.cards_used:
+            for c in state.myCard.moves[a].cards_used:
                m = m + getCardValue(c)
-            if len(a.cards_used) == 2:
-               if m == 9:
-                  return a
-               else:
+            if len(state.myCard.moves[a].cards_used) == 2:
+               if m != 9:
                   continue
-            power = state.power[m-1]
-            if power > p:
-               p = power
-               move = a
+               else:
+                  movelist = [state.myCard.moves[a]]
+                  while a < len(state.myCard.moves)-1:
+                     a += 1
+                     n = 0
+                     for j in state.myCard.moves[a].cards_used:
+                        n = n + getCardValue(j)
+                     if n != 9:                       
+                        return state.myCard.moves[a-1]
+                     else:
+                        movelist.append(state.myCard.moves[a])
+                  return random.choice(movelist)
       if len(state.myCard.cards) == 3:
          move = self.pickBest(state)
       if len(state.myCard.cards) > 3:         
@@ -347,7 +352,7 @@ class HeuristicAgent(Agent):
             handCards = len(state.myCard.cards) - len(a.cards_used)
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
-         move = self.pickBest(state)
+      move = self.pickBest(state)
       return move
 
    def pickBest(self, state):
@@ -369,6 +374,25 @@ class HeuristicAgent(Agent):
          if power == p:
             best.append(a)
       return random.choice(best)
+
+   def chooseMaxCard(self, movelist):
+      # TODO the state.board.cardNum list got randomly sorted? cannot find userid through this...
+      """ return the most-hand-card victim id"""
+      cardNumList = state.board.cardNum
+      cardlist = cardNumList.sort()
+      cardlist.reverse()
+      victim = list()
+      for c in cardlist:
+         victim.append(state.board.cardNum.index(c))
+      move = list()
+      for m in movelist:
+         if ((m.victim-1) in victim[0]):
+            move.append(m)
+      if move == []:
+         for m in movelist:
+            if((m.victim-1) in victim[1]):
+               move.append(m)
+      return random.choice(move)
 
 def randomGenmove(state):
    a = len(state.myCard.moves)
