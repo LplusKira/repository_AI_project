@@ -21,8 +21,8 @@ class PlayerState:
       cardNum.append(cardNum3)
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
-      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100 ]
-      #             1,  2,   3,  4,  5, 6,  7,  8, 9,  10,  j,  q,   k
+      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
+      #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
 
    def __str__(self):
       return str(self.myCard.moves)
@@ -71,6 +71,23 @@ class PlayerState:
       score = score + 2*self.board.cardNum[userid]
       return score
 
+   def myEval(self, userid):
+      self.power = [30, 30, 20, 70, 80, 0, -500, 0, 500, 80, 60, 80, 100]
+      #             1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+      score = 0
+      for card in self.myCard.cards:
+         score = score + self.power[getCardValue(card)-1]
+
+      # todo: specialcase9
+      if getCardValue(card)-1 != 9:
+         
+         
+      diff = 0
+      for cnum in self.board.cardNum:
+         diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
+      score = score - 60*diff
+      #score = score + 60*abs(3 - self.board.cardNum[userid])
+      return score
 
 class MyCard:
    def __init__(self, moves, cards):
@@ -90,7 +107,8 @@ def getCardString(cardIndex):
     cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
     return str(cardvalue) + cardType[(cardIndex-1)/13]
 def getCardValue(cardIndex):
-   return cardIndex % 13
+   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   return cardvalue
 def getMoveString(move):
    return str(move)
 
@@ -105,12 +123,12 @@ class RandomAgent(Agent):
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      print "Constructing Simple Agent, player id = ", self.i
+      print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
       return self.abGenmove(state)
 
-   def abGenmove(self, state, depth = 5, maxTime = 10):
+   def abGenmove(self, state, depth = 1, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       score = self.search(state, -INF, INF, depth)
@@ -118,11 +136,11 @@ class ScoutAgent(Agent):
       return randomGenmove(state) #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
-      # todo: update bestmove, 
-      if state.checkLose():
+      # todo: simulate move, 
+      if s.checkLose():
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
-         return s.SampleEval(self.i) if depth%2 == 0 else -s.SampleEval(self.i) #todo:check
+         return s.myEval(self.i) if depth%2 == 0 else -s.myEval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
       for a in state.myCard.moves:
