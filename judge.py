@@ -10,7 +10,7 @@ _MaxPoint_ = 99
 _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
-_TestGameNum_ = 100
+_TestGameNum_ = 2000
 
 import random
 import time
@@ -21,7 +21,7 @@ from action import *
 from ab_agent import ScoutAgent
 from ab_agent import RandomAgent
 from ab_agent import PlayerState
-from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent
+from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent
 from logger import Game, logger
 
 def simulateAction(self,s,a):# state, action # I skip, let monte carlo do it
@@ -38,10 +38,10 @@ class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
         if playerList is None:
             players = list()
-            players.append(HeuristicAgent(1))
+            players.append(ExpAgent(1))
         #        players.append(HumanAgent(2))
-            players.append(ScoutTestAgent(2))
-            players.append(ScoutAgent(3))
+            players.append(RandomAgent(2))
+            players.append(RandomAgent(3))
             players.append(RandomAgent(4))
             self.player = players
         else: # specify agents
@@ -73,12 +73,12 @@ class Judge:
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
-        self.printBoard()
+        #self.printBoard()
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
-                print "%d is dead(cannot move). next one." % self.current_player
+                #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
@@ -90,7 +90,7 @@ class Judge:
         for i in range(4):
             if self.isDead[i] == False:
                 winner = i
-        print "winner is " + str(winner+1)
+        #print "winner is " + str(winner+1)
         return self.player, str(winner+1)
 
     def rand4Cards(self):
@@ -210,21 +210,27 @@ class Judge:
 
         #   TODO: pop mountain, assign the card to current user
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
-            if len(self.mountain) == 0:
+            if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
                 self.randMountain()
-                print "randmountain, now len = %d" % len(self.mountain)
+                index_action = Action(0,[],0) 
+                """index_action.user = 0
+                                                                index_action.cards_used = list()
+                                                                index_action.victim = 0"""
+                self.history.append(index_action)  
+                #print "randmountain, now len = %d" % len(self.mountain)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
         # check dead
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
-                print "%d is dead(no card). next one." % (i+1)
+                #print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
             
         #   TODO: push action a into history
+            #   if mountain is empty, "0 list() 0" will be inserted first
         self.history.append(a)
-        self.printBoard()
+        #self.printBoard()
         self.changeNextPlayer()
 
     def setDead(self, playerid):
@@ -242,7 +248,7 @@ class Judge:
         self.current_player %= self.playerNum
         if self.current_player == 0:
             self.current_player += self.playerNum
-        print "next player is %d" % self.current_player
+        #print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
