@@ -80,9 +80,7 @@ class PlayerState:
 
       # todo: specialcase9
       if getCardValue(card)-1 != 9:
-         
-         
-      diff = 0
+      	diff = 0
       for cnum in self.board.cardNum:
          diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
       score = score - 60*diff
