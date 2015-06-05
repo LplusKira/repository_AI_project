@@ -41,7 +41,7 @@ class Judge:
         #        players.append(HumanAgent(2))
             players.append(HeuristicAgent(2))
             players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
+            players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -355,7 +355,7 @@ if __name__ == "__main__" :
         totalgamenum = int(sys.argv[1]) # [0] is scriptname
     else:
         totalgamenum = 100
-    i = 1 # no iterate?
+    i = 1 # no iterate? # i dont know
     log = logger() 
     for k in range(totalgamenum):
         j = Judge()
