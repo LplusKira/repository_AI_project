@@ -303,7 +303,7 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-
+        random.shuffle(av)
         return av
 
     def checkRule(self, a): #assume cards in action exist
@@ -358,9 +358,18 @@ if __name__ == "__main__" :
         totalgamenum = _TestGameNum_
     i = 1 # no iterate? # i dont know
     log = logger() 
+<<<<<<< HEAD
+    while i < 100:
+       j = Judge()
+       players, winner = j.GameStart()
+       g = Game(i, players, winner)
+       log.logGame(g)
+       i = i + 1
+=======
     for k in range(totalgamenum):
         j = Judge()
         players, winner = j.GameStart()
         g = Game(i, players, winner)
         log.logGame(g)
+>>>>>>> 575148dd3a08340e77bf5294d0d8c595ecbe40c1
     print log
