@@ -33,6 +33,8 @@ class PlayerState:
    # TODO
    def simulateMove(self, action):
       move = 0
+      print  "mycard: " + str(self.myCard.cards)
+      print "card used: " + str(action.cards_used) 
       for c in action.cards_used:
          self.myCard.cards.remove(c)
          move = move + getCardValue(c)
@@ -49,7 +51,7 @@ class PlayerState:
             self.board.nowPoint -= move
       elif move == 4:
          self.order *= -1
-      self.myCard.moves.remove(action)
+      #self.myCard.moves.remove(action)
 
    def Eval(self, userid):
       score = 0
@@ -102,23 +104,27 @@ class ScoutAgent(Agent):
    def abGenmove(self, state, depth = 5, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
+      self.depth = depth
       score = self.search(state, -INF, INF, depth)
       print "use " + str(time.time()-startTime) + "time"
-      return randomGenmove(state) #todo:
+      return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
       # todo: update bestmove, 
-      if state.checkLose():
+      if s.checkLose():
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
          return s.Eval(self.i) if depth%2 == 0 else -s.Eval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      for a in state.myCard.moves:
+      for a in s.myCard.moves:
          news = copy.deepcopy(s)
-         news.simulateMove(a)
+         #news.simulateMove(a)
+         
          tmp = -self.search(news, -n, -max(alpha, m), depth-1)
          if tmp > m: #todo:check
+            if depth == self.depth:
+               self.bestmove = a               
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:

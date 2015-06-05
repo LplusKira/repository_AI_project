@@ -18,35 +18,33 @@ import copy
 import sys
 from action import *
 from ab_agent import ScoutAgent
+from ab_agent import RandomAgent
 from ab_agent import PlayerState
 from ab_agent import HeuristicAgent, HumanAgent
 from logger import Game, logger
 
+def simulateAction(self,s,a):# state, action # I skip, let monte carlo do it
+    '''myjudge = Judge(s) # todo: build new init function for (judge) state
+    myjudge.doAction(a)
+    return judge.getJudgeState()
+    '''
+    
 class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
-class State:
-    def __init__(self, c, h, l, pcn, m, p, cw):
-        self.card = c
-        self.one_run_history = h
-        self.what_player_can_do = l
-        self.playersCardNum = pcn
-        self.mountain_remaining = m
-        self.points = p
-        self.clock_wise = cw
-
 class Judge:
-    def __init__(self, p = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        if p is None:
+    def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+        if playerList is None:
             players = list()
-            players.append(RandomAgent(1))
+            players.append(ScoutAgent(1))
         #        players.append(HumanAgent(2))
             players.append(HeuristicAgent(2))
             players.append(RandomAgent(3))
             players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
+            self.player = playerList
             pass
             random.shuffle(p)
             for player in p:
@@ -83,7 +81,7 @@ class Judge:
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise) #get playerstate
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
 
@@ -155,9 +153,6 @@ class Judge:
             + "South(id = 3):" + (getCardsString(self.card[2])) + "\n"\
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
-    def simulateAction(self,state,a):
-        pass
-        
     def doAction(self, a):
         #   TODO: add effect by the returning action a
         if not self.checkRule(a):
