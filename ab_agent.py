@@ -74,8 +74,6 @@ class PlayerState:
       pass
       for i in range(times):
          simulateAction(s, a)
-      
-      
    
    def myEval(self, userid):
       self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
