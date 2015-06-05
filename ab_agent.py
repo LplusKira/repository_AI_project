@@ -21,7 +21,7 @@ class PlayerState:
       cardNum.append(cardNum3)
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
-      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100 ]
+      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
       #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
 
    def __str__(self):
@@ -33,6 +33,8 @@ class PlayerState:
    # TODO
    def simulateMove(self, action):
       move = 0
+      print  "mycard: " + str(self.myCard.cards)
+      print "card used: " + str(action.cards_used) 
       for c in action.cards_used:
          self.myCard.cards.remove(c)
          move = move + getCardValue(c)
@@ -49,7 +51,7 @@ class PlayerState:
             self.board.nowPoint -= move
       elif move == 4:
          self.order *= -1
-      self.myCard.moves.remove(action)
+      #self.myCard.moves.remove(action)
 
    def Eval(self, userid):
       score = 0
@@ -60,6 +62,28 @@ class PlayerState:
       score = score + 2*self.board.cardNum[userid]
       return score
 
+   def myEval(self, userid):
+      self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
+      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+      
+      score = 0
+      nine = 0
+      for card in self.myCard.cards:
+         if getCardValue(card) == 9:      
+            nine += 1
+         score = score + self.power[getCardValue(card)-1]
+
+      # todo: specialcase9
+      if nine >= 1: 
+         pass
+      else: # no nine, compare cardnumber
+         score -= 500
+         diff = 0
+         for cnum in self.board.cardNum:
+            diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
+         score = score - 60*diff
+         #score = score + 60*abs(3 - self.board.cardNum[userid])
+      return score
 
 class MyCard:
    def __init__(self, moves, cards):
@@ -79,42 +103,51 @@ def getCardString(cardIndex):
     cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
     return str(cardvalue) + cardType[(cardIndex-1)/13]
 def getCardValue(cardIndex):
-   return cardIndex % 13
+   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   return cardvalue
 def getMoveString(move):
    return str(move)
-      
-class ScoutAgent(Agent):
-   def __init__(self, i = 0, cards = list()): # only need to know id
+
+class RandomAgent(Agent):
+   def __init__(self, i = 0):
       self.i = i
-      print "Constructing Simple Agent, player id = ", self.i
+      print "Constructing Random Agent, player id = ", self.i
 
    def genmove(self, state):
       return randomGenmove(state)
+      
+class ScoutAgent(Agent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      print "Constructing Alpha-Beta Agent, player id = ", self.i
 
+   def genmove(self, state):
+      return self.abGenmove(state)
 
-   def abGenmove(self, state, depth = 5, maxTime = 10):
+   def abGenmove(self, state, depth = 1, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
-      if state.board.nowPoint < 90: # do easy heuristic
-         return randomGenmove(state)
-      else:
-         score = self.search(state, -INF, INF, depth)
-         #print "search best move = " + action + "score = " + score
-         print "use " + str(time.time()-startTime) + "time"
-         return randomGenmove(state) #temp
+      self.depth = depth
+      score = self.search(state, -INF, INF, depth)
+      print "use " + str(time.time()-startTime) + "time"
+      return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
-      if state.checkLose():
+      # todo: simulate move, 
+      if s.checkLose():
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
-         return s.Eval(self.i) if depth%2 == 0 else -s.Eval(self.i) #todo:check
+         return s.myEval(self.i) if depth%2 == 0 else -s.myEval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      for a in state.myCard.moves:
+      for a in s.myCard.moves:
          news = copy.deepcopy(s)
-         news.simulateMove(a)
+         #news.simulateMove(a)
+         
          tmp = -self.search(news, -n, -max(alpha, m), depth-1)
          if tmp > m: #todo:check
+            if depth == self.depth:
+               self.bestmove = a               
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
