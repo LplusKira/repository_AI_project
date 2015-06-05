@@ -63,21 +63,23 @@ class PlayerState:
       return score
 
    def myEval(self, userid):
-      self.power = [30, 30, 20, 70, 80, 0, -500, 0, 500, 80, 60, 80, 100]
-      #             1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+      self.power = [0, 30, 30, 20, 70, 80, 0, -500, 0, 500, 80, 60, 80, 100]
+      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
       score = 0
+      nine = 0
       for card in self.myCard.cards:
+         if getCardValue(card) == 9:      # todo: specialcase9
+            nine += 1
          score = score + self.power[getCardValue(card)-1]
 
-      # todo: specialcase9
-      if getCardValue(card)-1 != 9:
-         
-         
-      diff = 0
-      for cnum in self.board.cardNum:
-         diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
-      score = score - 60*diff
-      #score = score + 60*abs(3 - self.board.cardNum[userid])
+      if nine >= 1: 
+         pass
+      else: # no nine, compare cardnumber
+         diff = 0
+         for cnum in self.board.cardNum:
+            diff += cnum-self.board.cardNum[userid] # other's card is more than mycard
+            score = score - 60*diff
+         #score = score + 60*abs(3 - self.board.cardNum[userid])
       return score
 
 class MyCard:
