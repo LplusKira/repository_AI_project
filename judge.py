@@ -37,16 +37,20 @@ class State:
         self.clock_wise = cw
 
 class Judge:
-    def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        players = list()
-        players.append(ScoutAgent(1))
-#        players.append(ScoutAgent(2))
-#        players.append(HumanAgent(2))
-        players.append(HeuristicAgent(2))
-        players.append(ScoutAgent(3))
-        players.append(ScoutAgent(4))
-        #random.shuffle(players)
-        self.player = players
+    def __init__(self, p = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+        if p is None:
+            players = list()
+            players.append(RandomAgent(1))
+        #        players.append(HumanAgent(2))
+            players.append(HeuristicAgent(2))
+            players.append(RandomAgent(3))
+            players.append(RandomAgent(4))
+            self.player = players
+        else: # specify agents
+            pass
+            random.shuffle(p)
+            for player in p:
+                players.append()
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
@@ -151,6 +155,9 @@ class Judge:
             + "South(id = 3):" + (getCardsString(self.card[2])) + "\n"\
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
+    def simulateAction(self,state,a):
+        pass
+        
     def doAction(self, a):
         #   TODO: add effect by the returning action a
         if not self.checkRule(a):
