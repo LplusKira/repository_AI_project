@@ -261,8 +261,9 @@ class HeuristicAgent(Agent):
    def pickBest(self, state):
    # choose 1-card action only, by the card-power in class PlayerState
       p = 0
+      best = list()
       for a in state.myCard.moves:
-         best = a
+         best.append(a)         
          if len(a.cards_used) > 1:
             continue
          m = 0
@@ -270,9 +271,12 @@ class HeuristicAgent(Agent):
             m = m + getCardValue(c)
          power = state.power[m-1]
          if power > p:
+            best[:] = []
             p = power
-            best = a         
-      return best
+            best.append(a)
+         if power == p:
+            best.append(a)
+      return random.choice(best)
 
 def randomGenmove(state):
    a = len(state.myCard.moves)
