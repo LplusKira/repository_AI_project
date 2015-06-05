@@ -353,8 +353,10 @@ def nextbool(vb, n):
 if __name__ == "__main__" :
     i = 1
     log = logger() 
-    j = Judge()
-    players, winner = j.GameStart()
-    g = Game(i, players, winner)
-    log.logGame(g)
+    while i < 100:
+       j = Judge()
+       players, winner = j.GameStart()
+       g = Game(i, players, winner)
+       log.logGame(g)
+       i = i + 1
     print log
