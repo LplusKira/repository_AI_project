@@ -302,7 +302,7 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-
+        random.shuffle(av)
         return av
 
     def checkRule(self, a): #assume cards in action exist
