@@ -33,6 +33,8 @@ class PlayerState:
    # TODO
    def simulateMove(self, action):
       move = 0
+      print  "mycard: " + str(self.myCard.cards)
+      print "card used: " + str(action.cards_used) 
       for c in action.cards_used:
          self.myCard.cards.remove(c)
          move = move + getCardValue(c)
@@ -49,23 +51,12 @@ class PlayerState:
             self.board.nowPoint -= move
       elif move == 4:
          self.order *= -1
-      self.myCard.moves.remove(action)
+      #self.myCard.moves.remove(action)
 
    def Eval(self, userid):
       score = 0
       for card in self.myCard.cards:
          score = score + self.power[getCardValue(card)]
-      for cnum in self.board.cardNum:
-         score = score - cnum*60
-      score = score + 2*self.board.cardNum[userid]
-      return score
-
-   def SampleEval(self, userid):
-      power = [30, 30, 20, 70, 80, 10, 150, 10, 50, 80, 60, 80, 100 ]
-      #        1,  2,   3,  4,  5,  6,  7,   8,  9, 10,  j,  q,  k
-      score = 0
-      for card in self.myCard.cards:
-         score = score + power[getCardValue(card)]
       for cnum in self.board.cardNum:
          score = score - cnum*60
       score = score + 2*self.board.cardNum[userid]
@@ -133,9 +124,10 @@ class ScoutAgent(Agent):
    def abGenmove(self, state, depth = 1, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
+      self.depth = depth
       score = self.search(state, -INF, INF, depth)
       print "use " + str(time.time()-startTime) + "time"
-      return randomGenmove(state) #todo:
+      return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth): # fail soft negascout
       # todo: simulate move, 
@@ -145,11 +137,14 @@ class ScoutAgent(Agent):
          return s.myEval(self.i) if depth%2 == 0 else -s.myEval(self.i) #todo:check
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      for a in state.myCard.moves:
+      for a in s.myCard.moves:
          news = copy.deepcopy(s)
-         news.simulateMove(a)
+         #news.simulateMove(a)
+         
          tmp = -self.search(news, -n, -max(alpha, m), depth-1)
          if tmp > m: #todo:check
+            if depth == self.depth:
+               self.bestmove = a               
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
