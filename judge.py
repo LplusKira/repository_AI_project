@@ -42,7 +42,7 @@ class Judge:
         #        players.append(HumanAgent(2))
             players.append(RandomAgent(2))
             players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
+            players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList

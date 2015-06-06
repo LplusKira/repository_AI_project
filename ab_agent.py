@@ -412,7 +412,8 @@ class HeuristicAgent(Agent):
                         return state.myCard.moves[a-1]
                      else:
                         movelist.append(state.myCard.moves[a])
-                  return random.choice(movelist)
+                  return self.chooseMaxCard(state, movelist)
+                  #return random.choice(movelist)
       if len(state.myCard.cards) == 3:
          move = self.pickBest(state)
       if len(state.myCard.cards) > 3:         
@@ -446,23 +447,24 @@ class HeuristicAgent(Agent):
             best.append(a)
       return random.choice(best)
 
-   def chooseMaxCard(self, movelist):
-      # TODO the state.board.cardNum list got randomly sorted? cannot find userid through this...
-      """ return the most-hand-card victim id"""
-      cardNumList = state.board.cardNum
-      cardlist = cardNumList.sort()
-      cardlist.reverse()
+   def chooseMaxCard(self, state, movelist):
+      """ return the most-hand-card victim move"""
+      cardList = list(state.board.cardNum)
+      cardNumList = list(state.board.cardNum)
+      cardNumList.sort()      
+      cardNumList.reverse()
       victim = list()
-      for c in cardlist:
-         victim.append(state.board.cardNum.index(c))
+      for c in range(0, len(cardNumList)):
+         victim.append(cardList.index(cardNumList[c]))
+         cardList.remove(cardNumList[c])
       move = list()
-      for m in movelist:
-         if ((m.victim-1) in victim[0]):
-            move.append(m)
-      if move == []:
-         for m in movelist:
-            if((m.victim-1) in victim[1]):
-               move.append(m)
+      for i in range(0, len(victim)):
+         if move == []:
+            for m in movelist:
+               if ((m.victim-1) == victim[i]):
+                  move.append(m)
+            if len(move) > 0:
+               break
       return random.choice(move)
 
 def randomGenmove(state):
