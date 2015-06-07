@@ -312,17 +312,12 @@ class ScoutAgent(Agent):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
-<<<<<<< HEAD
-      score = self.search(state, -INF, INF, depth)
-      #print "use " + str(time.time()-startTime) + "time"
-=======
       # todo: transform to judgestate
       js = self.fillstate(state)
       self.bestmove = state.myCard.moves[0]
       self.judge = SimJudge(js)
       score = self.search(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
->>>>>>> need to add getaction in simjudge
       return self.bestmove #todo:
 
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
