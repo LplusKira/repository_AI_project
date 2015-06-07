@@ -24,41 +24,6 @@ from ab_agent import PlayerState
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent
 from logger import Game, logger
 
-class JudgeState:
-    def __init__(self,playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        if playerList is None:
-            players = list()
-            players.append(ScoutAgent(1))
-        #        players.append(HumanAgent(2))
-            players.append(RandomAgent(2))
-            players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
-            self.player = players
-        else: # specify agents
-            self.player = playerList
-            pass
-            random.shuffle(p)
-            for player in p:
-                players.append()
-        if h is None:
-            self.history = list()
-        else:
-            self.history = h #action list
-        if c is None:
-            self.card = [[0 for x in range(5)] for x in range(4)]
-        else:
-            self.card = c # need to sort by cardvalue,two dimension list
-        if m is None:
-            self.mountain = list()
-        else:
-            self.mountain = m
-        self.point = p
-        self.clock_wise = cw
-        self.current_player = cp
-
-
-
-
 class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
@@ -67,7 +32,8 @@ class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
         if playerList is None:
             players = list()
-            players.append(ExpAgent(1))
+            #players.append(ExpAgent(1))
+            players.append(ScoutAgent(1))
         #        players.append(HumanAgent(2))
             players.append(RandomAgent(2))
             players.append(RandomAgent(3))

@@ -4,7 +4,6 @@ import time
 import copy
 import action
 import math
-from simJudge import simulateAction
 from simJudge import JudgeState
 from simJudge import SimJudge
 INF = 2147483647
@@ -71,13 +70,6 @@ class PlayerState:
          score = score - cnum*60
       score = score + 2*self.board.cardNum[userid]
       return score
-
-   def mySimulate(self, s, a):
-      simulateAction(s, a)
-      pass
-   
-   
-
 
    def myTestEval(self, userid):
       power_here = list()
@@ -178,7 +170,7 @@ class ExpAgent(Agent):
    def genmove(self, state):
       return self.abGenmove(state)
 
-   def abGenmove(self, state, depth = 1, maxTime = 10):
+   def abGenmove(self, state, depth = 3, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
@@ -320,8 +312,8 @@ class ScoutAgent(Agent):
       print "use " + str(time.time()-startTime) + "time"
       return self.bestmove #todo:
 
+   #  todo: remove redundant move, (8s, 8h, 8c, 8d)
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
-      # todo: simulate move, 
       if s.checkLose(self.i):
          return -INF
       if depth == 0 or self.timeUp(): # or some heuristic
@@ -329,15 +321,15 @@ class ScoutAgent(Agent):
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
       moves = s.getAction()
-      if nowdepth == 0:
+      '''if nowdepth == 0:
          print "simulate moves"
          for m in moves:
-            print m
+            print m'''
       #moves = s.myCard.moves
       for a in moves:
          news = copy.deepcopy(s)
          news.doAction(a)
-         if news.current_player == self.i: # change to maxnode
+         if news.current_player == self.i: # maxnode
             tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
          else: #minnode
             tmp = -self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
@@ -345,7 +337,7 @@ class ScoutAgent(Agent):
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
-               if news.current_player == self.i: # change to maxnode
+               if news.current_player == self.i: # maxnode
                   m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
                else: #minnode
                   m = -self.search(news, tmp, beta, depth-1, nowdepth+1) #research

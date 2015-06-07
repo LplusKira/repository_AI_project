@@ -19,23 +19,17 @@ import sys
 from action import *
 from logger import Game, logger
 
-def simulateAction(self,js,a):# state, action # I skip, let monte carlo do it
-    myjudge = SimJudge(js) # todo: build new init function for (judge) state
+def simulateAction(self,js,a): #describe how to use this judge
+    # js = judgestate(i use fillstate)
+    myjudge = SimJudge(js)
     myjudge.doAction(a)
-    print "simulate"
-    return judge.getJudgeState()
 
 class JudgeState:
-
     # add transform function in addfun
-    
-
-    
     def __init__(self,playerNum = 4, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
-
         self.playerNum = playerNum
         
-        if playerList is None:
+        if playerList is None: # no real agents, haha!
             players = list()
             self.player = players
         else: # specify agents
@@ -50,7 +44,7 @@ class JudgeState:
             self.history = h #action list
         if c is None:
             self.card = [[0 for x in range(5)] for x in range(4)]
-
+            self.isDead = [None]*4
         else:
             self.card = c # need to sort by cardvalue,two dimension list
             self.isDead = [None]*4
@@ -64,40 +58,23 @@ class JudgeState:
         self.clock_wise = cw
         self.current_player = cp
 
-def nextbool(vb, n):
-    nowv = 0
-    n = len(vb)
-    for i in range(n):
-        nowv *= 2
-        nowv += 1 if (vb[i]) else 0
-    nowv = nowv +1
-    if nowv >= math.pow(2, n):
-        return False
-    for i in range(n-1, -1, -1):
-        vb[i] = True if (nowv%2) else False
-        nowv /= 2
-    return True
-
-def getCardValue(cardIndex):
-   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
-   return cardvalue
-
-class SimJudge:
-
+class SimJudge: # new function: myeval
     def myEval(self):
-        self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
-      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+        self.power = [0, 30, 20, 20, 60, 80, -30, -10, -60, 500, 80, 60, 100, 80]
+      #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         score = 0
         nine = 0
         for card in self.card[self.current_player-1]:
             if getCardValue(card) == 9:      
                 nine += 1
-        score = score + self.power[getCardValue(card)-1]
+            score = score + self.power[getCardValue(card)]
+            #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
+        
       # todo: specialcase9
-        if nine >= 1: 
+        '''if nine >= 1: 
             pass
         else: # no nine, compare cardnumber
-            score -= 500
+            score -= 500'''
         diff = 0
         for c in self.card:
             diff += len(c)-len(self.card[self.current_player-1]) # other's card is more than mycard
@@ -106,13 +83,13 @@ class SimJudge:
         return score
     
     def checkLose(self, i):
-        return len(self.card[i]) == 0
+        return self.isDead[i-1]
 
     def __init__(self, s):
         
         self.state = s
         self.input_state()
-        self.printBoard()
+        #self.printBoard()
         #self.action = a
         #self.doAction(a)
 
@@ -377,7 +354,7 @@ class SimJudge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-
+        random.shuffle(av)
         return av
 
     def checkRule(self, a): #assume cards in action exist
@@ -410,3 +387,21 @@ class SimJudge:
             if self.point+cardValue <= 99:
                 return True
         return False
+
+def nextbool(vb, n):
+    nowv = 0
+    n = len(vb)
+    for i in range(n):
+        nowv *= 2
+        nowv += 1 if (vb[i]) else 0
+    nowv = nowv +1
+    if nowv >= math.pow(2, n):
+        return False
+    for i in range(n-1, -1, -1):
+        vb[i] = True if (nowv%2) else False
+        nowv /= 2
+    return True
+
+def getCardValue(cardIndex):
+   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   return cardvalue
