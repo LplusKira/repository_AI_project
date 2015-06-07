@@ -30,9 +30,9 @@ class JudgeState:
             players = list()
             players.append(ScoutAgent(1))
         #        players.append(HumanAgent(2))
-            players.append(HeuristicAgent(2))
+            players.append(RandomAgent(2))
             players.append(RandomAgent(3))
-            players.append(HeuristicAgent(4))
+            players.append(RandomAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -71,7 +71,7 @@ class Judge:
         #        players.append(HumanAgent(2))
             players.append(RandomAgent(2))
             players.append(RandomAgent(3))
-            players.append(HeuristicAgent(4))
+            players.append(RandomAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -106,6 +106,8 @@ class Judge:
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
+            for pa in self._possibleActions_:
+                print pa
             if len(self._possibleActions_) == 0:
                 #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)

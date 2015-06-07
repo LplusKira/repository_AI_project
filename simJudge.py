@@ -20,41 +20,21 @@ from action import *
 from logger import Game, logger
 
 def simulateAction(self,js,a):# state, action # I skip, let monte carlo do it
-    myjudge = SimJudge(js, a) # todo: build new init function for (judge) state
+    myjudge = SimJudge(js) # todo: build new init function for (judge) state
+    myjudge.doAction(a)
     print "simulate"
     return judge.getJudgeState()
 
 class JudgeState:
 
     # add transform function in addfun
+    
 
     
-    def checkLose(self, i):
-        print self.card
-        return len(self.card[i]) == 0
-    
-    def myEval(self, userid):
-        self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
-      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
-        score = 0
-        nine = 0
-        for card in self.card[self.current_player]:
-            if getCardValue(card) == 9:      
-                nine += 1
-        score = score + self.power[getCardValue(card)-1]
-      # todo: specialcase9
-        if nine >= 1: 
-            pass
-        else: # no nine, compare cardnumber
-            score -= 500
-            diff = 0
-        for c in self.card:
-            diff += len(c)-len(self.card[self.current_player]) # other's card is more than mycard
-        score = score - 60*diff
-         #score = score + 60*abs(3 - self.board.cardNum[userid])
-        return score
-    
-    def __init__(self,playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+    def __init__(self,playerNum = 4, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+
+        self.playerNum = playerNum
+        
         if playerList is None:
             players = list()
             self.player = players
@@ -70,8 +50,12 @@ class JudgeState:
             self.history = h #action list
         if c is None:
             self.card = [[0 for x in range(5)] for x in range(4)]
+
         else:
             self.card = c # need to sort by cardvalue,two dimension list
+            self.isDead = [None]*4
+            for i in range(4):
+                self.isDead[i] = len(self.card[i]) == 0
         if m is None:
             self.mountain = list()
         else:
@@ -94,29 +78,64 @@ def nextbool(vb, n):
         nowv /= 2
     return True
 
+def getCardValue(cardIndex):
+   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   return cardvalue
+
 class SimJudge:
-    def __init__(self, s, a):
+
+    def myEval(self):
+        self.power = [0, 30, 30, 20, 70, 80, -30, -10, -50, 500, 80, 60, 80, 100]
+      #                 1, 2,   3, 4,  5,   6, 7,   8,  9,  10,  j,  q,  k
+        score = 0
+        nine = 0
+        for card in self.card[self.current_player-1]:
+            if getCardValue(card) == 9:      
+                nine += 1
+        score = score + self.power[getCardValue(card)-1]
+      # todo: specialcase9
+        if nine >= 1: 
+            pass
+        else: # no nine, compare cardnumber
+            score -= 500
+        diff = 0
+        for c in self.card:
+            diff += len(c)-len(self.card[self.current_player-1]) # other's card is more than mycard
+        score = score - 60*diff
+         #score = score + 60*abs(3 - self.board.cardNum[userid])
+        return score
+    
+    def checkLose(self, i):
+        return len(self.card[i]) == 0
+
+    def __init__(self, s):
+        
         self.state = s
         self.input_state()
-        self.action = a
-        self.doAction(a)
+        self.printBoard()
+        #self.action = a
+        #self.doAction(a)
 
     def input_state(self):
+        self.playerNum = self.state.playerNum
         self.player = self.state.player
         self.history = self.state.history
         self.card = self.state.card
+        self.isDead = self.state.isDead
         self.mountain = self.state.mountain
         self.point = self.state.point
-        self.clock_wise = self.state.closk_wise
+        self.clock_wise = self.state.clock_wise
         self.current_player = self.state.current_player
 
     def output_state(self):
+        self.state.playerNum = self.playerNum
         self.state.player = self.player
         self.state.history = self.history
         self.state.card = self.card
+        self.state.isDead = self.isDead
         self.state.mountain = self.mountain
         self.state.point = self.point
-        self.state.closk_wise = self.clock_wise
+        self.state.clock_wise = self.clock_wise
         self.state.current_player = self.current_player
 
     def getJudgeState(self):
@@ -133,7 +152,7 @@ class SimJudge:
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
-                print "%d is dead(cannot move). next one." % self.current_player
+                #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
@@ -145,7 +164,7 @@ class SimJudge:
         for i in range(4):
             if self.isDead[i] == False:
                 winner = i
-        print "winner is " + str(winner+1)
+        #print "winner is " + str(winner+1)
         return self.player, str(winner+1)
 
     def rand4Cards(self):
@@ -212,7 +231,7 @@ class SimJudge:
     def doAction(self, a):
         #   TODO: add effect by the returning action a
         if not self.checkRule(a):
-            print "illegal move"
+            print "simjudge:illegal move"
             exit()
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
@@ -267,19 +286,19 @@ class SimJudge:
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:
                 self.randMountain()
-                print "randmountain, now len = %d" % len(self.mountain)
+                #print "randmountain, now len = %d" % len(self.mountain)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
         # check dead
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
-                print "%d is dead(no card). next one." % (i+1)
+                #print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
             
         #   TODO: push action a into history
         self.history.append(a)
-        self.printBoard()
+        #self.printBoard()
         self.changeNextPlayer()
 
     def setDead(self, playerid):
@@ -297,7 +316,7 @@ class SimJudge:
         self.current_player %= self.playerNum
         if self.current_player == 0:
             self.current_player += self.playerNum
-        print "next player is %d" % self.current_player
+        #print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]

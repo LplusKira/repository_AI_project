@@ -6,6 +6,7 @@ import action
 import math
 from simJudge import simulateAction
 from simJudge import JudgeState
+from simJudge import SimJudge
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
@@ -271,7 +272,9 @@ class ScoutAgent(Agent):
       #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
-      return self.abGenmove(state)
+      a = self.abGenmove(state)
+      print "bestmove = " + str(a)
+      return a
 
    def fillstate(self, s):
     #fill other's card, mountain
@@ -302,10 +305,10 @@ class ScoutAgent(Agent):
             cards.append(playercard)
             
       mountain = restcard # rest
-      js = JudgeState(None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
+      js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def abGenmove(self, state, depth = 1, maxTime = 10):
+   def abGenmove(self, state, depth = 5, maxTime = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
@@ -315,15 +318,13 @@ class ScoutAgent(Agent):
 =======
       # todo: transform to judgestate
       js = self.fillstate(state)
-      score = self.search(js, -INF, INF, depth, 0)
+      self.bestmove = state.myCard.moves[0]
+      self.judge = SimJudge(js)
+      score = self.search(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
 >>>>>>> need to add getaction in simjudge
       return self.bestmove #todo:
 
-
-
-
-   
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
       # todo: simulate move, 
       if s.checkLose(self.i):
@@ -333,11 +334,15 @@ class ScoutAgent(Agent):
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
       moves = s.getAction()
+      if nowdepth == 0:
+         print "simulate moves"
+         for m in moves:
+            print m
       #moves = s.myCard.moves
       for a in moves:
          news = copy.deepcopy(s)
-         news.mySimulate(news, a)
-         if nowdepth%4 == 0 or nowdepth%4 == 1: # change to maxnode
+         news.doAction(a)
+         if news.current_player == self.i: # change to maxnode
             tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
          else: #minnode
             tmp = -self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
@@ -345,12 +350,12 @@ class ScoutAgent(Agent):
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
-               if nowdepth%4 == 0 or nowdepth%4 == 1: # change to maxnode
+               if news.current_player == self.i: # change to maxnode
                   m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
                else: #minnode
                   m = -self.search(news, tmp, beta, depth-1, nowdepth+1) #research
-            if depth == self.depth:
-               print str(a)  + "  score = " + str(tmp)
+            if nowdepth == 0:
+               print "better move: " + str(a)  + "  score = " + str(tmp)
                self.bestmove = a               
          if m >= beta: # cut off
             return m 
