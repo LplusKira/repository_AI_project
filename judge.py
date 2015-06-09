@@ -32,8 +32,8 @@ class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
         if playerList is None:
             players = list()
-            #players.append(HeuristicAgent(1))
-            players.append(ScoutAgent(1))
+            players.append(MonteAgent(1))
+            #players.append(ScoutAgent(1))
             #players.append(HumanAgent(1))
             
             players.append(RandomAgent(2))

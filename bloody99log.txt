@@ -1,0 +1,4 @@
+
+The result is log below:
+TotalGameNum = 0
+MonteAgent wins: 1 games
