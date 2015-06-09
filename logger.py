@@ -18,22 +18,28 @@ class Game:
       return s
 
 class logger:
-   def __init__(self):
+   def __init__(self, filename = ""):
       self.games = list()
       self.wingames = Counter()
+      self.nowGameNum = 0
+      self.filename = filename
 
    def logGame(self, g):
       self.games.append(g)
       self.addReport()
+      self.file = open(self.filename, "w")
+      self.file.write(str(self))
+      self.file.close()
+      self.nowGameNum += 1
 
    def addReport(self):
       g = self.games[-1]
       self.wingames[g.players[int(g.winner)-1]] += 1
       
    def __str__(self):
-      s = "\nThe result is log below:\n"
-      for g in self.games:
-         s = s + str(g)
+      s = "\nThe result is log below:\nTotalGameNum = %d\n"%self.nowGameNum
+      #for g in self.games:
+      #s = s + str(g)
       for player in self.wingames.most_common():
          s += player[0] + " wins: " + str(player[1]) + " games\n"
       return s
