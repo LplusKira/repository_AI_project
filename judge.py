@@ -215,6 +215,7 @@ class Judge:
             self.point += actual_card
 
         #   TODO: pop mountain, assign the card to current user
+        self.history.append(a)
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
                 self.randMountain()
@@ -235,7 +236,6 @@ class Judge:
             
         #   TODO: push action a into history
             #   if mountain is empty, "0 list() 0" will be inserted first
-        self.history.append(a)
         #self.printBoard()
         self.changeNextPlayer()
 
