@@ -78,6 +78,7 @@ class MiniJudge:
             if self.isDead[i] == False:
                 self.winner = i
         print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", self.winner
+        return self.winner
 
     def rand4Cards(self):
         original_cards = list()
