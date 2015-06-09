@@ -26,15 +26,6 @@ class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
-class State:
-    def __init__(self, c, h, l, pcn, m, p, cw):
-        self.card = c
-        self.one_run_history = h
-        self.what_player_can_do = list
-        self.playersCardNum = pcn
-        self.mountain_remaining = m
-        self.points = p
-        self.clock_wise = cw
 
 class MiniJudge:
     def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
@@ -61,8 +52,9 @@ class MiniJudge:
             self.mountain = m
         self.point = p
         self.clock_wise = cw
-        self.current_player = cp
+        self.current_player = 1
         self._possibleActions_ = list()
+        self.winner = 0
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
@@ -79,14 +71,13 @@ class MiniJudge:
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
+            print "++++++++++++++++++++++++++++ Monte a++++++++++++++++++++++++++++++++", a
             self.doAction(a)
-
-        winner = 0
+        print "++++++++++++++++++++++++++++ SIMULATION END ++++++++++++++++++++++++++++++++"
         for i in range(4):
             if self.isDead[i] == False:
-                winner = i
-        print "winner is " + str(winner+1)
-        return self.player, str(winner+1)
+                self.winner = i
+        print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", self.winner
 
     def rand4Cards(self):
         original_cards = list()
