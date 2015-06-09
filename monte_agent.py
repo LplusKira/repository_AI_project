@@ -104,6 +104,7 @@ class MonteAgent(Agent):
    
    def monteGenmove(self, state):
       # Find the unknown cards
+      print "========================================================================"
       win_rate = {}
       fullCard = self.fullCard()
       temp = self.usedCard(state)
@@ -135,7 +136,7 @@ class MonteAgent(Agent):
             # Build a simulation judge (mc_judge)
             mc_judge = MiniJudge()
             # Replicate situation
-            mc_judge.points = state.board.nowPoint
+            mc_judge.point = state.board.nowPoint
             mc_judge.clock_wise = state.board.order
             mc_judge.history = state.board.record
             # write in the card distribution above
@@ -147,14 +148,16 @@ class MonteAgent(Agent):
                mc_judge.card.append(hand) 
             print mc_judge.card
             #做出已經出完candidate牌的樣子?
-            a.cards_used = candidate
-            mc_judge.doAction(a)      
+            print "candidate === ", candidate
+            mc_judge.doAction(candidate)      
 
             # (Player1在模擬局中，出candidate，之後讓mc_judge自己跑ab_agent跑完全程，回傳輸贏）???
-            mc_judge.GameStart()   # PS: mc_indicator要是全局變量，不然會無限mc下去???
-            if mc_judge.winner == 0: # winner要改全局變量???
+            winner = mc_judge.GameStart()
+            if winner == 0: 
                win_point += 1
-            
+               print "++++++++++++++++++WIN POINT COUNT+++++++++++++++++++++++++", win_point / 1067
+            else:
+               pass
          # find the win rate of a certain candidate, append it
          win_rate.update({candidate : win_point / 1067})
       decided_card = max(win_rate.iteritems(), key=operator.itemgetter(1))[0]
