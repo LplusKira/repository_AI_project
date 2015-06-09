@@ -58,21 +58,14 @@ class JudgeState:
         self.clock_wise = cw
         self.current_player = cp
 
-class SimJudge: # new function: myeval
-<<<<<<< HEAD
-    def myEval(self):
-=======
+class SimJudge: # new function: myev
     def myEval(self, myid):
->>>>>>> origin/master
         self.power = [0, 30, 20, 20, 60, 80, -30, -10, -60, 500, 80, 60, 100, 80]
       #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         score = 0
         nine = 0
-<<<<<<< HEAD
-        for card in self.card[self.current_player-1]:
-=======
+
         for card in self.card[myid-1]:
->>>>>>> origin/master
             if getCardValue(card) == 9:      
                 nine += 1
             score = score + self.power[getCardValue(card)]
@@ -85,11 +78,7 @@ class SimJudge: # new function: myeval
             score -= 500'''
         diff = 0
         for c in self.card:
-<<<<<<< HEAD
-            diff += len(c)-len(self.card[self.current_player-1]) # other's card is more than mycard
-=======
             diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
->>>>>>> origin/master
         score = score - 60*diff
          #score = score + 60*abs(3 - self.board.cardNum[userid])
         return score
@@ -219,25 +208,20 @@ class SimJudge: # new function: myeval
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
-<<<<<<< HEAD
+
         if not self.checkRule(a):
             print "simjudge:illegal move"
             exit()
-=======
         #if not self.checkRule(a):
          #   print "simjudge:illegal move"
           #  exit()
         isZero = False
->>>>>>> origin/master
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
             if actual_card == 0:
                 actual_card = 13
-<<<<<<< HEAD
-=======
             if a.cards_used[0] == 1:
                 isZero = True
->>>>>>> origin/master
         else:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
@@ -254,11 +238,7 @@ class SimJudge: # new function: myeval
                 self.point -= 20
             elif actual_card == 10:
                 self.point -= 10           
-<<<<<<< HEAD
-        elif actual_card == 1:    #   else if the action is Spade 1 or 4, 5, 11, 13 
-=======
         elif isZero:    #   else if the action is Spade 1 or 4, 5, 11, 13 
->>>>>>> origin/master
             self.point = 0
         elif actual_card % 13 == 4:
             self.clock_wise *= -1

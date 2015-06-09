@@ -19,44 +19,15 @@ import copy
 import sys
 import argparse
 from action import *
-from ab_agent import ScoutAgent
-from ab_agent import RandomAgent
 from ab_agent import PlayerState
-<<<<<<< HEAD
-from ab_agent import HeuristicAgent, HumanAgent
 from monte_agent import MonteAgent
-=======
-from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent
->>>>>>> origin/master
+from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, ScoutAgent, RandomAgent
 from logger import Game, logger
 
 class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
-<<<<<<< HEAD
-class State:
-    def __init__(self, c, h, l, pcn, m, p, cw):
-        self.card = c
-        self.one_run_history = h
-        self.what_player_can_do = list
-        self.playersCardNum = pcn
-        self.mountain_remaining = m
-        self.points = p
-        self.clock_wise = cw
-
-class Judge:
-    def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        players = list()
-        players.append(ScoutAgent(1))
-#        players.append(ScoutAgent(2))
-#        players.append(HumanAgent(2))
-        players.append(HeuristicAgent(2))
-        players.append(MonteAgent(3))
-        players.append(ScoutAgent(4))
-        #random.shuffle(players)
-        self.player = players
-=======
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
         if playerList is None:
@@ -74,7 +45,6 @@ class Judge:
             random.shuffle(p)
             for player in p:
                 players.append()
->>>>>>> origin/master
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python

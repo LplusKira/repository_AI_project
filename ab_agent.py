@@ -3,14 +3,11 @@ import random
 import time
 import copy
 import action
-<<<<<<< HEAD
 import operator
-=======
 import math
 from simJudge import JudgeState
 from simJudge import SimJudge
 
->>>>>>> origin/master
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
@@ -538,12 +535,9 @@ class HeuristicAgent(Agent):
             handCards = len(state.myCard.cards) - len(a.cards_used)
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
-<<<<<<< HEAD
          move = self.pickBest(state)
       print "+++++++++++++++++++++++", move
-=======
       move = self.pickBest(state)
->>>>>>> origin/master
       return move
 
    def pickBest(self, state):
