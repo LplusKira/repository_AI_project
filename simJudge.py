@@ -60,27 +60,31 @@ class JudgeState:
 
 class SimJudge: # new function: myev
     def myEval(self, myid):
-        self.power = [0, 30, 20, 20, 60, 80, -30, -10, -60, 500, 80, 60, 100, 80]
+        self.power = [0, 30, 20, 20, 60, 80, -20, 10, -50, 500, 80, 60, 100, 80]
       #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
-        score = 0
+        mycardlen = len(self.card[myid-1])
+        score = 60 * mycardlen
         nine = 0
 
         for card in self.card[myid-1]:
             if getCardValue(card) == 9:      
                 nine += 1
             score = score + self.power[getCardValue(card)]
+        #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
+        #for i in range(4):
+            #self.isDead
 
-        
       # todo: specialcase9
-        '''if nine >= 1: 
-            pass
-        else: # no nine, compare cardnumber
-            score -= 500'''
+        if nine >= 1: #do something to consume cards
+            score -= 500*(nine-1) #only count one 9
+            if mycardlen == 1:
+                score += 500
+            elif mycardlen == 2: #todo:double9...
+                score += 300
         diff = 0
         for c in self.card:
             diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
         score = score - 60*diff
-         #score = score + 60*abs(3 - self.board.cardNum[userid])
         return score
     
     def checkLose(self, i):
@@ -147,7 +151,7 @@ class SimJudge: # new function: myev
 
     def rand4Cards(self):
         original_cards = list()
-        random.seed(time.clock())
+        random.seed(time.time())
     	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
@@ -364,37 +368,6 @@ class SimJudge: # new function: myev
                     av.append(a)
         random.shuffle(av)
         return av
-
-    def checkRule(self, a): #assume cards in action exist
-        cardValue = 0
-        iszero = False
-        for i in range(len(a.cards_used)):
-            cardValue += a.cards_used[i]
-            if(a.cards_used[i] == 1):#space one
-                iszero = True
-        if iszero and cardValue == 1:
-            return True
-
-        cardValue = cardValue % 13
-        if cardValue == 7:
-            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user and len(self.card[a.victim-1]) >= 1:
-                return True
-        elif cardValue == 9:
-            if a.victim > 0 and a.victim <= self.playerNum and a.victim != a.user:
-                return True
-        elif cardValue == 5:
-            if a.victim > 0 and a.victim <= self.playerNum:
-                return True
-        elif cardValue == 12 or cardValue == 10:
-            value = 20 if (cardValue % 13 == 12) else 10
-            if a.victim == -1 and self.point + value <= 99 or a.victim == -2 and self.point - value >= 0:
-                return True
-        elif cardValue == 4 or cardValue == 11 or cardValue == 13:
-            return True
-        else:
-            if self.point+cardValue <= 99:
-                return True
-        return False
 
 def nextbool(vb, n):
     nowv = 0

@@ -91,7 +91,8 @@ class Judge:
 
     def rand4Cards(self):
         original_cards = list()
-        random.seed(time.clock())
+        random.seed(time.time())
+        print time.time()
     	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):

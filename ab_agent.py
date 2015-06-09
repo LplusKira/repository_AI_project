@@ -312,27 +312,127 @@ class ScoutAgent(Agent):
       js = self.fillstate(state)
       self.bestmove = state.myCard.moves[0]
       self.judge = SimJudge(js)
-      score = self.search(self.judge, -INF, INF, depth, 0)
+      score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
-      if self.bestmove not in state.myCard.moves:
-         print "abgenmove: no this move"
-         exit()
+      self.judge.printBoard()
+      #raw_input()
+      #if self.bestmove not in state.myCard.moves:
+       #  print "abgenmove: no this move"
+        # exit()
       return self.bestmove #todo:
 
    #  todo: remove redundant move, (8s, 8h, 8c, 8d)
-   # todo: no need to check rule in simjudge
    # todo: maybe use two function...
+   # todo: check max node and minnode
+
+   def maxSearch(self, s, alpha, beta, depth, nowdepth):
+      #print "maxsearch"
+      if s.checkLose(self.i):
+         print "i am dead"
+         s.printBoard()
+         return -INF
+      if depth == 0:
+         return s.myEval(self.i)
+      if nowdepth == 0:
+         moves = copy.deepcopy(self.state.myCard.moves)
+      else:
+         moves = s.getAction()
+      m = -INF # current lower bound, fail soft
+      if len(moves) > 0:
+         news = copy.deepcopy(s)
+         news.doAction(moves[0])
+         if news.current_player == self.i:
+            
+            score = self.maxSearch(news, alpha, beta, depth-1, nowdepth+1)
+         else:
+            score = self.minSearch(news, alpha, beta, depth-1, nowdepth+1) 
+         m = max(m, score)
+         if m >= beta:
+            print "cutoff %d %d %d" % (m, score, beta)
+            return m
+      for a in moves:
+         news = copy.deepcopy(s)
+         news.doAction(a)
+         if news.current_player == self.i: # next node is max
+            tmp = self.maxSearch(news,m,m+1,depth-1,nowdepth+1)
+         else: #minnode
+            tmp = self.minSearch(news,m,m+1,depth-1,nowdepth+1)
+
+         if tmp > m: #todo:check
+            if depth < 3 or tmp >= beta:
+               m = tmp
+            else:
+               if news.current_player == self.i: # next node is max
+                  m = self.maxSearch(news,tmp,beta,depth-1,nowdepth+1)
+               else: #minnode
+                  m = self.minSearch(news,tmp,beta,depth-1,nowdepth+1)
+            if nowdepth == 0:
+               self.bestmove = a
+         if nowdepth == 0:
+            print "search move: " + str(a)  + "  score = " + str(tmp)
+            raw_input()
+         if m >= beta: # cut off
+            return m
+      return m
+
+   def minSearch(self, s, alpha, beta, depth, nowdepth):
+      #print "minsearch"
+      if s.checkLose(self.i):
+         print "i am dead"
+         s.printBoard()
+         return INF #?
+      if depth == 0:
+         return s.myEval(self.i)
+      moves = s.getAction()
+      m = INF # current lower bound, fail soft
+      if len(moves) > 0:
+         news = copy.deepcopy(s)
+         news.doAction(moves[0])
+         if news.current_player == self.i:
+            score = self.maxSearch(news, alpha, beta, depth-1, nowdepth+1)
+         else:
+            score = self.minSearch(news, alpha, beta, depth-1, nowdepth+1) 
+            m = min(m, score)
+         if m <= alpha:
+            print "cutoff %d %d" % (m, score)
+            return m
+      for a in moves:
+         news = copy.deepcopy(s)
+         news.doAction(a)
+         if news.current_player == self.i: # next node is max
+            tmp = self.maxSearch(news,m-1,m,depth-1,nowdepth+1)
+         else: #minnode
+            tmp = self.minSearch(news,m-1,m,depth-1,nowdepth+1)
+
+         if tmp < m: #todo:check
+            if depth < 3 or tmp <= alpha:
+               m = tmp
+            else:
+               if news.current_player == self.i: # next node is max
+                  m = self.maxSearch(news,alpha,tmp,depth-1,nowdepth+1)
+               else: #minnode
+                  m = self.minSearch(news,alpha,tmp,depth-1,nowdepth+1)
+            if nowdepth == 0:
+               self.bestmove = a
+         if nowdepth == 0:
+            print "search min move: " + str(a)  + "  score = " + str(tmp)
+         if m <= alpha: # cut off
+            return m 
+      return m
+
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
       if s.checkLose(self.i):
+         print "i am dead"
+         s.printBoard()
          return -INF
       #if depth == 0 or self.timeUp(): # or some heuristic
-      if depth == 0: # or some heuristic
-         return s.myEval(self.i) #todo:not depth = 2
+      if depth == 0:
+         return s.myEval(self.i) if s.current_player == self.i else -s.myEval(self.i)#todo:not depth = 2
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
       if nowdepth == 0:
-         moves = self.state.myCard.moves
+         moves = copy.deepcopy(self.state.myCard.moves)
       else:
          moves = s.getAction()
       for a in moves:
@@ -355,6 +455,7 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             print "search move: " + str(a)  + "  score = " + str(tmp)
+            raw_input()
          if m >= beta: # cut off
             return m 
          n = max(alpha, m) + 1 # set up null window
