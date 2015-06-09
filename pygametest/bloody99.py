@@ -2,6 +2,7 @@ import pygame, sys, os, math, random, sys
 from pygame.locals import *
 sys.path.append("../")
 from judge import Judge
+from logger import Game, logger
 
 # http://blog.ez2learn.com/2008/11/28/play-pygame/
 red = (200,0,0)
@@ -61,8 +62,15 @@ class Bloody99:
         self.initGame()
 
     def runGame(self):
-        
-        self.judge.GameStart()
+                
+        i = 1 # no iterate? # i dont know
+        log = logger("bloody99.txt")
+        for k in range(i):
+            j = Judge()
+            players, winner = j.GameStart()
+            g = Game(i, players, winner)
+            log.logGame(g)
+        print log
         '''x = (display_width * 0.45)
         y = (display_height * 0.8)
 
