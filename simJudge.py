@@ -68,7 +68,7 @@ class SimJudge: # new function: myeval
             if getCardValue(card) == 9:      
                 nine += 1
             score = score + self.power[getCardValue(card)]
-            #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
+
         
       # todo: specialcase9
         '''if nine >= 1: 
@@ -124,7 +124,7 @@ class SimJudge: # new function: myeval
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
-        self.printBoard()
+        #self.printBoard()
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()

@@ -266,32 +266,25 @@ class ScoutAgent(Agent):
 
    def genmove(self, state):
       self.state = state
-      a = self.abGenmove(state)
+      a = self.scoutGenmove(state)
       return a
 
    def fillstate(self, s):
     #fill other's card, mountain
-      '''
-  File "/home/hcl/Documents/aiFinal/ab_agent.py", line 308, in abGenmove
-    js = self.fillstate(state)
-  File "/home/hcl/Documents/aiFinal/ab_agent.py", line 285, in fillstate
-    restcard.remove(c)
-ValueError: list.remove(x): x not in list
-      '''
       restcard = []
       for i in range(52):
          restcard.append(i+1)
       for c in s.myCard.cards:
-         print "remove mycard %d " % c
+         #print "remove mycard %d " % c
          restcard.remove(c)
       lastrand = False
       for i, a in enumerate(s.board.record):
          if a.user == 0: # after lastest randmountain
             lastrand = i
       for i in range(lastrand+1, len(s.board.record), 1):
-         print "remove action card: " + str(s.board.record[i])
+         #print "remove action card: " + str(s.board.record[i])
          for c in s.board.record[i].cards_used:
-            print "remove" + action.getCardString(c)
+            #print "remove" + action.getCardString(c)
             restcard.remove(c)
       random.shuffle(restcard)
       cards = []
@@ -310,7 +303,7 @@ ValueError: list.remove(x): x not in list
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def abGenmove(self, state, depth = 4, maxTime = 100):
+   def scoutGenmove(self, state, depth = 4, maxTime = 100):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
