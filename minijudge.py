@@ -10,42 +10,40 @@ _MaxPoint_ = 99
 _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
-_TestGameNum_ = 2000
 
 import random
 import time
 import math
 import copy
 import sys
-import argparse
 from action import *
+from ab_agent import ScoutAgent
 from ab_agent import PlayerState
-from monte_agent import MonteAgent
-from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, ScoutAgent, RandomAgent
+from ab_agent import HeuristicAgent, HumanAgent
 from logger import Game, logger
 
 class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
-class Judge:
-    def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        if playerList is None:
-            players = list()
-            #players.append(HeuristicAgent(1))
-            players.append(ScoutAgent(1))
-            #players.append(HumanAgent(1))
-            
-            players.append(RandomAgent(2))
-            players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
-            self.player = players
-        else: # specify agents
-            self.player = playerList
-            pass
-            random.shuffle(p)
-            for player in p:
-                players.append()
+class State:
+    def __init__(self, c, h, l, pcn, m, p, cw):
+        self.card = c
+        self.one_run_history = h
+        self.what_player_can_do = list
+        self.playersCardNum = pcn
+        self.mountain_remaining = m
+        self.points = p
+        self.clock_wise = cw
+
+class MiniJudge:
+    def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
+        players = list()
+        players.append(HeuristicAgent(1))
+        players.append(HeuristicAgent(2))
+        players.append(HeuristicAgent(3))
+        players.append(HeuristicAgent(4))
+        self.player = players
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
@@ -64,21 +62,22 @@ class Judge:
         self.point = p
         self.clock_wise = cw
         self.current_player = cp
-        
-    def GameStart(self):
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
-        #self.printBoard()
+        self.printBoard()
+        
+    def GameStart(self):
+
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
-                #print "%d is dead(cannot move). next one." % self.current_player
+                print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise) #get playerstate
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
 
@@ -86,7 +85,7 @@ class Judge:
         for i in range(4):
             if self.isDead[i] == False:
                 winner = i
-        #print "winner is " + str(winner+1)
+        print "winner is " + str(winner+1)
         return self.player, str(winner+1)
 
     def rand4Cards(self):
@@ -127,13 +126,6 @@ class Judge:
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
-        # check mountain is correct or not
-        for c in self.mountain:
-            for i in range(4):
-                if c in self.card[i]:
-                    print "illegal randmountain"
-                    exit()
-
     def initBoard(self):
         self.current_player = 1
         self.clock_wise = 1 #1 and -1
@@ -162,13 +154,10 @@ class Judge:
         if not self.checkRule(a):
             print "illegal move"
             exit()
-        isZero = False
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
             if actual_card == 0:
                 actual_card = 13
-            if a.cards_used[0] == 1:
-                isZero = True
         else:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
@@ -185,7 +174,7 @@ class Judge:
                 self.point -= 20
             elif actual_card == 10:
                 self.point -= 10           
-        elif isZero:    #   else if the action is Spade 1 or 4, 5, 11, 13 
+        elif actual_card == 1:    #   else if the action is Spade 1 or 4, 5, 11, 13 
             self.point = 0
         elif actual_card % 13 == 4:
             self.clock_wise *= -1
@@ -215,28 +204,22 @@ class Judge:
             self.point += actual_card
 
         #   TODO: pop mountain, assign the card to current user
-        self.history.append(a)
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
-            if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
+            if len(self.mountain) == 0:
                 self.randMountain()
-                index_action = Action(0,[],0) 
-                """index_action.user = 0
-                                                                index_action.cards_used = list()
-                                                                index_action.victim = 0"""
-                self.history.append(index_action)  
-                #print "randmountain, now len = %d" % len(self.mountain)
+                print "randmountain, now len = %d" % len(self.mountain)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
             self.mountain.pop()
 
         # check dead
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
-                #print "%d is dead(no card). next one." % (i+1)
+                print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
             
         #   TODO: push action a into history
-            #   if mountain is empty, "0 list() 0" will be inserted first
-        #self.printBoard()
+        self.history.append(a)
+        self.printBoard()
         self.changeNextPlayer()
 
     def setDead(self, playerid):
@@ -254,7 +237,7 @@ class Judge:
         self.current_player %= self.playerNum
         if self.current_player == 0:
             self.current_player += self.playerNum
-        #print "next player is %d" % self.current_player
+        print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
@@ -315,21 +298,10 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-        random.shuffle(av)
+
         return av
 
-    def checkRule(self, a):
-        if a.user != self.current_player:
-            return False
-        for c in a.cards_used:
-            for i in range(4):
-                if i == a.user-1:
-                    if c not in self.card[i]:
-                        return False
-                elif c in self.card[i]:
-                    return False
-            if c in self.mountain:
-                return False
+    def checkRule(self, a): #assume cards in action exist
         cardValue = 0
         iszero = False
         for i in range(len(a.cards_used)):
@@ -375,17 +347,13 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    parser = argparse.ArgumentParser(description='Bloody99 judge')
-    parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
-    parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt")
-    args = parser.parse_args()
-
-    f = open(args.file, "w")#clear
-    f.close()
-    
-    i = 1 # no iterate? # i dont know
-    log = logger(args.file)
-    for k in range(args.p):
+    if len(sys.argv) == 2: # usage: judge.py [gamenum]
+        totalgamenum = int(sys.argv[1]) # [0] is scriptname
+    else:
+        totalgamenum = 100
+    i = 1 # no iterate?
+    log = logger() 
+    for k in range(totalgamenum):
         j = Judge()
         players, winner = j.GameStart()
         g = Game(i, players, winner)

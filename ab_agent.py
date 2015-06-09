@@ -3,6 +3,7 @@ import random
 import time
 import copy
 import action
+import operator
 import math
 from simJudge import JudgeState
 from simJudge import SimJudge
@@ -405,20 +406,84 @@ class MonteAgent(Agent):
       #print "Constructing Montecaro Agent, id = ", self.i
 
    def genmove(self, state):
-      othersCard = 0
-      for cardNum in state.cardNum:
-          othersCard = othersCard + len(cardNum)
-      knownCard = 52 - (state.board.restNum + othersCard - state.cardNum[self.i])
-      if knownCard < 17:
+      # In any circumstance, when unknown_cards < 17, use monte carlo algorithm
+      if state.board.cardNum[1] + state.board.cardNum[2] + state.board.cardNum[3] + state.board.restNum > 17:
           return randomGenmove(state)
       else:
           return self.monteGenmove(state)
 
-   # TODO: Can use other heuristic here
+   # Monte_Carlo_Part
+   
    def monteGenmove(self, state):
-      i = MontecaroSearch(state)
-      return state.myCard.moves[i]
-      
+      # Find the unknown cards
+      win_rate = {}
+      fullCard = self.fullCard()
+      temp = self.usedCard(state)
+      usedCard = []
+      for i in temp:
+         for j in i:
+            usedCard.append(j)
+      usedCard.extend(state.myCard.cards)
+      cards_unknown = [i for i in fullCard if i not in usedCard]
+
+      for candidate in state.myCard.moves:
+         for i in range(0, 1067):
+            
+            # Replicate situation
+
+            win_point = 0
+            cards_1 = state.myCard.cards
+
+            # Shuffle and deal cards
+            random.shuffle(cards_unknown)
+            dummy = 0
+            cards_2 = cards_unknown[dummy : state.board.cardNum[1]]
+            dummy += state.board.cardNum[1]
+            cards_3 = cards_unknown[dummy : dummy + state.board.cardNum[2]]
+            dummy += state.board.cardNum[2]
+            cards_4 = cards_unknown[dummy : dummy + state.board.cardNum[3]]
+            dummy += state.board.cardNum[3]
+            mountain = cards_unknown[dummy:]
+
+            '''
+            # Play under certain condition
+            # Build a simulation judge (mc_judge) and write in the card distribution above
+            mc_judge = Judge()
+            mc_judge.card = []
+            for i in [cards_1, cards_2, cards_3, cards_4]:
+               hand = []
+               for j in i:
+                  hand.append(j)
+               mc_judge.card.append(hand) 
+            #做出已經出完candidate牌的樣子?
+            a.cards_used = candidate
+            mc_judge.doAction(a)      
+
+            # (Player1在模擬局中，出candidate，之後讓mc_judge自己跑ab_agent跑完全程，回傳輸贏）???
+            mc_judge.GameStart()   # PS: mc_indicator要是全局變量，不然會無限mc下去???
+            if mc_judge.winner == 0: # winner要改全局變量???
+               win_point += 1
+            '''
+         # find the win rate of a certain candidate, append it
+         win_rate.update({candidate : win_point / 1067})
+      print "win_rate", win_rate
+      decided_card = max(win_rate.iteritems(), key=operator.itemgetter(1))[0]
+      print "decided_card=================================", decided_card
+      return decided_card
+
+   def fullCard(self):
+      fullCard = []
+      for i in range(1,53):
+         fullCard.append(i)
+      return fullCard
+
+   def usedCard(self, state):
+      usedCard = []
+      for i in state.board.record:
+         usedCard.append(i.cards_used)
+      return usedCard
+
+
 class HeuristicAgent(Agent):
    """
    Only use heuristics.
@@ -463,6 +528,8 @@ class HeuristicAgent(Agent):
             handCards = len(state.myCard.cards) - len(a.cards_used)
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
+         move = self.pickBest(state)
+      print "+++++++++++++++++++++++", move
       move = self.pickBest(state)
       return move
 

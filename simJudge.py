@@ -58,12 +58,13 @@ class JudgeState:
         self.clock_wise = cw
         self.current_player = cp
 
-class SimJudge: # new function: myeval
+class SimJudge: # new function: myev
     def myEval(self, myid):
         self.power = [0, 30, 20, 20, 60, 80, -30, -10, -60, 500, 80, 60, 100, 80]
       #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         score = 0
         nine = 0
+
         for card in self.card[myid-1]:
             if getCardValue(card) == 9:      
                 nine += 1
@@ -207,6 +208,10 @@ class SimJudge: # new function: myeval
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
+
+        if not self.checkRule(a):
+            print "simjudge:illegal move"
+            exit()
         #if not self.checkRule(a):
          #   print "simjudge:illegal move"
           #  exit()
