@@ -1,5 +1,0 @@
-
-The result is log below:
-TotalGameNum = 22
-RandomAgent wins: 13 games
-ScoutAgent wins: 10 games
