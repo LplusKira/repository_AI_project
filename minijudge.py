@@ -19,7 +19,7 @@ import sys
 from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
-from ab_agent import HeuristicAgent, HumanAgent
+from ab_agent import HeuristicAgent, RandomAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -30,10 +30,10 @@ class PossibleCombination:
 class MiniJudge:
     def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
         players = list()
-        players.append(HeuristicAgent(1))
-        players.append(HeuristicAgent(2))
-        players.append(HeuristicAgent(3))
-        players.append(HeuristicAgent(4))
+        players.append(RandomAgent(1))
+        players.append(RandomAgent(2))
+        players.append(RandomAgent(3))
+        players.append(RandomAgent(4))
         self.player = players
 
         # because this attribute is mutable, use this way
@@ -65,19 +65,16 @@ class MiniJudge:
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
-                print "%d is dead(cannot move). next one." % self.current_player
+                #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise)
             a = self.player[self.current_player-1].genmove(state)
-            print "++++++++++++++++++++++++++++ Monte a++++++++++++++++++++++++++++++++", a
             self.doAction(a)
-        print "++++++++++++++++++++++++++++ SIMULATION END ++++++++++++++++++++++++++++++++"
         for i in range(4):
             if self.isDead[i] == False:
                 self.winner = i
-        print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", self.winner
         return self.winner
 
     def rand4Cards(self):
