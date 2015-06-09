@@ -3,6 +3,7 @@ from pygame.locals import *
 sys.path.append("../")
 from judge import Judge
 from logger import Game, logger
+from ab_agent import PlayerState
 
 # http://blog.ez2learn.com/2008/11/28/play-pygame/
 red = (200,0,0)
@@ -20,6 +21,7 @@ clock = pygame.time.Clock()
 
 cardImg = pygame.image.load('yuki_for_steam.bmp')
 car_width = 73
+background_image_filename = 'Image/Nostalgy.gif'
 #monkey_head_file_name = "yuki_for_steam.bmp"
 #bg_file_name = "1227798240162.jpg"
 #xd_file_name = "test.png"
@@ -63,12 +65,35 @@ class Bloody99:
 
     def runGame(self):
                 
-        i = 1 # no iterate? # i dont know
+        i = 1 
         log = logger("bloody99.txt")
+        self.fill_background()
         for k in range(i):
+            pygame.display.update()
             j = Judge()
-            players, winner = j.GameStart()
-            g = Game(i, players, winner)
+#----
+            j._possibleActions_ = list()
+            j.initBoard()
+            j.rand4Cards()
+            #j.printBoard()
+            
+            while not j.isGameFinished():
+                j._possibleActions_ = j.getAction()
+                if len(j._possibleActions_) == 0:
+                    #print "%d is dead(cannot move). next one." % j.current_player
+                    j.setDead(j.current_player)
+                    j.changeNextPlayer()
+                    continue
+                state = PlayerState(j.history, j._possibleActions_, j.card[j.current_player-1], len(j.card[0]), len(j.card[1]), len(j.card[2]), len(j.card[3]), len(j.mountain), j.point, j.clock_wise) #get playerstate
+                a = j.player[j.current_player-1].genmove(state)
+                j.doAction(a)                
+
+            winner = 0
+            for i in range(4):
+                if j.isDead[i] == False:
+                    winner = i
+#----            
+            g = Game(i, j.player, str(winner+1))
             log.logGame(g)
         print log
         '''x = (display_width * 0.45)
@@ -100,6 +125,11 @@ class Bloody99:
         pygame.display.update()
         clock.tick(60)
 
+    def fill_background(self):
+        for y in range(0, 600, self.background.get_height()):
+            for x in range(0, 800, self.background.get_width()):
+                self.window.blit(self.background, (x, y))
+
     def doAction(self):
         pass
 
@@ -112,6 +142,7 @@ class Bloody99:
 
         self.window = pygame.display.set_mode((800, 600))
         self.screen = pygame.display.get_surface()
+        self.background = pygame.image.load(background_image_filename).convert()
         pos = (0, 0)
         self.screen.fill(white)
 
