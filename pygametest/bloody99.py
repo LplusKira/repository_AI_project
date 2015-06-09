@@ -4,7 +4,6 @@ sys.path.append("../")
 from judge import Judge
 
 # http://blog.ez2learn.com/2008/11/28/play-pygame/
-
 red = (200,0,0)
 green = (0,200,0)
 white = (255,255,255)

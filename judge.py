@@ -17,6 +17,7 @@ import time
 import math
 import copy
 import sys
+import argparse
 from action import *
 from ab_agent import ScoutAgent
 from ab_agent import RandomAgent
@@ -72,8 +73,6 @@ class Judge:
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
-            for pa in self._possibleActions_:
-                print pa
             if len(self._possibleActions_) == 0:
                 #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
@@ -128,6 +127,13 @@ class Judge:
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
+        # check mountain is correct or not
+        for c in self.mountain:
+            for i in range(4):
+                if c in self.card[i]:
+                    print "illegal randmountain"
+                    exit()
+
     def initBoard(self):
         self.current_player = 1
         self.clock_wise = 1 #1 and -1
@@ -156,10 +162,13 @@ class Judge:
         if not self.checkRule(a):
             print "illegal move"
             exit()
+        isZero = False
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
             if actual_card == 0:
                 actual_card = 13
+            if a.cards_used[0] == 1:
+                isZero = True
         else:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
@@ -176,7 +185,7 @@ class Judge:
                 self.point -= 20
             elif actual_card == 10:
                 self.point -= 10           
-        elif actual_card == 1:    #   else if the action is Spade 1 or 4, 5, 11, 13 
+        elif isZero:    #   else if the action is Spade 1 or 4, 5, 11, 13 
             self.point = 0
         elif actual_card % 13 == 4:
             self.clock_wise *= -1
@@ -309,7 +318,18 @@ class Judge:
         random.shuffle(av)
         return av
 
-    def checkRule(self, a): #assume cards in action exist
+    def checkRule(self, a):
+        if a.user != self.current_player:
+            return False
+        for c in a.cards_used:
+            for i in range(4):
+                if i == a.user-1:
+                    if c not in self.card[i]:
+                        return False
+                elif c in self.card[i]:
+                    return False
+            if c in self.mountain:
+                return False
         cardValue = 0
         iszero = False
         for i in range(len(a.cards_used)):
@@ -355,13 +375,17 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    if len(sys.argv) == 2: # usage: judge.py [gamenum]
-        totalgamenum = int(sys.argv[1]) # [0] is scriptname
-    else:
-        totalgamenum = _TestGameNum_
+    parser = argparse.ArgumentParser(description='Bloody99 judge')
+    parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
+    parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt")
+    args = parser.parse_args()
+
+    f = open(args.file, "w")#clear
+    f.close()
+    
     i = 1 # no iterate? # i dont know
-    log = logger() 
-    for k in range(totalgamenum):
+    log = logger(args.file)
+    for k in range(args.p):
         j = Judge()
         players, winner = j.GameStart()
         g = Game(i, players, winner)

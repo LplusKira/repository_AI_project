@@ -6,6 +6,7 @@ import action
 import math
 from simJudge import JudgeState
 from simJudge import SimJudge
+
 INF = 2147483647
 _CardNumPerType_ = 13
 _Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
@@ -264,24 +265,33 @@ class ScoutAgent(Agent):
       #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
+      self.state = state
       a = self.abGenmove(state)
-      print "bestmove = " + str(a)
       return a
 
    def fillstate(self, s):
     #fill other's card, mountain
+      '''
+  File "/home/hcl/Documents/aiFinal/ab_agent.py", line 308, in abGenmove
+    js = self.fillstate(state)
+  File "/home/hcl/Documents/aiFinal/ab_agent.py", line 285, in fillstate
+    restcard.remove(c)
+ValueError: list.remove(x): x not in list
+      '''
       restcard = []
       for i in range(52):
          restcard.append(i+1)
       for c in s.myCard.cards:
+         print "remove mycard %d " % c
          restcard.remove(c)
       lastrand = False
-      for a in s.board.record:
-         if not lastrand:#todo: get lastest rand record
-            if a.user == 0:
-               lastrand = True
-            continue
-         for c in a.cards_used:
+      for i, a in enumerate(s.board.record):
+         if a.user == 0: # after lastest randmountain
+            lastrand = i
+      for i in range(lastrand+1, len(s.board.record), 1):
+         print "remove action card: " + str(s.board.record[i])
+         for c in s.board.record[i].cards_used:
+            print "remove" + action.getCardString(c)
             restcard.remove(c)
       random.shuffle(restcard)
       cards = []
@@ -300,7 +310,7 @@ class ScoutAgent(Agent):
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def abGenmove(self, state, depth = 5, maxTime = 10):
+   def abGenmove(self, state, depth = 4, maxTime = 100):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
@@ -310,40 +320,47 @@ class ScoutAgent(Agent):
       self.judge = SimJudge(js)
       score = self.search(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
+      print "bestmove = " + str(self.bestmove)
+      if self.bestmove not in state.myCard.moves:
+         print "abgenmove: no this move"
+         exit()
       return self.bestmove #todo:
 
    #  todo: remove redundant move, (8s, 8h, 8c, 8d)
+   # todo: no need to check rule in simjudge
+   # todo: maybe use two function...
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
       if s.checkLose(self.i):
          return -INF
-      if depth == 0 or self.timeUp(): # or some heuristic
-         return s.myEval() if depth%2 == 0 else -s.myEval() #todo:not depth = 2
+      #if depth == 0 or self.timeUp(): # or some heuristic
+      if depth == 0: # or some heuristic
+         return s.myEval(self.i) #todo:not depth = 2
       m = -INF # current lower bound, fail soft
       n = beta # current upper bound
-      moves = s.getAction()
-      '''if nowdepth == 0:
-         print "simulate moves"
-         for m in moves:
-            print m'''
-      #moves = s.myCard.moves
+      if nowdepth == 0:
+         moves = self.state.myCard.moves
+      else:
+         moves = s.getAction()
       for a in moves:
          news = copy.deepcopy(s)
          news.doAction(a)
-         if news.current_player == self.i: # maxnode
-            tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
+         if news.current_player == self.i: # next node is max
+            tmp = self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
          else: #minnode
-            tmp = -self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
+            tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
+
          if tmp > m: #todo:check
             if n == beta or depth < 3 or tmp >= beta:
                m = tmp
             else:
                if news.current_player == self.i: # maxnode
-                  m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
+                  m = self.search(news, tmp, beta, depth-1, nowdepth+1) #research
                else: #minnode
-                  m = -self.search(news, tmp, beta, depth-1, nowdepth+1) #research
+                  m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
             if nowdepth == 0:
-               print "better move: " + str(a)  + "  score = " + str(tmp)
-               self.bestmove = a               
+               self.bestmove = a
+         if nowdepth == 0:
+            print "search move: " + str(a)  + "  score = " + str(tmp)
          if m >= beta: # cut off
             return m 
          n = max(alpha, m) + 1 # set up null window
