@@ -20,7 +20,6 @@ from action import *
 from ab_agent import ScoutAgent
 from ab_agent import PlayerState
 from ab_agent import HeuristicAgent, HumanAgent
-from monte_agent import MonteAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -37,16 +36,13 @@ class State:
         self.points = p
         self.clock_wise = cw
 
-class Judge:
+class MiniJudge:
     def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1):
         players = list()
-        players.append(ScoutAgent(1))
-#        players.append(ScoutAgent(2))
-#        players.append(HumanAgent(2))
+        players.append(HeuristicAgent(1))
         players.append(HeuristicAgent(2))
-        players.append(MonteAgent(3))
-        players.append(ScoutAgent(4))
-        #random.shuffle(players)
+        players.append(HeuristicAgent(3))
+        players.append(HeuristicAgent(4))
         self.player = players
 
         # because this attribute is mutable, use this way
@@ -66,12 +62,13 @@ class Judge:
         self.point = p
         self.clock_wise = cw
         self.current_player = cp
-        
-    def GameStart(self):
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
         self.printBoard()
+        
+    def GameStart(self):
+
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()

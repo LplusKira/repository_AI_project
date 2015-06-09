@@ -4,6 +4,7 @@ import time
 import copy
 import action
 import operator
+from minijudge import MiniJudge
 INF = 2147483647
 
 class Agent:
@@ -84,84 +85,6 @@ def getCardValue(cardIndex):
 def getMoveString(move):
    return str(move)
       
-class ScoutAgent(Agent):
-   def __init__(self, i = 0, cards = list()): # only need to know id
-      self.i = i
-      print "Constructing Simple Agent, player id = ", self.i
-
-   def genmove(self, state):
-      return randomGenmove(state)
-
-
-   def abGenmove(self, state, depth = 5, maxTime = 10):
-      startTime = time.time()
-      self.endTime = startTime + maxTime
-      if state.board.nowPoint < 90: # do easy heuristic
-         return randomGenmove(state)
-      else:
-         score = self.search(state, -INF, INF, depth)
-         #print "search best move = " + action + "score = " + score
-         print "use " + str(time.time()-startTime) + "time"
-         return randomGenmove(state) #temp
-
-   def search(self, s, alpha, beta, depth): # fail soft negascout
-      if state.checkLose():
-         return -INF
-      if depth == 0 or self.timeUp(): # or some heuristic
-         return s.Eval(self.i) if depth%2 == 0 else -s.Eval(self.i) #todo:check
-      m = -INF # current lower bound, fail soft
-      n = beta # current upper bound
-      for a in state.myCard.moves:
-         news = copy.deepcopy(s)
-         news.simulateMove(a)
-         tmp = -self.search(news, -n, -max(alpha, m), depth-1)
-         if tmp > m: #todo:check
-            if n == beta or depth < 3 or tmp >= beta:
-               m = tmp
-            else:
-               m = -self.search(news, -beta, -tmp, depth-1) #research
-         if m >= beta: # cut off
-            return m 
-         n = max(alpha, m) + 1 # set up null window
-      return m
-
-   def timeUp(self):
-      nowTime = time.time()
-      if nowTime > self.endTime:
-         return True
-      else:
-         return False
-         
-class HumanAgent(Agent):
-   """
-   The human agent, action decided by human.
-   """
-   def __init__(self, i = 0):
-      self.i = i
-      print "Constructing Human Agent, id = ", self.i
-
-   def genmove(self, state):
-      return self.humanGenmove(state)
-
-   def humanGenmove(self, state):
-      s = ""
-      for card in state.myCard.cards:
-         s = s + getCardString(card) + ", "
-      moves = list()
-      for m in state.myCard.moves:
-         moves.append(getMoveString(m) + ",\n")
-      print "The card you have: ", s
-      print "The legal move you can take: "
-      for i in range(0, len(moves)):
-         print "move index:", i, moves[i], 
-      print "The point now is: ", state.board.nowPoint
-      move = raw_input("pick the move by input the move index: ")   
-      while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
-         move = raw_input("The move index value is illegal, try again: ")                   
-      print "The move you take is: ", state.myCard.moves[int(move)]
-      return state.myCard.moves[int(move)]
-   
-
 class MonteAgent(Agent):
    """
    The Montecaro agent
@@ -173,7 +96,7 @@ class MonteAgent(Agent):
    def genmove(self, state):
       # In any circumstance, when unknown_cards < 17, use monte carlo algorithm
       if state.board.cardNum[1] + state.board.cardNum[2] + state.board.cardNum[3] + state.board.restNum > 17:
-          return randomGenmove(state)
+          return self.heuristicgenmove(state)
       else:
           return self.monteGenmove(state)
 
@@ -194,8 +117,6 @@ class MonteAgent(Agent):
       for candidate in state.myCard.moves:
          for i in range(0, 1067):
             
-            # Replicate situation
-
             win_point = 0
             cards_1 = state.myCard.cards
 
@@ -209,17 +130,22 @@ class MonteAgent(Agent):
             cards_4 = cards_unknown[dummy : dummy + state.board.cardNum[3]]
             dummy += state.board.cardNum[3]
             mountain = cards_unknown[dummy:]
-
-            '''
+            
             # Play under certain condition
-            # Build a simulation judge (mc_judge) and write in the card distribution above
-            mc_judge = Judge()
+            # Build a simulation judge (mc_judge)
+            mc_judge = MiniJudge()
+            # Replicate situation
+            mc_judge.points = state.board.nowPoint
+            mc_judge.clock_wise = state.board.order
+            mc_judge.history = state.board.record
+            # write in the card distribution above
             mc_judge.card = []
             for i in [cards_1, cards_2, cards_3, cards_4]:
                hand = []
                for j in i:
                   hand.append(j)
                mc_judge.card.append(hand) 
+            print mc_judge.card
             #做出已經出完candidate牌的樣子?
             a.cards_used = candidate
             mc_judge.doAction(a)      
@@ -228,12 +154,10 @@ class MonteAgent(Agent):
             mc_judge.GameStart()   # PS: mc_indicator要是全局變量，不然會無限mc下去???
             if mc_judge.winner == 0: # winner要改全局變量???
                win_point += 1
-            '''
+            
          # find the win rate of a certain candidate, append it
          win_rate.update({candidate : win_point / 1067})
-      print "win_rate", win_rate
       decided_card = max(win_rate.iteritems(), key=operator.itemgetter(1))[0]
-      print "decided_card=================================", decided_card
       return decided_card
 
    def fullCard(self):
@@ -248,17 +172,8 @@ class MonteAgent(Agent):
          usedCard.append(i.cards_used)
       return usedCard
 
-
-class HeuristicAgent(Agent):
-   """
-   Only use heuristics.
-   """
-   def __init__(self, i = 0):
-      self.i = i
-      print "Constructing Heuristic Agent, id = ", self.i
-
    # Totally by heuristic...
-   def genmove(self, state):
+   def heuristicgenmove(self, state):
       move = state.myCard.moves[0]     
       if len(state.myCard.cards) == 1 or len(state.myCard.moves) == 1:
          return move
@@ -288,7 +203,6 @@ class HeuristicAgent(Agent):
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
          move = self.pickBest(state)
-      print "+++++++++++++++++++++++", move
       return move
 
    def pickBest(self, state):
@@ -313,7 +227,6 @@ def randomGenmove(state):
       return []
    else:
       i = random.randint(0, len(state.myCard.moves)-1)
-      print state.myCard.moves[i]
       return state.myCard.moves[i]
 
 
