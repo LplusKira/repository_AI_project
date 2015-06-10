@@ -20,8 +20,9 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-from monte_agent import MonteAgent
-from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, ScoutAgent, RandomAgent
+#from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
+from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
+from scoutagent import ScoutAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -44,8 +45,8 @@ class Judge:
         '''
         if playerList is None:
             players = list()
-            players.append(MonteAgent(1))
-            #players.append(ScoutAgent(1))
+            #players.append(MonteAgent(1))
+            players.append(ScoutAgent(1))
             #players.append(HumanAgent(1))
             
             players.append(RandomAgent(2))

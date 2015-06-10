@@ -120,7 +120,7 @@ class SimJudge: # new function: myeval
         for c in self.card:
             diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
         score = score - 60*diff'''
-        return score
+        #return score
     
     def checkLose(self, i):
         return self.isDead[i-1]
@@ -249,10 +249,6 @@ class SimJudge: # new function: myeval
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
-
-        if not self.checkRule(a):
-            print "simjudge:illegal move"
-            exit()
         #if not self.checkRule(a):
          #   print "simjudge:illegal move"
           #  exit()
