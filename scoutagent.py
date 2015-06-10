@@ -28,6 +28,7 @@ class ScoutAgent(Agent):
       return a
 
    def fillstate(self, s):
+      random.seed(time.time())
     #fill other's card, mountain
       restcard = []
       for i in range(52):
@@ -66,17 +67,10 @@ class ScoutAgent(Agent):
       self.endTime = startTime + maxTime
       self.avgScore = {}
       # todo: remove redunant moves
-      for i in range(replayNum):
-         js = self.fillstate(state)
-         self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js)
-         score = self.maxSearch(self.judge, -INF, INF, depth, 0)
-      maxscore = -INF
-      for k,v in self.avgScore.iteritems():
-         print str(v[0]) + "\t%d" % (v[1]/replayNum)
-         if maxscore < v[1]:
-            maxscore = v[1]
-            self.bestmove = v[0]
+      js = self.fillstate(state)
+      self.bestmove = state.myCard.moves[0]
+      self.judge = SimJudge(js)
+      score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       #self.judge.printBoard()
@@ -86,20 +80,21 @@ class ScoutAgent(Agent):
         # exit()
       return self.bestmove #todo:
 
-   # todo: remove redundant move, (8s, 8h, 8c, 8d)
+   # todo: remove redundant move from server(4h, 4s...)
            # other redundant?: 
    # todo: check max node and minnode
    # todo: remember some structure to win 
    # fix: in fact, can are not playing with randomagent, but a smart agent
    # idea: all max search for each player's evaluation
            # not every player want to kill me...
+   # every player have different evaluation value...
    '''
    test result:
    heuristic        depth result(2000times) techniques
    cardnum            2   35.5%
    cardnum            2   35.45%             no cut off
    power              2   36.3%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-   dynamic-power      2   35.5% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   34.4% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
    dynamic-power      2   34.6% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
    dynamic-power      1   % (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
    '''
@@ -147,10 +142,6 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             #print "search max move: " + str(a)  + "  score = " + str(m)
-            if str(a) in self.avgScore:
-               self.avgScore[str(a)][1] += m
-            else:
-               self.avgScore[str(a)] = [a, m]
             wait_input()
          if m >= beta: # cut off
             #print "beta cutoff %d %d" % (m, beta) + str(a)
