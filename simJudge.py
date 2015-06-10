@@ -103,7 +103,7 @@ class SimJudge: # new function: myeval
         return score
         
     def myEval(self, myid):
-        return self.dpEval1(myid)
+        return self.dpEval(myid)
             
         #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
         #for i in range(4):
@@ -131,7 +131,7 @@ class SimJudge: # new function: myeval
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         self.state = s
         self.input_state()
-        self.printBoard()
+        #self.printBoard()
         #self.action = a
         #self.doAction(a)
 
