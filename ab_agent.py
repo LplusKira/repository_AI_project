@@ -15,6 +15,10 @@ _UpperBd_ = 100
 _HotThresh_ = 10
 _Step_ = 2
 
+def wait_input():
+   #raw_input()
+   pass
+
 class Agent:
    def __init__(self, index = 0):
       self.index = index
@@ -304,7 +308,7 @@ class ScoutAgent(Agent):
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def scoutGenmove(self, state, depth = 4, maxTime = 100):
+   def scoutGenmove(self, state, depth = 2, maxTime = 100):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.depth = depth
@@ -316,16 +320,33 @@ class ScoutAgent(Agent):
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       self.judge.printBoard()
-      #raw_input()
+      wait_input()
+      #wait_input()
       #if self.bestmove not in state.myCard.moves:
        #  print "abgenmove: no this move"
         # exit()
       return self.bestmove #todo:
 
-   #  todo: remove redundant move, (8s, 8h, 8c, 8d)
-   # todo: maybe use two function...
+   # todo: remove redundant move, (8s, 8h, 8c, 8d)
+           # other redundant?: 
    # todo: check max node and minnode
+   # todo: remember some structure to win 
+   # fix: in fact, can are not playing with randomagent, but a smart agent
+   # idea: only use max search for each player's evaluation
+           # not every player want to kill me...
+   '''
+   test result:
+   heuristic        depth result(2000times) techniques
+   cardnum            2   35.5%
+   cardnum            2   35.45%             no cut off
+   power              2   36.3%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+   dynamic-power      2   37.2% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   % (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
 
+   dynamic-power      1   % (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   
+HeuristicAgent wins: 44 games
+   '''
    def maxSearch(self, s, alpha, beta, depth, nowdepth):
       #print "maxsearch"
       if s.checkLose(self.i):
@@ -343,13 +364,12 @@ class ScoutAgent(Agent):
          news = copy.deepcopy(s)
          news.doAction(moves[0])
          if news.current_player == self.i:
-            
             score = self.maxSearch(news, alpha, beta, depth-1, nowdepth+1)
          else:
             score = self.minSearch(news, alpha, beta, depth-1, nowdepth+1) 
          m = max(m, score)
          if m >= beta:
-            print "cutoff %d %d %d" % (m, score, beta)
+            print "beta cutoff %d %d %d" % (m, score, beta) + str(moves[0])
             return m
       for a in moves:
          news = copy.deepcopy(s)
@@ -370,9 +390,10 @@ class ScoutAgent(Agent):
             if nowdepth == 0:
                self.bestmove = a
          if nowdepth == 0:
-            print "search move: " + str(a)  + "  score = " + str(tmp)
-            raw_input()
+            print "search max move: " + str(a)  + "  score = " + str(tmp)
+            wait_input()
          if m >= beta: # cut off
+            print "beta cutoff %d %d" % (m, beta) + str(a)
             return m
       return m
 
@@ -393,9 +414,9 @@ class ScoutAgent(Agent):
             score = self.maxSearch(news, alpha, beta, depth-1, nowdepth+1)
          else:
             score = self.minSearch(news, alpha, beta, depth-1, nowdepth+1) 
-            m = min(m, score)
+         m = min(m, score)
          if m <= alpha:
-            print "cutoff %d %d" % (m, score)
+            print "alpha cutoff %d %d [%d, %d]" % (m, score, alpha, beta) + str(moves[0])
             return m
       for a in moves:
          news = copy.deepcopy(s)
@@ -417,7 +438,13 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             print "search min move: " + str(a)  + "  score = " + str(tmp)
+         else:
+            indent = ""
+            for i in range(nowdepth):
+               indent += "    "
+            print indent + "search min move "+ str(a)  + "  score = " + str(tmp)
          if m <= alpha: # cut off
+            print "alpha cutoff %d [%d, %d]" % (m, alpha, beta) + str(a)
             return m 
       return m
 
@@ -455,7 +482,7 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             print "search move: " + str(a)  + "  score = " + str(tmp)
-            raw_input()
+            wait_input()
          if m >= beta: # cut off
             return m 
          n = max(alpha, m) + 1 # set up null window
@@ -491,9 +518,9 @@ class HumanAgent(Agent):
       for i in range(0, len(moves)):
          print "move index:", i, moves[i], 
       print "The point now is: ", state.board.nowPoint
-      move = raw_input("pick the move by input the move index: ")   
+      move = wait_input("pick the move by input the move index: ")   
       while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
-         move = raw_input("The move index value is illegal, try again: ")                   
+         move = wait_input("The move index value is illegal, try again: ")                   
       print "The move you take is: ", state.myCard.moves[int(move)]
       return state.myCard.moves[int(move)]
    

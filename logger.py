@@ -27,11 +27,14 @@ class logger:
    def logGame(self, g):
       self.games.append(g)
       self.addReport()
+      self.nowGameNum += 1
+      self.writeLog()
+
+   def writeLog(self):
       self.file = open(self.filename, "w")
       self.file.write(str(self))
       self.file.close()
-      self.nowGameNum += 1
-
+      
    def addReport(self):
       g = self.games[-1]
       self.wingames[g.players[int(g.winner)-1]] += 1

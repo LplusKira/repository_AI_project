@@ -28,8 +28,20 @@ class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
+iter_num = 1
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+        seednum = (time.time()*iter_num) % 1000000000
+        random.seed(seednum)
+        global iter_num
+        iter_num += 1
+        '''
+        when seed == 1
+        North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
+        East(id = 2):13♣ , 5♦ , 7♥ , 9♠ , 11♥ , 
+        South(id = 3):8♣ , 11♦ , 9♣ , 13♦ , 10♠ , 
+        West(id = 4):9♥ , 1♣ , 10♥ , 4♥ , 4♣ , 
+        '''
         if playerList is None:
             players = list()
             players.append(MonteAgent(1))
@@ -39,6 +51,9 @@ class Judge:
             players.append(RandomAgent(2))
             players.append(RandomAgent(3))
             players.append(RandomAgent(4))
+            #players.append(HeuristicAgent(2))
+            #players.append(ScoutAgent(3))
+            #players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -91,8 +106,6 @@ class Judge:
 
     def rand4Cards(self):
         original_cards = list()
-        random.seed(time.time())
-        print time.time()
     	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):

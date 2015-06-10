@@ -58,43 +58,80 @@ class JudgeState:
         self.clock_wise = cw
         self.current_player = cp
 
-class SimJudge: # new function: myev
-    def myEval(self, myid):
-        self.power = [0, 30, 20, 20, 60, 80, -20, 10, -50, 500, 80, 60, 100, 80]
-      #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+class SimJudge: # new function: myeval
+
+    def dpEval(self, myid):
+        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
         nine = 0
-
-        for card in self.card[myid-1]:
-            if getCardValue(card) == 9:      
-                nine += 1
+        if mycardlen <= 2:
+            for card in self.card[myid-1]:
+                if getCardValue(card) == 9:      
+                    nine += 1
+            score = score + self.endpower[getCardValue(card)]
+            if nine > 0:
+                score -= 50*(nine-1)
+        else:
+            for card in self.card[myid-1]:
+                if getCardValue(card) == 9:      
+                    nine += 1
             score = score + self.power[getCardValue(card)]
+        return score
+
+    def dpEval1(self, myid):
+        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
+        mycardlen = len(self.card[myid-1])
+        score = 60 * mycardlen
+        nine = 0
+        if mycardlen <= 2:
+            for card in self.card[myid-1]:
+                if getCardValue(card) == 9:      
+                    nine += 1
+            score = score + self.endpower[getCardValue(card)]
+            if nine > 0:
+                score -= 120*(nine-1)
+        else:
+            for card in self.card[myid-1]:
+                if getCardValue(card) == 9:      
+                    nine += 1
+            score = score + self.power[getCardValue(card)]
+        return score
+        
+    def myEval(self, myid):
+        return self.dpEval1(myid)
+            
         #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
         #for i in range(4):
             #self.isDead
 
       # todo: specialcase9
-        if nine >= 1: #do something to consume cards
+        '''if nine >= 1: #do something to consume cards
             score -= 500*(nine-1) #only count one 9
             if mycardlen == 1:
                 score += 500
             elif mycardlen == 2: #todo:double9...
-                score += 300
-        diff = 0
+                score += 300'''
+        '''diff = 0
         for c in self.card:
             diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
-        score = score - 60*diff
+        score = score - 60*diff'''
         return score
     
     def checkLose(self, i):
         return self.isDead[i-1]
 
     def __init__(self, s):
-        
+        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         self.state = s
         self.input_state()
-        #self.printBoard()
+        self.printBoard()
         #self.action = a
         #self.doAction(a)
 
@@ -149,9 +186,9 @@ class SimJudge: # new function: myev
         #print "winner is " + str(winner+1)
         return self.player, str(winner+1)
 
-    def rand4Cards(self):
+    def rand4Cards(self): #do not use in simjudge
         original_cards = list()
-        random.seed(time.time())
+        random.seed(time.time()*self.current_player)
     	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
@@ -308,7 +345,22 @@ class SimJudge: # new function: myev
         #print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
-        card = self.card[self.current_player-1]
+        card = copy.deepcopy(self.card[self.current_player-1])
+        #remove the same value card
+        #print card
+        valuelist = []
+        newcard = []
+        for c in card:
+            if c == 1:
+                newcard.append(1)
+            elif c%13 not in valuelist:
+                valuelist.append(c%13)
+                newcard.append(c)
+        #print "valuelist" + str(valuelist)
+                #print "newcard" + getCardsString(newcard)
+                #print getCardsString(self.card[self.current_player-1])
+        card = newcard
+
         isuse = [False]*len(card)
         av = list()
         a_template = Action(self.current_player)
@@ -366,7 +418,7 @@ class SimJudge: # new function: myev
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-        random.shuffle(av)
+                    #random.shuffle(av)
         return av
 
 def nextbool(vb, n):
