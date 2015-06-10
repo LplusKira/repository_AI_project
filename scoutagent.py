@@ -66,17 +66,10 @@ class ScoutAgent(Agent):
       self.endTime = startTime + maxTime
       self.avgScore = {}
       # todo: remove redunant moves
-      for i in range(replayNum):
-         js = self.fillstate(state)
-         self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js)
-         score = self.maxSearch(self.judge, -INF, INF, depth, 0)
-      maxscore = -INF
-      for k,v in self.avgScore.iteritems():
-         print str(v[0]) + "\t%d" % (v[1]/replayNum)
-         if maxscore < v[1]:
-            maxscore = v[1]
-            self.bestmove = v[0]
+      js = self.fillstate(state)
+      self.bestmove = state.myCard.moves[0]
+      self.judge = SimJudge(js)
+      score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       #self.judge.printBoard()
@@ -147,10 +140,6 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             #print "search max move: " + str(a)  + "  score = " + str(m)
-            if str(a) in self.avgScore:
-               self.avgScore[str(a)][1] += m
-            else:
-               self.avgScore[str(a)] = [a, m]
             wait_input()
          if m >= beta: # cut off
             #print "beta cutoff %d %d" % (m, beta) + str(a)
