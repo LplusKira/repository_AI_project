@@ -102,8 +102,11 @@ class SimJudge: # new function: myeval
             score = score + self.power[getCardValue(card)]
         return score
         
-    def myEval(self, myid):
-        return self.dpEval(myid)
+    def myEval(self, myid = -1):
+        if myid == -1:
+            return self.dpEval1(self.current_player-1)
+        else:
+            return self.dpEval1(myid)
             
         #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
         #for i in range(4):
@@ -122,8 +125,11 @@ class SimJudge: # new function: myeval
         score = score - 60*diff'''
         #return score
     
-    def checkLose(self, i):
-        return self.isDead[i-1]
+    def checkLose(self, i = -1):
+        if i == -1:
+            return self.isDead[self.current_player-1]
+        else:
+            return self.isDead[i-1]
 
     def __init__(self, s):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
