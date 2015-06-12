@@ -101,12 +101,15 @@ class SimJudge: # new function: myeval
                     nine += 1
             score = score + self.power[getCardValue(card)]
         return score
-        
+
+    def cardEval(self, myid):
+        return len(self.card[myid-1])
+    
     def myEval(self, myid = -1):
         if myid == -1:
-            return self.dpEval1(self.current_player-1)
+            return self.cardEval(self.current_player-1)
         else:
-            return self.dpEval1(myid)
+            return self.cardEval(myid)
             
         #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
         #for i in range(4):

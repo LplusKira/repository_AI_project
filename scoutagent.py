@@ -62,7 +62,7 @@ class ScoutAgent(Agent):
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def scoutGenmove(self, state, depth = 2, maxTime = 100, replayNum = 20):
+   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 20):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
@@ -96,7 +96,7 @@ class ScoutAgent(Agent):
    power              2   ?%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
    dynamic-power      2   34.4% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
    dynamic-power      2   34.4?% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
-   dynamic-power      1   ?% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      1   36.35% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
    '''
    def maxSearch(self, s, alpha, beta, depth, nowdepth):
       #print "maxsearch"
