@@ -71,14 +71,14 @@ class SimJudge: # new function: myeval
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.endpower[getCardValue(card)]
+                score = score + self.endpower[getCardValue(card)]
             if nine > 0:
                 score -= 50*(nine-1)
         else:
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.power[getCardValue(card)]
+                score = score + self.power[getCardValue(card)]
         return score
 
     def dpEval1(self, myid):
@@ -92,15 +92,25 @@ class SimJudge: # new function: myeval
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.endpower[getCardValue(card)]
+                score = score + self.endpower[getCardValue(card)]
             if nine > 0:
                 score -= 120*(nine-1)
         else:
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.power[getCardValue(card)]
+                score = score + self.power[getCardValue(card)]
         return score
+
+    def cardEval(self, myid):
+        return len(self.card[myid-1])
+
+    def powerEval(self, myid):
+        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+        score = 60 * mycardlen
+        if mycardlen <= 2:
+            for card in self.card[myid-1]:
+                score = score + self.endpower[getCardValue(card)]
         
     def myEval(self, myid = -1):
         if myid == -1:
@@ -131,10 +141,12 @@ class SimJudge: # new function: myeval
         else:
             return self.isDead[i-1]
 
-    def __init__(self, s):
+    def __init__(self, s, evalName):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval}
+        self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()
         #self.printBoard()
@@ -191,22 +203,6 @@ class SimJudge: # new function: myeval
                 winner = i
         #print "winner is " + str(winner+1)
         return self.player, str(winner+1)
-
-    def rand4Cards(self): #do not use in simjudge
-        original_cards = list()
-        random.seed(time.time()*self.current_player)
-    	for i in range(_cardNum_):
-            original_cards.append(i + 1)
-        for i in range(_TotalPlayerNum_):
-            for counter in range(_InitCardsPerPlayer_):
-                pick = random.randint(0,1024) % len(original_cards)
-                self.card[i][counter] = original_cards[pick]
-                original_cards.pop(pick)
-        #	TODO:	set mountain
-        for i in range(len(original_cards)):
-            pick = random.randint(0, 1024) % len(original_cards)
-            self.mountain.append(original_cards[pick])
-            original_cards.pop(pick)
 
     def randMountain(self):
         #   TODO:   collecting remained cards into cards_remained
@@ -350,7 +346,7 @@ class SimJudge: # new function: myeval
         card = copy.deepcopy(self.card[self.current_player-1])
         #remove the same value card
         #print card
-        valuelist = []
+        '''valuelist = []
         newcard = []
         for c in card:
             if c == 1:
@@ -361,7 +357,7 @@ class SimJudge: # new function: myeval
         #print "valuelist" + str(valuelist)
                 #print "newcard" + getCardsString(newcard)
                 #print getCardsString(self.card[self.current_player-1])
-        card = newcard
+        card = newcard'''
 
         isuse = [False]*len(card)
         av = list()

@@ -20,6 +20,8 @@ class Agent: # todo:how to remove this
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
+      random.seed(time.time())
+      self.evalName = 'dpeval1'
       #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
@@ -27,76 +29,99 @@ class ScoutAgent(Agent):
       a = self.scoutGenmove(state)
       return a
 
-   def fillstate(self, s):
-      random.seed(time.time())
-    #fill other's card, mountain
-      restcard = []
-      for i in range(52):
-         restcard.append(i+1)
+   def getKnownCards(self, s):
+      restcard = [i+1 for i in range(52)]
+      nonUsedCard = [i+1 for i in range(52)]# cards that never showed in this game, always in someone's hand
       for c in s.myCard.cards:
-         #print "remove mycard %d " % c
          restcard.remove(c)
-      lastrand = False
+         nonUsedCard.remove(c)
+      lastrand = -1
       for i, a in enumerate(s.board.record):
-         if a.user == 0: # after lastest randmountain
+         for c in a.cards_used:
+            if c in nonUsedCard:
+               nonUsedCard.remove(c)
+         if a.user == 0: # only remove cards after lastest randmountain
             lastrand = i
       for i in range(lastrand+1, len(s.board.record), 1):
-         #print "remove action card: " + str(s.board.record[i])
          for c in s.board.record[i].cards_used:
-            #print "remove" + action.getCardString(c)
             restcard.remove(c)
+
+      if lastrand == -1:
+         nonUsedCard = []
+      for c in nonUsedCard:
+         restcard.remove(c)
       random.shuffle(restcard)
+      return nonUsedCard, restcard
+      
+   def fillstate(self, s):    #fill other's card, mountain
+      nonUsedCard, restcard = self.getKnownCards(s)
+      print action.getCardsString(nonUsedCard)
+      unknownHandCardNum = 0
+      for i in range(4):
+         if i+1 != self.i:
+            unknownHandCardNum += s.board.cardNum[i]
+      handcard = nonUsedCard
+      while len(handcard) < unknownHandCardNum:
+         handcard.append(restcard[-1])
+         restcard.pop()
+      random.shuffle(handcard)
+      mountain = restcard # rest
       cards = []
-      mountain = []
       for i in range(4):
          if self.i == i+1:
             cards.append(s.myCard.cards)
          else:
             playercard = []
             for j in range(s.board.cardNum[i]):
-               playercard.append(restcard[-1])
-               restcard.pop()
+               playercard.append(handcard[-1])
+               handcard.pop()
             cards.append(playercard)
-            
-      mountain = restcard # rest
+
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def scoutGenmove(self, state, depth = 2, maxTime = 100, replayNum = 20):
+   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 20):
+
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
-      # todo: remove redunant moves
-      js = self.fillstate(state)
-      self.bestmove = state.myCard.moves[0]
-      self.judge = SimJudge(js)
+      for i in range(replayNum):
+         js = self.fillstate(state)
+         self.bestmove = state.myCard.moves[0]
+         self.judge = SimJudge(js, self.evalName)
+         score = self.maxSearch(self.judge, -INF, INF, depth, 0)
+      maxscore = -INF
+      for k,v in self.avgScore.iteritems():
+         print str(v[0]) + "\t%d" % (v[1]/replayNum)
+         if maxscore < v[1]:
+            maxscore = v[1]
+            self.bestmove = v[0]
       score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
-      #self.judge.printBoard()
       wait_input()
       #if self.bestmove not in state.myCard.moves:
        #  print "abgenmove: no this move"
         # exit()
       return self.bestmove #todo:
 
-   # todo: remove redundant move from server(4h, 4s...)
-           # other redundant?: 
-   # todo: check max node and minnode
-   # todo: remember some structure to win 
-   # fix: in fact, can are not playing with randomagent, but a smart agent
+   # todo: remove redundant move from server(4h, 4s...) after getaction()
+   # todo: remember some structures(or rules) to win 
+   # fix: our opponent need to be simple agent(based on cardnum or cardvalue) instead random agent
+   # fix: every player have different evaluation value...
    # idea: all max search for each player's evaluation
            # not every player want to kill me...
-   # every player have different evaluation value...
    '''
    test result:
    heuristic        depth result(2000times) techniques
-   cardnum            2   ?%
-   cardnum            2   ?%             no cut off
+   cardnum            1   38.35%
    power              2   ?%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-   dynamic-power      2   34.4% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
-   dynamic-power      2   34.4?% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
-   dynamic-power      1   ?% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   ?% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   36.6% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      1   37.7% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      1   38% (% vs heuristic) self.dpeval1(), remember cards
+   dynamic-power      1   39.85% (% vs heuristic) self.dpeval1(), remember cards, no trim getaction in simjudge
+   dynamic-power      1   37.75% (% vs heuristic) self.dpeval1(), remember cards, no trim getaction in simjudge, improve fillstate...
    '''
    def maxSearch(self, s, alpha, beta, depth, nowdepth):
       #print "maxsearch"
@@ -142,6 +167,10 @@ class ScoutAgent(Agent):
                self.bestmove = a
          if nowdepth == 0:
             #print "search max move: " + str(a)  + "  score = " + str(m)
+            if str(a) in self.avgScore:
+               self.avgScore[str(a)][1] += m
+            else:
+               self.avgScore[str(a)] = [a, m]
             wait_input()
          if m >= beta: # cut off
             #print "beta cutoff %d %d" % (m, beta) + str(a)
@@ -246,3 +275,18 @@ class ScoutAgent(Agent):
          return True
       else:
          return False
+
+class CardNumberHeuristicAgent(ScoutAgent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      random.seed(time.time())
+      self.evalName = 'cardeval'
+
+   def genmove(self, state):
+      self.state = state
+      a = self.scoutGenmove(state)
+      return a
+
+      
+
+      
