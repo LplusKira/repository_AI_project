@@ -84,8 +84,8 @@ class Judge:
 
         #   TODO: adding small history for players to remember cards (in case of 9 or 7 is enforced on any player)
         if small_h is None:
-            self.small_h = [[None] for i in range(_TotalPlayerNum_)]
-        else
+            self.small_h = [[] for i in range(_TotalPlayerNum_)]
+        else:
             self.small_h = small_h
         
     def GameStart(self):
@@ -190,15 +190,23 @@ class Judge:
 
     def Empty_small_h(self, which_player):
         while len(self.small_h[which_player]) > 0:
-            self.small_h.pop()
+            self.small_h[which_player].pop()
 
-    def Push_small_h(self, usr, sevenOrNine, residual_card, victim):
-        Action new_action.user = usr
-        for card in range(len(residual_card)):
-            new_action.cards_used.append(residual_card[card]) 
-        new_action.victim = sevenOrNine
-
+    def Push_small_h(self, new_action, victim):
+        #for card in range(len(residual_card)):
+        #    new_action.cards_used.append(residual_card[card]) 
         self.small_h[victim].append(new_action)
+        """if victim == 0:
+                                    print "==========in judge========"
+                                    print "victim == " + str(victim)
+                                    for i in range(len(self.small_h[victim])):
+                                        print "usr == " + str(self.small_h[victim][i].user) + ", cards == "
+                                        for j in range(len(self.small_h[victim][i].cards_used)):
+                                            print  self.small_h[victim][i].cards_used[j]
+                                        print "operation == " + str(self.small_h[victim][i].victim)
+                                    #time.sleep(1)
+                                    print "========end judge========"
+        """
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
@@ -243,9 +251,13 @@ class Judge:
         elif actual_card % 13 == 7: #   else if the action is 7, 9
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
+            
+            #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
             self.card[a.victim - 1].pop(pick)
-            #   TODO: adding small history to the victim and sending him the hsitory
-            self.Push_small_h(a.user - 1, 7, self.card[a.victim - 1]), a.victim - 1)
+            self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
+            new_action = Action(a.user - 1, self.card[a.victim - 1], 7)
+            self.Push_small_h(new_action, a.victim - 1)
+            self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -259,7 +271,8 @@ class Judge:
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
             #   TODO: adding small history to the victim and sending him the hsitory
-            self.Push_small_h(a.user - 1, 9, self.card[a.victim - 1]), a.victim - 1)
+            new_action = Action(a.user - 1, self.card[a.victim - 1], 9)
+            self.Push_small_h(new_action, a.victim - 1)
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
