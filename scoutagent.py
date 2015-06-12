@@ -39,7 +39,7 @@ class ScoutAgent(Agent):
          for c in a.cards_used:
             if c in nonUsedCard:
                nonUsedCard.remove(c)
-         if a.user == 0: # after lastest randmountain
+         if a.user == 0: # only remove cards after lastest randmountain
             lastrand = i
       for i in range(lastrand+1, len(s.board.record), 1):
          for c in s.board.record[i].cards_used:
@@ -106,11 +106,11 @@ class ScoutAgent(Agent):
       return self.bestmove #todo:
 
    # todo: remove redundant move from server(4h, 4s...) after getaction()
-   # todo: remember some structure to win 
-   # fix: in fact, can are not playing with randomagent, but a smart agent
+   # todo: remember some structures(or rules) to win 
+   # fix: our opponent need to be simple agent(based on cardnum or cardvalue) instead random agent
+   # fix: every player have different evaluation value...
    # idea: all max search for each player's evaluation
            # not every player want to kill me...
-   # every player have different evaluation value...
    '''
    test result:
    heuristic        depth result(2000times) techniques
