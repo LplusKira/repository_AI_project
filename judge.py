@@ -192,13 +192,13 @@ class Judge:
         while len(self.small_h[which_player]) > 0:
             self.small_h.pop()
 
-    def Push_small_h(self, usr, sevenOrNine, residual_card):
+    def Push_small_h(self, usr, sevenOrNine, residual_card, victim):
         Action new_action.user = usr
         for card in range(len(residual_card)):
             new_action.cards_used.append(residual_card[card]) 
         new_action.victim = sevenOrNine
 
-        self.small_h.append(new_action)
+        self.small_h[victim].append(new_action)
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
@@ -245,7 +245,7 @@ class Judge:
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             self.card[a.victim - 1].pop(pick)
             #   TODO: adding small history to the victim and sending him the hsitory
-            self.Push_small_h(a.user - 1, 7, self.card[a.victim - 1]))
+            self.Push_small_h(a.user - 1, 7, self.card[a.victim - 1]), a.victim - 1)
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -259,7 +259,7 @@ class Judge:
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
             #   TODO: adding small history to the victim and sending him the hsitory
-            self.Push_small_h(a.user - 1, 9, self.card[a.victim - 1]))
+            self.Push_small_h(a.user - 1, 9, self.card[a.victim - 1]), a.victim - 1)
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
