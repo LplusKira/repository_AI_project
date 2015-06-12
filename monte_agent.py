@@ -116,9 +116,8 @@ class MonteAgent(Agent):
       cards_unknown = [i for i in fullCard if i not in usedCard]
 
       for candidate in state.myCard.moves:
+         win_point = 0
          for i in range(0, 1067):
-            
-            win_point = 0
             cards_1 = state.myCard.cards
 
             # Shuffle and deal cards
@@ -148,18 +147,21 @@ class MonteAgent(Agent):
                mc_judge.card.append(hand) 
             print mc_judge.card
             #做出已經出完candidate牌的樣子?
-            print "candidate === ", candidate
             mc_judge.doAction(candidate)      
 
             # (Player1在模擬局中，出candidate，之後讓mc_judge自己跑ab_agent跑完全程，回傳輸贏）???
             winner = mc_judge.GameStart()
+            print "++++++++++++++++++++++++++++ SIMULATION END ++++++++++++++++++++++++++++++++"
+            #print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", winner
             if winner == 0: 
-               win_point += 1
-               print "++++++++++++++++++WIN POINT COUNT+++++++++++++++++++++++++", win_point / 1067
+               win_point = win_point + 1
+               #print "++++++++++++++++++WIN POINT COUNT+++++++++++++++++++++++++", win_point
             else:
                pass
          # find the win rate of a certain candidate, append it
-         win_rate.update({candidate : win_point / 1067})
+         win_rate.update({candidate : win_point})
+      temp__A.append(str(win_rate))
+      print "++++++++++++++++++++++++ temp__A +++++++++++++++++++++++++++++", str(temp__A)
       decided_card = max(win_rate.iteritems(), key=operator.itemgetter(1))[0]
       return decided_card
 

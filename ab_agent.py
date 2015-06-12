@@ -5,8 +5,6 @@ import copy
 import action
 import operator
 import math
-from simJudge import JudgeState
-from simJudge import SimJudge
 
 INF = 2147483647
 _CardNumPerType_ = 13
@@ -260,112 +258,7 @@ class ScoutTestAgent(Agent):
       else:
          return False
       
-class ScoutAgent(Agent):
-   def __init__(self, i = 0): # only need to know id
-      self.i = i
-      #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
-   def genmove(self, state):
-      self.state = state
-      a = self.scoutGenmove(state)
-      return a
-
-   def fillstate(self, s):
-    #fill other's card, mountain
-      restcard = []
-      for i in range(52):
-         restcard.append(i+1)
-      for c in s.myCard.cards:
-         #print "remove mycard %d " % c
-         restcard.remove(c)
-      lastrand = False
-      for i, a in enumerate(s.board.record):
-         if a.user == 0: # after lastest randmountain
-            lastrand = i
-      for i in range(lastrand+1, len(s.board.record), 1):
-         #print "remove action card: " + str(s.board.record[i])
-         for c in s.board.record[i].cards_used:
-            #print "remove" + action.getCardString(c)
-            restcard.remove(c)
-      random.shuffle(restcard)
-      cards = []
-      mountain = []
-      for i in range(4):
-         if self.i == i+1:
-            cards.append(s.myCard.cards)
-         else:
-            playercard = []
-            for j in range(s.board.cardNum[i]):
-               playercard.append(restcard[-1])
-               restcard.pop()
-            cards.append(playercard)
-            
-      mountain = restcard # rest
-      js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
-      return js
-   
-   def scoutGenmove(self, state, depth = 4, maxTime = 100):
-      startTime = time.time()
-      self.endTime = startTime + maxTime
-      self.depth = depth
-      # todo: transform to judgestate
-      js = self.fillstate(state)
-      self.bestmove = state.myCard.moves[0]
-      self.judge = SimJudge(js)
-      score = self.search(self.judge, -INF, INF, depth, 0)
-      print "use " + str(time.time()-startTime) + "time"
-      print "bestmove = " + str(self.bestmove)
-      if self.bestmove not in state.myCard.moves:
-         print "abgenmove: no this move"
-         exit()
-      return self.bestmove #todo:
-
-   #  todo: remove redundant move, (8s, 8h, 8c, 8d)
-   # todo: no need to check rule in simjudge
-   # todo: maybe use two function...
-   def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
-      if s.checkLose(self.i):
-         return -INF
-      #if depth == 0 or self.timeUp(): # or some heuristic
-      if depth == 0: # or some heuristic
-         return s.myEval(self.i) #todo:not depth = 2
-      m = -INF # current lower bound, fail soft
-      n = beta # current upper bound
-      if nowdepth == 0:
-         moves = self.state.myCard.moves
-      else:
-         moves = s.getAction()
-      for a in moves:
-         news = copy.deepcopy(s)
-         news.doAction(a)
-         if news.current_player == self.i: # next node is max
-            tmp = self.search(news, min(alpha, m), n, depth-1, nowdepth+1)
-         else: #minnode
-            tmp = -self.search(news, -n, -max(alpha, m), depth-1, nowdepth+1)
-
-         if tmp > m: #todo:check
-            if n == beta or depth < 3 or tmp >= beta:
-               m = tmp
-            else:
-               if news.current_player == self.i: # maxnode
-                  m = self.search(news, tmp, beta, depth-1, nowdepth+1) #research
-               else: #minnode
-                  m = -self.search(news, -beta, -tmp, depth-1, nowdepth+1) #research
-            if nowdepth == 0:
-               self.bestmove = a
-         if nowdepth == 0:
-            print "search move: " + str(a)  + "  score = " + str(tmp)
-         if m >= beta: # cut off
-            return m 
-         n = max(alpha, m) + 1 # set up null window
-      return m
-
-   def timeUp(self):
-      nowTime = time.time()
-      if nowTime > self.endTime:
-         return True
-      else:
-         return False
          
 class HumanAgent(Agent):
    """
@@ -390,9 +283,9 @@ class HumanAgent(Agent):
       for i in range(0, len(moves)):
          print "move index:", i, moves[i], 
       print "The point now is: ", state.board.nowPoint
-      move = raw_input("pick the move by input the move index: ")   
+      move = wait_input("pick the move by input the move index: ")   
       while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
-         move = raw_input("The move index value is illegal, try again: ")                   
+         move = wait_input("The move index value is illegal, try again: ")                   
       print "The move you take is: ", state.myCard.moves[int(move)]
       return state.myCard.moves[int(move)]
    
