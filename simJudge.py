@@ -141,10 +141,11 @@ class SimJudge: # new function: myeval
         else:
             return self.isDead[i-1]
 
-    def __init__(self, s):
+    def __init__(self, s, evalName):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
+        self.myEval = 
         self.state = s
         self.input_state()
         #self.printBoard()

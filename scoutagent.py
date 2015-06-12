@@ -17,6 +17,17 @@ class Agent: # todo:how to remove this
    def genmove(self, state):
       pass
 
+class SimpleHeuristicAgent(ScoutAgent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      random.seed(time.time())
+
+   def genmove(self, state):
+      self.state = state
+      a = self.scoutGenmove(state)
+      return a
+
+      
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
