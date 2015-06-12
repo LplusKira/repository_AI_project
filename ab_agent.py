@@ -32,6 +32,10 @@ class PlayerState:
       self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
       self.counter = 0
       #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
+      if the_specific_small_h is None:
+         self.the_specific_small_h = None
+      else:   
+         self.the_specific_small_h = the_specific_small_h
 
    def __str__(self):
       return str(self.myCard.moves)

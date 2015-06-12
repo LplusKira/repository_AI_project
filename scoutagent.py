@@ -91,6 +91,18 @@ class ScoutAgent(Agent):
       return js
    
    def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 20):
+
+      #print state.the_specific_small_h
+      """
+                        print "it's scout speaking"
+                  
+                        for i in range(len(state.the_specific_small_h)):
+                           print "usr == " + str(state.the_specific_small_h[i].user) + ", cards == "
+                           for j in range(len(state.the_specific_small_h[i].cards_used)):
+                              print  state.the_specific_small_h[i].cards_used[j]
+                           print "operation == " + str(state.the_specific_small_h[i].victim)
+                        #time.sleep(1)"""
+
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
