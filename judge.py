@@ -138,12 +138,14 @@ class Judge:
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
+        """
         # check mountain is correct or not
         for c in self.mountain:
             for i in range(4):
                 if c in self.card[i]:
                     print "illegal randmountain"
                     exit()
+        """
 
     def initBoard(self):
         self.current_player = 1
@@ -184,8 +186,10 @@ class Judge:
             actual_card = 0
             for i in range(0, len(a.cards_used), 1):
                 actual_card += a.cards_used[i] % 13
+
         for c in a.cards_used:
             self.card[a.user-1].remove(c)
+
         if a.victim == _Adding_:    #   if the action is NO harmful: 10, 12(e.g. +- 10; +- 20)    
             if actual_card == 12:
                 self.point += 20
@@ -231,9 +235,6 @@ class Judge:
             if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
                 self.randMountain()
                 index_action = Action(0,[],0) 
-                """index_action.user = 0
-                                                                index_action.cards_used = list()
-                                                                index_action.victim = 0"""
                 self.history.append(index_action)  
                 #print "randmountain, now len = %d" % len(self.mountain)
             self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
@@ -244,10 +245,6 @@ class Judge:
             if len(self.card[i]) == 0 and not self.isDead[i]:
                 #print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
-            
-        #   TODO: push action a into history
-            #   if mountain is empty, "0 list() 0" will be inserted first
-        #self.printBoard()
         self.changeNextPlayer()
 
     def setDead(self, playerid):
