@@ -91,6 +91,8 @@ class Judge:
                 self.changeNextPlayer()
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise) #get playerstate
+            if self.current_player == 1:
+                self.printBoard()
             a = self.player[self.current_player-1].genmove(state)
             self.doAction(a)
 
