@@ -22,7 +22,7 @@ from action import *
 from ab_agent import PlayerState
 #from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
-from scoutagent import ScoutAgent
+from scoutagent import ScoutAgent, CardNumberHeuristicAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -32,10 +32,6 @@ class PossibleCombination:
 iter_num = 1
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
-        seednum = (time.time()*iter_num) % 1000000000
-        random.seed(seednum)
-        global iter_num
-        iter_num += 1
         '''
         when seed == 1
         North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
@@ -49,9 +45,9 @@ class Judge:
             players.append(ScoutAgent(1))
             #players.append(HumanAgent(1))
             
-            players.append(RandomAgent(2))
-            players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
+            players.append(ScoutAgent(2))
+            players.append(ScoutAgent(3))
+            players.append(HumanAgent(4))
             #players.append(HeuristicAgent(2))
             #players.append(ScoutAgent(3))
             #players.append(HeuristicAgent(4))
@@ -292,7 +288,8 @@ class Judge:
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
                 self.setDead(i+1) # id
-        self.changeNextPlayer()
+        if actual_card % 13 != 5:
+            self.changeNextPlayer()
 
     def setDead(self, playerid):
         self.isDead[playerid-1] = True

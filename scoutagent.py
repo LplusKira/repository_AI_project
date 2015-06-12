@@ -17,21 +17,11 @@ class Agent: # todo:how to remove this
    def genmove(self, state):
       pass
 
-class SimpleHeuristicAgent(ScoutAgent):
-   def __init__(self, i = 0): # only need to know id
-      self.i = i
-      random.seed(time.time())
-
-   def genmove(self, state):
-      self.state = state
-      a = self.scoutGenmove(state)
-      return a
-
-      
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
       random.seed(time.time())
+      self.evalName = 'dpeval1'
       #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
@@ -92,24 +82,13 @@ class ScoutAgent(Agent):
    
    def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 20):
 
-      #print state.the_specific_small_h
-      """
-                        print "it's scout speaking"
-                  
-                        for i in range(len(state.the_specific_small_h)):
-                           print "usr == " + str(state.the_specific_small_h[i].user) + ", cards == "
-                           for j in range(len(state.the_specific_small_h[i].cards_used)):
-                              print  state.the_specific_small_h[i].cards_used[j]
-                           print "operation == " + str(state.the_specific_small_h[i].victim)
-                        #time.sleep(1)"""
-
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js)
+         self.judge = SimJudge(js, self.evalName)
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
       for k,v in self.avgScore.iteritems():
@@ -117,8 +96,6 @@ class ScoutAgent(Agent):
          if maxscore < v[1]:
             maxscore = v[1]
             self.bestmove = v[0]
-      self.judge.printBoard()
-      raw_input()
       score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
@@ -298,3 +275,18 @@ class ScoutAgent(Agent):
          return True
       else:
          return False
+
+class CardNumberHeuristicAgent(ScoutAgent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      random.seed(time.time())
+      self.evalName = 'cardeval'
+
+   def genmove(self, state):
+      self.state = state
+      a = self.scoutGenmove(state)
+      return a
+
+      
+
+      

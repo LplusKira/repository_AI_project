@@ -287,9 +287,9 @@ class HumanAgent(Agent):
       for i in range(0, len(moves)):
          print "move index:", i, moves[i], 
       print "The point now is: ", state.board.nowPoint
-      move = wait_input("pick the move by input the move index: ")   
+      move = raw_input("pick the move by input the move index: ")   
       while ((move.isdigit() == False) or (int(move) < 0) or (int(move) >= len(state.myCard.moves))):
-         move = wait_input("The move index value is illegal, try again: ")                   
+         move = raw_input("The move index value is illegal, try again: ")                   
       print "The move you take is: ", state.myCard.moves[int(move)]
       return state.myCard.moves[int(move)]
    

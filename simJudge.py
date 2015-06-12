@@ -145,7 +145,8 @@ class SimJudge: # new function: myeval
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
-        self.myEval = 
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval}
+        self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()
         #self.printBoard()
