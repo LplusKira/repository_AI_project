@@ -71,14 +71,14 @@ class SimJudge: # new function: myeval
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.endpower[getCardValue(card)]
+                score = score + self.endpower[getCardValue(card)]
             if nine > 0:
                 score -= 50*(nine-1)
         else:
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.power[getCardValue(card)]
+                score = score + self.power[getCardValue(card)]
         return score
 
     def dpEval1(self, myid):
@@ -92,15 +92,25 @@ class SimJudge: # new function: myeval
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.endpower[getCardValue(card)]
+                score = score + self.endpower[getCardValue(card)]
             if nine > 0:
                 score -= 120*(nine-1)
         else:
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1
-            score = score + self.power[getCardValue(card)]
+                score = score + self.power[getCardValue(card)]
         return score
+
+    def cardEval(self, myid):
+        return len(self.card[myid-1])
+
+    def powerEval(self, myid):
+        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
+        score = 60 * mycardlen
+        if mycardlen <= 2:
+            for card in self.card[myid-1]:
+                score = score + self.endpower[getCardValue(card)]
         
     def myEval(self, myid = -1):
         if myid == -1:
@@ -350,7 +360,7 @@ class SimJudge: # new function: myeval
         card = copy.deepcopy(self.card[self.current_player-1])
         #remove the same value card
         #print card
-        valuelist = []
+        '''valuelist = []
         newcard = []
         for c in card:
             if c == 1:
@@ -361,7 +371,7 @@ class SimJudge: # new function: myeval
         #print "valuelist" + str(valuelist)
                 #print "newcard" + getCardsString(newcard)
                 #print getCardsString(self.card[self.current_player-1])
-        card = newcard
+        card = newcard'''
 
         isuse = [False]*len(card)
         av = list()
