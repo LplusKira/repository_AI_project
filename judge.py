@@ -32,10 +32,6 @@ class PossibleCombination:
 iter_num = 1
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
-        seednum = (time.time()*iter_num) % 1000000000
-        random.seed(seednum)
-        global iter_num
-        iter_num += 1
         '''
         when seed == 1
         North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
@@ -390,6 +386,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
+    random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt")
