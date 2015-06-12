@@ -202,22 +202,6 @@ class SimJudge: # new function: myeval
         #print "winner is " + str(winner+1)
         return self.player, str(winner+1)
 
-    def rand4Cards(self): #do not use in simjudge
-        original_cards = list()
-        random.seed(time.time()*self.current_player)
-    	for i in range(_cardNum_):
-            original_cards.append(i + 1)
-        for i in range(_TotalPlayerNum_):
-            for counter in range(_InitCardsPerPlayer_):
-                pick = random.randint(0,1024) % len(original_cards)
-                self.card[i][counter] = original_cards[pick]
-                original_cards.pop(pick)
-        #	TODO:	set mountain
-        for i in range(len(original_cards)):
-            pick = random.randint(0, 1024) % len(original_cards)
-            self.mountain.append(original_cards[pick])
-            original_cards.pop(pick)
-
     def randMountain(self):
         #   TODO:   collecting remained cards into cards_remained
         cards_remained = list()

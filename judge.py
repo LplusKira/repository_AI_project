@@ -107,6 +107,7 @@ class Judge:
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
             
             #   TODO: call up the current player to generate move
+
             a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
