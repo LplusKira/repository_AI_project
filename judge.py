@@ -31,7 +31,11 @@ class PossibleCombination:
 
 iter_num = 1
 class Judge:
-    def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
+    def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
+        seednum = (time.time()*iter_num) % 1000000000
+        random.seed(seednum)
+        global iter_num
+        iter_num += 1
         '''
         when seed == 1
         North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
@@ -73,9 +77,16 @@ class Judge:
             self.mountain = list()
         else:
             self.mountain = m
+
         self.point = p
         self.clock_wise = cw
         self.current_player = cp
+
+        #   TODO: adding small history for players to remember cards (in case of 9 or 7 is enforced on any player)
+        if small_h is None:
+            self.small_h = [[None] for i in range(_TotalPlayerNum_)]
+        else:
+            self.small_h = small_h
         
     def GameStart(self):
         self._possibleActions_ = list()
@@ -83,17 +94,23 @@ class Judge:
         self.rand4Cards()
         #self.printBoard()
         
+        can_I_clean = list()
+        for i in range(_TotalPlayerNum_):
+            can_I_clean.append(0)
+
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
-                #print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise) #get playerstate
-            if self.current_player == 1:
-                self.printBoard()
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
+            
+            #   TODO: call up the current player to generate move
+
             a = self.player[self.current_player-1].genmove(state)
+            #   TODO: clean current player's small history
+            self.Empty_small_h(self.current_player-1)
             self.doAction(a)
 
         winner = 0
@@ -172,6 +189,18 @@ class Judge:
             + "South(id = 3):" + (getCardsString(self.card[2])) + "\n"\
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
+    def Empty_small_h(self, which_player):
+        while len(self.small_h[which_player]) > 0:
+            self.small_h.pop()
+
+    def Push_small_h(self, usr, sevenOrNine, residual_card):
+        Action new_action.user = usr
+        for card in range(len(residual_card)):
+            new_action.cards_used.append(residual_card[card]) 
+        new_action.victim = sevenOrNine
+
+        self.small_h.append(new_action)
+
     def doAction(self, a):
         #   TODO: add effect by the returning action a
         if not self.checkRule(a):
@@ -216,6 +245,8 @@ class Judge:
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             self.card[a.victim - 1].pop(pick)
+            #   TODO: adding small history to the victim and sending him the hsitory
+            self.Push_small_h(a.user - 1, 7, self.card[a.victim - 1]))
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -228,6 +259,8 @@ class Judge:
                 self.card[a.victim - 1].pop()
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
+            #   TODO: adding small history to the victim and sending him the hsitory
+            self.Push_small_h(a.user - 1, 9, self.card[a.victim - 1]))
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
@@ -245,7 +278,6 @@ class Judge:
         # check dead
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
-                #print "%d is dead(no card). next one." % (i+1)
                 self.setDead(i+1) # id
         self.changeNextPlayer()
 
