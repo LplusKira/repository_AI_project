@@ -27,38 +27,45 @@ class ScoutAgent(Agent):
       a = self.scoutGenmove(state)
       return a
 
-   def fillstate(self, s):
-      random.seed(time.time())
-    #fill other's card, mountain
-      restcard = []
-      for i in range(52):
-         restcard.append(i+1)
+   def fillstate(self, s):    #fill other's card, mountain
+      restcard = [i+1 for i in range(52)]
+      nonUsedCard = [i+1 for i in range(52)]# cards that never showed in this game, always in someone's hand
       for c in s.myCard.cards:
-         #print "remove mycard %d " % c
          restcard.remove(c)
-      lastrand = False
+      lastrand = -1
       for i, a in enumerate(s.board.record):
+         for c in a.cards_used:
+            if c in nonUsedCard:
+               nonUsedCard.remove(c)
          if a.user == 0: # after lastest randmountain
             lastrand = i
       for i in range(lastrand+1, len(s.board.record), 1):
-         #print "remove action card: " + str(s.board.record[i])
          for c in s.board.record[i].cards_used:
-            #print "remove" + action.getCardString(c)
             restcard.remove(c)
       random.shuffle(restcard)
+
+      if lastrand == -1:
+         nonUsedCard = []
+      unknownHandCardNum = 0
+      for i in range(4):
+         if i+1 != self.i:
+            unknownHandCardNum += s.board.cardNum[i]
+      handcard = nonUsedCard
+      while len(handcard) < unknownHandCardNum:
+         handcard.append(restcard[-1])
+         restcard.pop()
+      mountain = restcard # rest
       cards = []
-      mountain = []
       for i in range(4):
          if self.i == i+1:
             cards.append(s.myCard.cards)
          else:
             playercard = []
             for j in range(s.board.cardNum[i]):
-               playercard.append(restcard[-1])
-               restcard.pop()
+               playercard.append(handcard[-1])
+               handcard.pop()
             cards.append(playercard)
-            
-      mountain = restcard # rest
+
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
@@ -80,9 +87,7 @@ class ScoutAgent(Agent):
         # exit()
       return self.bestmove #todo:
 
-   # todo: remove redundant move from server(4h, 4s...)
-           # other redundant?: 
-   # todo: check max node and minnode
+   # todo: remove redundant move from server(4h, 4s...) after getaction()
    # todo: remember some structure to win 
    # fix: in fact, can are not playing with randomagent, but a smart agent
    # idea: all max search for each player's evaluation
@@ -91,12 +96,13 @@ class ScoutAgent(Agent):
    '''
    test result:
    heuristic        depth result(2000times) techniques
-   cardnum            2   ?%
-   cardnum            2   ?%             no cut off
+   cardnum            1   38.35%
    power              2   ?%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-   dynamic-power      2   34.4% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
-   dynamic-power      2   34.4?% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
-   dynamic-power      1   36.35% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   ?% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
+   dynamic-power      2   36.6% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      1   37.7% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
+   dynamic-power      1   38% (% vs heuristic) self.dpeval1(), remember cards
+   dynamic-power      1   39.85% (% vs heuristic) self.dpeval1(), remember cards, no trim getaction in simjudge
    '''
    def maxSearch(self, s, alpha, beta, depth, nowdepth):
       #print "maxsearch"
