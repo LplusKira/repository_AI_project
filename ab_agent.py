@@ -21,7 +21,7 @@ class Agent:
       pass
 
 class PlayerState:
-   def __init__(self, history, leg, card, cardNum1, cardNum2, cardNum3, cardNum4, mountNum, point, order):
+   def __init__(self, history, leg, card, cardNum1, cardNum2, cardNum3, cardNum4, mountNum, point, order, the_specific_small_h):
       self.myCard = MyCard(leg, card)# var card non exist
       cardNum = list()
       cardNum.append(cardNum1)
