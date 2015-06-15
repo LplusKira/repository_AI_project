@@ -42,7 +42,7 @@ class Judge:
         if playerList is None:
             players = list()
             #players.append(MonteAgent(1))
-            players.append(AllMaxHeuristicAgent(1))
+            players.append(ScoutAgent(1))
             #players.append(HumanAgent(1))
             
             players.append(RandomAgent(2))
@@ -247,13 +247,13 @@ class Judge:
         elif actual_card % 13 == 7: #   else if the action is 7, 9
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
-            
             #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
-            self.card[a.victim - 1].pop(pick)
-            self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
-            new_action = Action(a.user - 1, self.card[a.victim - 1], 7)
+            take_card = [self.card[a.victim-1][pick]]
+            self.card[a.victim - 1].pop(pick)            
+            #self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
+            new_action = Action(a.user, take_card, 7)
             self.Push_small_h(new_action, a.victim - 1)
-            self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
+            #self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -267,7 +267,7 @@ class Judge:
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
             #   TODO: adding small history to the victim and sending him the hsitory
-            new_action = Action(a.user - 1, self.card[a.victim - 1], 9)
+            new_action = Action(a.user, self.card[a.user - 1], 9) # i want other player's card...
             self.Push_small_h(new_action, a.victim - 1)
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card

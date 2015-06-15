@@ -32,6 +32,14 @@ class ScoutAgent(Agent):
    def getKnownCards(self, s):
       restcard = [i+1 for i in range(52)]
       nonUsedCard = [i+1 for i in range(52)]# cards that never showed in this game, always in someone's hand
+      if len(s.smallh) >0:
+         print "smallh"
+         for a in s.smallh:
+            print a
+         print "action history"
+         for a in s.board.record:
+            print a
+         raw_input()
       for c in s.myCard.cards:
          restcard.remove(c)
          nonUsedCard.remove(c)
@@ -45,6 +53,7 @@ class ScoutAgent(Agent):
       for i in range(lastrand+1, len(s.board.record), 1):
          for c in s.board.record[i].cards_used:
             restcard.remove(c)
+            
 
       if lastrand == -1:
          nonUsedCard = []
@@ -54,6 +63,7 @@ class ScoutAgent(Agent):
       return nonUsedCard, restcard
       
    def fillstate(self, s):    #fill other's card, mountain
+      #nonUsedCard, restcard, fixedcard = self.getKnownCards(s)
       nonUsedCard, restcard = self.getKnownCards(s)
       print action.getCardsString(nonUsedCard)
       unknownHandCardNum = 0

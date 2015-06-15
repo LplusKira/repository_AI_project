@@ -100,7 +100,7 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.power[getCardValue(card)]
-        return scores
+        return score
 
     def dpEvalAll(self):
         #self.printBoard()
