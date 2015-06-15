@@ -96,7 +96,6 @@ class ScoutAgent(Agent):
          if maxscore < v[1]:
             maxscore = v[1]
             self.bestmove = v[0]
-      score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       wait_input()
@@ -111,6 +110,7 @@ class ScoutAgent(Agent):
    # fix: every player have different evaluation value...
    # idea: all max search for each player's evaluation
            # not every player want to kill me...
+   # todo: check gameend when search
    '''
    test result:
    heuristic        depth result(2000times) techniques
@@ -286,6 +286,96 @@ class CardNumberHeuristicAgent(ScoutAgent):
       self.state = state
       a = self.scoutGenmove(state)
       return a
+
+def checkscore(t, m, cp):
+   return getRelativeScore(t, cp) > getRelativeScore(m, cp)
+
+def getRelativeScore(scores, myid):
+   # if [1, 2, 3, 4], score of 1 is 1*4 - 2 -3 -4
+   newscore = scores[myid-1]*5
+   for i in range(4):
+      newscore -= scores[i]
+   return newscore
+   
+class AllMaxHeuristicAgent(ScoutAgent):
+   def __init__(self, i = 0): # only need to know id
+      self.i = i
+      random.seed(1)
+      self.evalName = 'dpevalall'
+
+   def genmove(self, state):
+      self.state = state
+      a = self.scoutGenmove(state)
+      return a
+
+   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 1):
+      startTime = time.time()
+      self.endTime = startTime + maxTime
+      self.avgScore = {}
+      for i in range(replayNum):
+         js = self.fillstate(state)
+         self.bestmove = state.myCard.moves[0]
+         self.judge = SimJudge(js, self.evalName)
+         alpha = [-INF]*4
+         beta = [INF]*4
+         alpha[self.i-1] = INF
+         beta[self.i-1] = -INF
+         score = self.maxSearch(self.judge, alpha, beta, depth, 0)
+      maxscore = [INF]*4
+      for k,v in self.avgScore.iteritems():
+         print str(v[0]) + "\t" + str(v[1])
+         if checkscore(v[1], maxscore, self.i):
+            maxscore = v[1]
+            self.bestmove = v[0]
+            print "better score!"
+      print "use " + str(time.time()-startTime) + "time"
+      print "bestmove = " + str(self.bestmove)
+      wait_input()
+      #if self.bestmove not in state.myCard.moves:
+       #  print "abgenmove: no this move"
+        # exit()
+      return self.bestmove #todo:
+   
+   def maxSearch(self, s, alpha, beta, depth, nowdepth):
+      if depth == 0 or s.checkLose():
+         return s.myEval()
+      if nowdepth == 0:
+         moves = self.state.myCard.moves
+      else:
+         moves = s.getAction()
+      m = [INF, INF, INF, INF] # current lower bound, fail soft
+      m[s.current_player-1] = -INF
+      al = alpha[:]
+      be = beta[:]
+      if len(moves) > 0:
+         news = copy.deepcopy(s)
+         news.doAction(moves[0])
+         score = self.maxSearch(news, al, be, depth-1, nowdepth+1)[:]
+         m = m if checkscore(m, score, s.current_player) else score[:]
+         print "update m" + str(m)
+      for a in moves:
+         news = copy.deepcopy(s)
+         news.doAction(a)
+         nullm1 = m[:]; nullm2 = m[:]; nullm2[s.current_player-1] += 1
+         
+         tmp = self.maxSearch(news,nullm1,nullm2,depth-1,nowdepth+1)[:]
+
+         if checkscore(tmp, m, s.current_player): #todo:check
+            if depth < 3 or checkscore(tmp,beta, s.current_player):
+               m = tmp[:]
+            else:
+               t = tmp[:]
+               m = self.maxSearch(news,t,be,depth-1,nowdepth+1)[:]
+            if nowdepth == 0:
+               self.bestmove = a
+               if str(a) in self.avgScore:
+                  self.avgScore[str(a)][1] += m[:]
+               else:
+                  self.avgScore[str(a)] = [a, m[:]]
+               print "move = " + str(a) + " score = " + str(self.avgScore[str(a)][1])
+         elif nowdepth == 0:
+            print "move = " + str(a)
+      return m
 
       
 

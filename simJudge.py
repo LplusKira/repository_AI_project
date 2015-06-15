@@ -100,7 +100,36 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.power[getCardValue(card)]
-        return score
+        return scores
+
+    def dpEvalAll(self):
+        #self.printBoard()
+        self.power = [0, -30, -30, -20, 60, 80, -40, 50, -55, 80, 80, 80, 100, 80]
+        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        self.endpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, 200, 80, 80, 100, 80]
+        scores= [ ]
+        for myid in range(4):
+            mycardlen = len(self.card[myid-1])
+            score = 60 * mycardlen
+            nine = 0
+            if mycardlen <= 2:
+                for card in self.card[myid-1]:
+                    if getCardValue(card) == 9:      
+                        nine += 1
+                    score = score + self.endpower[getCardValue(card)]
+                if nine > 0:
+                    score -= 120*(nine-1)
+            else:
+                for card in self.card[myid-1]:
+                    if getCardValue(card) == 9:      
+                        nine += 1
+                    score = score + self.power[getCardValue(card)]
+            for i in range(4):
+                score -= 60*(len(self.card[i]) - mycardlen)
+            scores.append(score)
+        #print scores
+            #raw_input()
+        return scores
 
     def cardEval(self, myid):
         return len(self.card[myid-1])
@@ -145,7 +174,7 @@ class SimJudge: # new function: myeval
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
-        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval}
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll}
         self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()
