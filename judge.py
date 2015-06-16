@@ -11,6 +11,7 @@ _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
 _TestGameNum_ = 2000
+_LuckySeed_ = 21126
 
 import random
 import time
@@ -42,19 +43,19 @@ class Judge:
         if playerList is None:
             players = list()
             #players.append(MonteAgent(1))
-            players.append(HumanAgent(1))
+            players.append(ScoutAgent(1))
             #players.append(ScoutAgent(2))
             
             #players.append(RandomAgent(2))
             #players.append(RandomAgent(3))
             #players.append(RandomAgent(4))
-            players.append(ScoutAgent(2))
-            players.append(ScoutAgent(3))
-            players.append(HumanAgent(4))
+            players.append(RandomAgent(2))
+            players.append(RandomAgent(3))
+            players.append(RandomAgent(4))
 
             #players.append(HeuristicAgent(2))
             #players.append(ScoutAgent(3))
-            players.append(HeuristicAgent(4))
+            #players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -435,7 +436,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(time.time())
+    random.seed(_LuckySeed_)
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
