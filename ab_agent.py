@@ -473,7 +473,8 @@ class HeuristicAgent(Agent):
                   move.append(m)
             if len(move) > 0:
                break
-      print "chooseMaxCard , move ===", move
+      if len(move) == 0:
+         move = movelist
       return random.choice(move)
 
 def randomGenmove(state):
