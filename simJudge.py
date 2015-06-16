@@ -88,7 +88,7 @@ class SimJudge: # new function: myeval
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
         nine = 0
-        if mycardlen <= 3:
+        if mycardlen <= 2:
             for card in self.card[myid-1]:
                 if getCardValue(card) == 9:      
                     nine += 1

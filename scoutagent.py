@@ -30,16 +30,18 @@ class ScoutAgent(Agent):
    def genmove(self, state):
       self.state = state
       a = self.scoutGenmove(state)
+
       return a
 
    def getKnownCards(self, s):
       restcard = [i+1 for i in range(52)]
       nonUsedCard = [i+1 for i in range(52)]# cards that never showed in this game, always in someone's hand
       nowsmallhindex = 0
-      for i in range(self.lasti, len(s.board.record)):
+      for i in range(self.lasti, len(s.board.record), 1):
          a = s.board.record[i]
          if a.user == 0: # randmountain
-            break
+            continue
+         print "remove cards " + getCardsString(a.cards_used)
          for c in a.cards_used: # remove used cards
             if c in self.knownCard[a.user-1]:
                self.knownCard[a.user-1].remove(c)
@@ -63,6 +65,7 @@ class ScoutAgent(Agent):
          for i in range(4):
             print "player %d" % (i+1)
             print action.getCardsString(self.knownCard[i])
+            
       for i in range(4):
          if s.board.cardNum[i] == 0:
             self.knownCard[i] = []
@@ -141,8 +144,11 @@ class ScoutAgent(Agent):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
          self.judge = SimJudge(js, self.evalName)
-         if len(state.smallh)>0:
-            self.judge.printBoard()
+         #if len(state.smallh)>0:
+            #print "simjudge board"
+            #self.judge.printBoard()
+            #print "real"
+            #self.mystr()
             #raw_input()
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
@@ -337,6 +343,8 @@ class CardNumberHeuristicAgent(ScoutAgent):
       self.i = i
       random.seed(time.time())
       self.evalName = 'cardeval'
+      self.knownCard = [list() for i in range(4)]
+      self.lasti = 0
 
    def genmove(self, state):
       self.state = state

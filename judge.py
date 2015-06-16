@@ -42,7 +42,7 @@ class Judge:
         if playerList is None:
             players = list()
             #players.append(MonteAgent(1))
-            players.append(ScoutAgent(1))
+            players.append(CardNumberHeuristicAgent(1))
             #players.append(HumanAgent(1))
             
             players.append(RandomAgent(2))
@@ -101,9 +101,11 @@ class Judge:
                 self.changeNextPlayer()
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
-            self.printBoard()
             #   TODO: call up the current player to generate move
-            a = self.player[self.current_player-1].genmove(state)
+            if self.current_player == 1:
+                a = self.player[self.current_player-1].genmove(state)
+            else:
+                a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
             self.doAction(a)
