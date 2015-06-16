@@ -6,6 +6,7 @@ from action import getCardsString
 from simJudge import JudgeState
 from simJudge import SimJudge
 INF = 2147483647
+_LuckySeed_ = 21126
 
 def wait_input():
    #raw_input()
@@ -21,7 +22,7 @@ class Agent: # todo:how to remove this
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(time.time())
+      random.seed(_LuckySeed_)
       self.evalName = 'dpeval1'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0

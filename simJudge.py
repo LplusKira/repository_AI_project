@@ -61,9 +61,6 @@ class JudgeState:
 
 class SimJudge: # new function: myeval
 
-    def is_small_Group(self, myid):
-        for
-
     def timeEval(self, myid):
         self.prior_power = [0, 20, 10, 10, 60, 80, -30, 30, -50, 80, 80, 60, 70, 80]
         #                       1, 2,   3, 4,  5,   6,  7   ,8,  9,  10,  j,  q,  k
@@ -85,7 +82,7 @@ class SimJudge: # new function: myeval
 
     def dpEval(self, myid):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        #                1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
@@ -106,7 +103,7 @@ class SimJudge: # new function: myeval
 
     def dpEval1(self, myid):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        #                1,  2,   3, 4,  5,   6,   7,  8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
