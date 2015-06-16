@@ -168,7 +168,7 @@ class Bloody99:
                     self.judge.setDead(self.judge.current_player)
                     self.judge.changeNextPlayer()
                     continue
-                state = PlayerState(self.judge.history, self.judge._possibleActions_, self.judge.card[self.judge.current_player-1], len(self.judge.card[0]), len(self.judge.card[1]), len(self.judge.card[2]), len(self.judge.card[3]), len(self.judge.mountain), self.judge.point, self.judge.clock_wise) #get playerstate
+                state = PlayerState(self.judge.history, self.judge._possibleActions_, self.judge.card[self.judge.current_player-1], len(self.judge.card[0]), len(self.judge.card[1]), len(self.judge.card[2]), len(self.judge.card[3]), len(self.judge.mountain), self.judge.point, self.judge.clock_wise, self.judge.small_h[self.judge.current_player-1]) #get playerstate
                 
                 if self.judge.player[self.judge.current_player-1].__class__.__name__ == "HumanAgent":
                     click = True
