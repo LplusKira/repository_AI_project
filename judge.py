@@ -21,7 +21,7 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-#from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
+from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
 from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
@@ -45,14 +45,12 @@ class Judge:
             #players.append(MonteAgent(1))
             players.append(ScoutAgent(1))
             #players.append(ScoutAgent(2))
-            
-            #players.append(RandomAgent(2))
+            #players.append(CardNumberHeuristicAgent(1))
+            players.append(RandomAgent(2))
             #players.append(RandomAgent(3))
             #players.append(RandomAgent(4))
-            players.append(RandomAgent(2))
             players.append(RandomAgent(3))
             players.append(RandomAgent(4))
-
             #players.append(HeuristicAgent(2))
             #players.append(ScoutAgent(3))
             #players.append(HeuristicAgent(4))
@@ -379,10 +377,10 @@ class Judge:
         random.shuffle(av)
         return av
 
-    def checkRule(self, a):
+    def checkRule(self, a):                
         if a.user != self.current_player:
             return False
-        for c in a.cards_used:
+        for c in a.cards_used:           
             for i in range(4):
                 if i == a.user-1:
                     if c not in self.card[i]:
@@ -392,11 +390,18 @@ class Judge:
             if c in self.mountain:
                 return False
         cardValue = 0
+        cards = 0
         iszero = False
         for i in range(len(a.cards_used)):
             cardValue += a.cards_used[i]
+            if a.cards_used[i] % 13 != 0:            
+                cards += a.cards_used[i] % 13
+            else:
+                cards += 13
             if(a.cards_used[i] == 1):#space one
                 iszero = True
+        if cards > 13:
+            return False
         if iszero and cardValue == 1:
             return True
 
