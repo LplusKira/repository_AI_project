@@ -22,7 +22,6 @@ class Agent: # todo:how to remove this
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(11126)
       self.evalName = 'dpeval1'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0
@@ -374,16 +373,19 @@ class AllMaxHeuristicAgent(ScoutAgent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
       self.evalName = 'dpevalall'
-
+      self.knownCard = [list() for i in range(4)]
+      self.lasti = 0
+      
    def genmove(self, state):
       self.state = state
       a = self.scoutGenmove(state)
       return a
 
-   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 1):
+   def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 1):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
+      self.getKnownCards(state)
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
@@ -392,24 +394,27 @@ class AllMaxHeuristicAgent(ScoutAgent):
          beta = [INF]*4
          alpha[self.i-1] = INF
          beta[self.i-1] = -INF
-         score = self.maxSearch(self.judge, alpha, beta, depth, 0)
+         score = self.allmaxSearch(self.judge, alpha, beta, depth, 0)
       maxscore = [INF]*4
-      for k,v in self.avgScore.iteritems():
+      '''for k,v in self.avgScore.iteritems():
          print str(v[0]) + "\t" + str(v[1])
          if checkscore(v[1], maxscore, self.i):
             maxscore = v[1]
             self.bestmove = v[0]
-            print "better score!"
+            print "better score!"'''
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       wait_input()
       #if self.bestmove not in state.myCard.moves:
        #  print "abgenmove: no this move"
         # exit()
+      self.lasti = len(state.board.record)
       return self.bestmove #todo:
    
-   def maxSearch(self, s, alpha, beta, depth, nowdepth):
+   def allmaxSearch(self, s, alpha, beta, depth, nowdepth):
       if depth == 0 or s.checkLose():
+         #s.printBoard()
+         #print "score = %d" % getRelativeScore(s.myEval(), self.i)
          return s.myEval()
       if nowdepth == 0:
          moves = self.state.myCard.moves
@@ -422,31 +427,32 @@ class AllMaxHeuristicAgent(ScoutAgent):
       if len(moves) > 0:
          news = copy.deepcopy(s)
          news.doAction(moves[0])
-         score = self.maxSearch(news, al, be, depth-1, nowdepth+1)[:]
+         score = self.allmaxSearch(news, al, be, depth-1, nowdepth+1)[:]
          m = m if checkscore(m, score, s.current_player) else score[:]
-         print "update m" + str(m)
+         #print "update m" + str(m)
       for a in moves:
          news = copy.deepcopy(s)
          news.doAction(a)
          nullm1 = m[:]; nullm2 = m[:]; nullm2[s.current_player-1] += 1
          
-         tmp = self.maxSearch(news,nullm1,nullm2,depth-1,nowdepth+1)[:]
+         tmp = self.allmaxSearch(news,nullm1,nullm2,depth-1,nowdepth+1)[:]
 
          if checkscore(tmp, m, s.current_player): #todo:check
             if depth < 3 or checkscore(tmp,beta, s.current_player):
                m = tmp[:]
             else:
                t = tmp[:]
-               m = self.maxSearch(news,t,be,depth-1,nowdepth+1)[:]
+               m = self.allmaxSearch(news,t,be,depth-1,nowdepth+1)[:]
             if nowdepth == 0:
                self.bestmove = a
                if str(a) in self.avgScore:
                   self.avgScore[str(a)][1] += m[:]
                else:
                   self.avgScore[str(a)] = [a, m[:]]
-               print "move = " + str(a) + " score = " + str(self.avgScore[str(a)][1])
-         elif nowdepth == 0:
-            print "move = " + str(a)
+               #print "move = " + str(a) + " score = " + str(getRelativeScore(self.avgScore[str(a)][1], self.i))
+#elif nowdepth == 0:
+            #print "move = " + str(a)
+
       return m
 
       

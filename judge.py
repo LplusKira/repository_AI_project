@@ -11,7 +11,6 @@ _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
 _TestGameNum_ = 2000
-_LuckySeed_ = 21126
 
 import random
 import time
@@ -21,7 +20,7 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
+#from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
 from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
@@ -42,18 +41,21 @@ class Judge:
         '''
         if playerList is None:
             players = list()
-            #players.append(MonteAgent(1))
+            #players.append(HumanAgent(1))
             players.append(ScoutAgent(1))
             #players.append(ScoutAgent(2))
-            #players.append(CardNumberHeuristicAgent(1))
-            players.append(RandomAgent(2))
-            #players.append(RandomAgent(3))
-            #players.append(RandomAgent(4))
-
-            players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
-            #players.append(HeuristicAgent(2))
+            players.append(HeuristicAgent(2))
+            players.append(ScoutAgent(3))
+            players.append(HeuristicAgent(4))
+            #players.append(RandomAgent(2))
+            #players.append(ScoutAgent(2))
             #players.append(ScoutAgent(3))
+            #players.append(ScoutAgent(4))
+            #players.append(RandomAgent(3))
+            #layers.append(RandomAgent(4))
+
+            #players.append(HeuristicAgent(2))
+            
             #players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
@@ -378,10 +380,10 @@ class Judge:
         random.shuffle(av)
         return av
 
-    def checkRule(self, a):                
+    def checkRule(self, a):
         if a.user != self.current_player:
             return False
-        for c in a.cards_used:           
+        for c in a.cards_used:
             for i in range(4):
                 if i == a.user-1:
                     if c not in self.card[i]:
@@ -391,18 +393,11 @@ class Judge:
             if c in self.mountain:
                 return False
         cardValue = 0
-        cards = 0
         iszero = False
         for i in range(len(a.cards_used)):
             cardValue += a.cards_used[i]
-            if a.cards_used[i] % 13 != 0:            
-                cards += a.cards_used[i] % 13
-            else:
-                cards += 13
             if(a.cards_used[i] == 1):#space one
                 iszero = True
-        if cards > 13:
-            return False
         if iszero and cardValue == 1:
             return True
 
@@ -442,7 +437,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(11126)
+    random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
