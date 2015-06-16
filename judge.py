@@ -22,7 +22,7 @@ from action import *
 from ab_agent import PlayerState
 #from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
-from scoutagent import ScoutAgent
+from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -32,10 +32,6 @@ class PossibleCombination:
 iter_num = 1
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
-        seednum = (time.time()*iter_num) % 1000000000
-        random.seed(seednum)
-        global iter_num
-        iter_num += 1
         '''
         when seed == 1
         North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
@@ -46,15 +42,19 @@ class Judge:
         if playerList is None:
             players = list()
             #players.append(MonteAgent(1))
-            players.append(ScoutAgent(1))
-            #players.append(HumanAgent(1))
+            players.append(HumanAgent(1))
+            #players.append(ScoutAgent(2))
             
-            players.append(RandomAgent(2))
-            players.append(RandomAgent(3))
-            players.append(RandomAgent(4))
+            #players.append(RandomAgent(2))
+            #players.append(RandomAgent(3))
+            #players.append(RandomAgent(4))
+            players.append(ScoutAgent(2))
+            players.append(ScoutAgent(3))
+            players.append(HumanAgent(4))
+
             #players.append(HeuristicAgent(2))
             #players.append(ScoutAgent(3))
-            #players.append(HeuristicAgent(4))
+            players.append(HeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -105,10 +105,11 @@ class Judge:
                 self.changeNextPlayer()
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
-            
             #   TODO: call up the current player to generate move
-
-            a = self.player[self.current_player-1].genmove(state)
+            if self.current_player == 1:
+                a = self.player[self.current_player-1].genmove(state)
+            else:
+                a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
             self.doAction(a)
@@ -214,6 +215,9 @@ class Judge:
         if not self.checkRule(a):
             print "illegal move"
             exit()
+
+        self.history.append(a)
+            
         isZero = False
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
@@ -252,13 +256,13 @@ class Judge:
         elif actual_card % 13 == 7: #   else if the action is 7, 9
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
-            
             #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
-            self.card[a.victim - 1].pop(pick)
-            self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
-            new_action = Action(a.user - 1, self.card[a.victim - 1], 7)
+            take_card = [self.card[a.victim-1][pick]]
+            self.card[a.victim - 1].pop(pick)            
+            #self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
+            new_action = Action(a.user, take_card,  (len(self.history)-1)*10+7)
             self.Push_small_h(new_action, a.victim - 1)
-            self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
+            #self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
         elif actual_card % 13 == 9:
             temp = list()
             for i in range(0, len(self.card[a.user - 1]), 1):
@@ -272,13 +276,13 @@ class Judge:
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
             #   TODO: adding small history to the victim and sending him the hsitory
-            new_action = Action(a.user - 1, self.card[a.victim - 1], 9)
+            new_action = Action(a.user, self.card[a.user - 1], (len(self.history)-1)*10+9) # i want other player's card...
             self.Push_small_h(new_action, a.victim - 1)
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
         #   TODO: pop mountain, assign the card to current user
-        self.history.append(a)
+
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
                 self.randMountain()
@@ -292,7 +296,8 @@ class Judge:
         for i in range(self.playerNum):
             if len(self.card[i]) == 0 and not self.isDead[i]:
                 self.setDead(i+1) # id
-        self.changeNextPlayer()
+        if actual_card % 13 != 5:
+            self.changeNextPlayer()
 
     def setDead(self, playerid):
         self.isDead[playerid-1] = True
@@ -433,7 +438,7 @@ if __name__ == "__main__" :
     random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
-    parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt")
+    parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
     args = parser.parse_args()
 
     f = open(args.file, "w")#clear
