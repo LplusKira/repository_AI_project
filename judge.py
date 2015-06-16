@@ -49,6 +49,7 @@ class Judge:
             players.append(RandomAgent(2))
             #players.append(RandomAgent(3))
             #players.append(RandomAgent(4))
+
             players.append(RandomAgent(3))
             players.append(RandomAgent(4))
             #players.append(HeuristicAgent(2))
@@ -91,7 +92,7 @@ class Judge:
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
-        #self.printBoard()
+        self.printBoard()
         
         can_I_clean = list()
         for i in range(_TotalPlayerNum_):
@@ -441,7 +442,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(_LuckySeed_)
+    random.seed(11126)
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
