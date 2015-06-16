@@ -6,6 +6,7 @@ from action import getCardsString
 from simJudge import JudgeState
 from simJudge import SimJudge
 INF = 2147483647
+_LuckySeed_ = 21126
 
 def wait_input():
    #raw_input()
@@ -21,7 +22,7 @@ class Agent: # todo:how to remove this
 class ScoutAgent(Agent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(time.time())
+      random.seed(11126)
       self.evalName = 'dpeval1'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0
@@ -108,7 +109,8 @@ class ScoutAgent(Agent):
       knownCard = self.knownCard[:]
       #print "nonusedcard " + getCardsString(nonUsedCard)
       #print "restcard" + getCardsString(restcard)
-      
+
+
       unknownHandCardNum = 0
       for i in range(4):
          if i+1 != self.i:
@@ -152,11 +154,12 @@ class ScoutAgent(Agent):
             #raw_input()
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
-      for k,v in self.avgScore.iteritems():
+      '''for k,v in self.avgScore.iteritems(): # need to preserve previous sequence...
          print str(v[0]) + "\t%d" % (v[1]/replayNum)
          if maxscore < v[1]:
             maxscore = v[1]
-            self.bestmove = v[0]
+            self.bestmove = v[0]'''
+   
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       wait_input()
@@ -192,6 +195,8 @@ class ScoutAgent(Agent):
          #s.printBoard()
          return -INF
       if depth == 0:
+         s.printBoard()
+         print "this board score = " + str(s.myEval(self.i))
          return s.myEval(self.i)
       if nowdepth == 0:
          moves = self.state.myCard.moves
@@ -227,8 +232,13 @@ class ScoutAgent(Agent):
                   m = self.minSearch(news,tmp,beta,depth-1,nowdepth+1)
             if nowdepth == 0:
                self.bestmove = a
+               
          if nowdepth == 0:
             #print "search max move: " + str(a)  + "  score = " + str(m)
+            
+            news.printBoard()
+            print "action = "+ str(a)+ " score = " + str(m)
+
             if str(a) in self.avgScore:
                self.avgScore[str(a)][1] += m
             else:
@@ -341,7 +351,6 @@ class ScoutAgent(Agent):
 class CardNumberHeuristicAgent(ScoutAgent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(time.time())
       self.evalName = 'cardeval'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0
@@ -364,7 +373,6 @@ def getRelativeScore(scores, myid):
 class AllMaxHeuristicAgent(ScoutAgent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(time.time())
       self.evalName = 'dpevalall'
 
    def genmove(self, state):

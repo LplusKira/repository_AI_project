@@ -10,6 +10,7 @@ _MaxPoint_ = 99
 _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
+_emergencyThresh_ = 3
 
 import random
 import time
@@ -60,9 +61,28 @@ class JudgeState:
 
 class SimJudge: # new function: myeval
 
+    def timeEval(self, myid):
+        self.prior_power = [0, 20, 10, 10, 60, 80, -30, 30, -50, 80, 80, 60, 70, 80]
+        #                       1, 2,   3, 4,  5,   6,  7   ,8,  9,  10,  j,  q,  k
+        self.later_power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 70, 80]
+        mycardlen = len(self.card[myid-1])
+        score = 60 * mycardlen
+        nine = 0
+        if mycardlen <= _emergencyThresh_:
+            for card in self.card[myid-1]:
+                if getCardValue(card) == 9:      
+                    nine += 1
+                score = score + self.endpower[getCardValue(card)]
+            if nine > 0:
+                score -= 50*(nine-1)
+        else:
+            for card in self.card[myid-1]:
+                score = score + self.power[getCardValue(card)]
+        return score
+
     def dpEval(self, myid):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        #                1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
@@ -82,8 +102,9 @@ class SimJudge: # new function: myeval
         return score
 
     def dpEval1(self, myid):
+        print "myeval"
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
+        #                1,  2,   3, 4,  5,   6,   7,  8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
         mycardlen = len(self.card[myid-1])
         score = 60 * mycardlen
@@ -93,6 +114,7 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.endpower[getCardValue(card)]
+                print "score add %s = %d" % (getCardString(card), self.endpower[getCardValue(card)])
             if nine > 0:
                 score -= 120*(nine-1)
             if nine == 1 and mycardlen == 1:
@@ -102,6 +124,7 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.power[getCardValue(card)]
+                print "score add %s = %d" % (getCardString(card), self.power[getCardValue(card)])
         return score
 
     def dpEvalAll(self):
