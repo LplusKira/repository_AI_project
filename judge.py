@@ -20,7 +20,7 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-#from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
+from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
 from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
