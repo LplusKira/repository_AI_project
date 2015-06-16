@@ -9,6 +9,7 @@ from action import Action
 # http://blog.ez2learn.com/2008/11/28/play-pygame/
 red = (200,0,0)
 green = (0,200,0)
+blue = (0,0,200)
 white = (255,255,255)
 black = (0, 0, 0)
 block_color = (53,115,255)
@@ -42,7 +43,6 @@ def message_display(screen, text):
 def button(screen, msg,x,y,w,h,ic,ac,action=None):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
-    print(click)
     if x+w > mouse[0] > x and y+h > mouse[1] > y:
         pygame.draw.rect(screen, ac,(x,y,w,h))
 
@@ -175,6 +175,7 @@ class Bloody99:
                     while click:
                         for event in pygame.event.get():
                             if event.type == QUIT:
+                                pygame.quit()
                                 exit()
                             if event.type == MOUSEBUTTONDOWN:
                                 if event.button == 1:
@@ -272,18 +273,38 @@ class Bloody99:
     def display_player1(self):
         for x in range(0, len(self.judge.card[0])):
             self.window.blit(self.num_to_cards(self.judge.card[0][x]), (self.player_card_pos[x][0], self.player_card_pos[x][1]))
+        font = pygame.font.Font(None, 30)
+        if self.judge.current_player == 1:
+            word = "South: " + self.judge.player[0].__class__.__name__ 
+            text = font.render(word, 1, blue)
+            self.window.blit(text, (self.player_card_x,self.player_card_y-50))
 
     def display_player2(self):
         for x in range(0, len(self.judge.card[1])):
             self.window.blit(self.Back_Card90, (self.p2_card_pos[x][0], self.p2_card_pos[x][1]))
+        if self.judge.current_player == 2:
+            font = pygame.font.Font(None, 30)
+            word = "East: " + self.judge.player[1].__class__.__name__ 
+            text = font.render(word, 1, blue)
+            self.window.blit(text, (self.p2_card_x-80, self.p2_card_y-50))
 
     def display_player3(self):
         for x in range(0, len(self.judge.card[2])):
             self.window.blit(self.Back_Card, (self.p3_card_pos[x][0], self.p3_card_pos[x][1]))
+        if self.judge.current_player == 3:
+            font = pygame.font.Font(None, 30)
+            word = "North: " + self.judge.player[2].__class__.__name__ 
+            text = font.render(word, 1, blue)
+            self.window.blit(text, (self.p3_card_x, self.p3_card_y + self.Back_Card90.get_width()))
 
     def display_player4(self):
         for x in range(0, len(self.judge.card[3])):
             self.window.blit(self.Back_Cardn90, (self.p4_card_pos[x][0], self.p4_card_pos[x][1]))
+        if self.judge.current_player == 4:
+            font = pygame.font.Font(None, 30)
+            word = "West: " + self.judge.player[3].__class__.__name__ 
+            text = font.render(word, 1, blue)
+            self.window.blit(text, (self.p4_card_x, self.p4_card_y-50))
 
     def display_desktop(self, cards):
         self.desk_card_pos = [[0 for x in range(2)] for x in range(len(cards))]
@@ -347,6 +368,7 @@ class Bloody99:
         if cardvalue == 10 or cardvalue == 12:
             button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
             button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
+            pygame.display.update()
             return -1
         return 2
 
