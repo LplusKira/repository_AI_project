@@ -30,9 +30,9 @@ class PlayerState:
       cardNum.append(cardNum3)
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
-      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
+      self.power = [50, 80, 90, 40, 10, 120, 0, 130, 0, 45, 10, 60, 10]
       self.counter = 0
-      #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
+      #             1,  2,  3,   4,  5,  6,   7,  8,   9, 10,  j,  q,   k
       if the_specific_small_h is None:
          self.smallh = None
       else:   
