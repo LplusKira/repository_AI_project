@@ -82,6 +82,7 @@ class SimJudge: # new function: myeval
         return score
 
     def dpEval1(self, myid):
+        print "myeval"
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
         self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
@@ -93,6 +94,7 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.endpower[getCardValue(card)]
+                print "score add %s = %d" % (getCardString(card), self.endpower[getCardValue(card)])
             if nine > 0:
                 score -= 120*(nine-1)
             if nine == 1 and mycardlen == 1:
@@ -102,6 +104,7 @@ class SimJudge: # new function: myeval
                 if getCardValue(card) == 9:      
                     nine += 1
                 score = score + self.power[getCardValue(card)]
+                print "score add %s = %d" % (getCardString(card), self.power[getCardValue(card)])
         return score
 
     def dpEvalAll(self):
