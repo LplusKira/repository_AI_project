@@ -155,7 +155,6 @@ class Bloody99:
             self.judge._possibleActions_ = list()
             self.judge.initBoard()
             self.judge.rand4Cards()
-            #j.printBoard()
             self.fill_background()
             self.resetCardPos()
             self.display_allPlayers()
@@ -164,7 +163,6 @@ class Bloody99:
             while not self.judge.isGameFinished():
                 self.judge._possibleActions_ = self.judge.getAction()
                 if len(self.judge._possibleActions_) == 0:
-                    #print "%d is dead(cannot move). next one." % j.current_player
                     self.judge.setDead(self.judge.current_player)
                     self.judge.changeNextPlayer()
                     continue
@@ -187,10 +185,21 @@ class Bloody99:
                                             cards_used.append(self.judge.card[self.judge.current_player-1][cardIdx])
                                     a = self.judge.player[self.judge.current_player-1].pygameGenmove(self.judge.current_player, cards_used)
                                     a.victim = self.chooseVictim(a)
-                                    if self.judge.checkRule(a) == True and len(cards_used) != 0:
+                                    if self.judge.checkRule(a) == True and len(cards_used) > 0:
                                         click = False
                                         break
+                                    elif self.judge.checkRule(a) == False and len(cards_used) > 0:
+                                        font = pygame.font.Font(None, 40)
+                                        text = font.render("ILLEGAL MOVE!!", 1, white)
+                                        self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y))   
+                                        pygame.display.update()
+                                        continue
                                     else:
+                                        self.fill_background()
+                                        self.resetCardPos()
+                                        self.display_allPlayers()
+                                        self.display_desktop(self.prevCard)
+                                        pygame.display.update()                                        
                                         continue
                 else:                          
                     a = self.judge.player[self.judge.current_player-1].genmove(state)
@@ -206,6 +215,24 @@ class Bloody99:
             for i in range(4):
                 if self.judge.isDead[i] == False:
                     winner = i
+            if winner == 0:
+                s = "South: "
+            elif winner == 1:
+                s = "East: "
+            elif winner == 2:
+                s = "North: "
+            else:
+                s = "West: "
+            if self.judge.player[winner].__class__.__name__ == "HumanAgent":
+                font = pygame.font.Font(None, 40)
+                text = font.render("You Win!", 1, white)
+                self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y/2))   
+                pygame.display.update()
+            else:
+                font = pygame.font.Font(None, 40)
+                text = font.render(s + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
+                self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y/2))   
+                pygame.display.update()
             g = Game(i, self.judge.player, str(winner+1))
             log.logGame(g)
         '''x = (display_width * 0.45)
@@ -354,35 +381,101 @@ class Bloody99:
         pygame.display.update()
 
     def chooseVictim(self, action):
-        # TODO 5 7 9(!= user)  10 12 (-1 -2) click the button then set the action.victim to it.
+        # 5 7 9(!= user)  10 12 (-1 -2) click the button then set the action.victim to it.
         cardvalue = 0
         for card in action.cards_used:
-            cardvalue += card
-        cardvalue = 13 if cardvalue % 13 == 0 else cardvalue % 13
-        if cardvalue == 5 or cardvalue == 7 or cardvalue == 9:
-            button(self.screen, "East",self.p2_card_x, self.p2_card_y, 100, 50, green, bright_green, self.setVictim(2))
-            button(self.screen, "North",self.p3_card_x, self.p3_card_y, 100, 50, green, bright_green, self.setVictim(3))
-            button(self.screen, "West", self.p4_card_x, self.p4_card_y, 100, 50, green, bright_green, self.setVictim(4))
+            if card % 13 != 0:
+                cardvalue += card % 13
+            else:
+                cardvalue += 13
+        if cardvalue > 13 or cardvalue < 1:
+            return 0
+        elif cardvalue == 5:
+            w, h = 100, 50                        
+            if self.judge.isDead[0] == False:
+                button(self.screen, "South",self.player_card_x, self.player_card_y, w, h, green, bright_green)
+            if self.judge.isDead[1] == False:
+                button(self.screen, "East",self.p2_card_x, self.p2_card_y, w, h, green, bright_green)
+            if self.judge.isDead[2] == False:
+                button(self.screen, "North",self.p3_card_x, self.p3_card_y, w, h, green, bright_green)
+            if self.judge.isDead[3] == False:
+                button(self.screen, "West", self.p4_card_x, self.p4_card_y, w, h, green, bright_green)
             pygame.display.update()
-            return 2
-        if cardvalue == 10 or cardvalue == 12:
-            button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
-            button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
+            click = True
+            while click:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        exit()
+                    if event.type == MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            click = False
+                            mousePos = pygame.mouse.get_pos()
+                            if self.judge.isDead[0] == False and self.player_card_x < mousePos[0] < self.player_card_x + w and self.player_card_y < mousePos[1] < self.player_card_y + h:
+                                victim = 1
+                            elif self.judge.isDead[1] == False and self.p2_card_x < mousePos[0] < self.p2_card_x + w and self.p2_card_y < mousePos[1] < self.p2_card_y + h:
+                                victim = 2
+                            elif self.judge.isDead[2] == False and self.p3_card_x < mousePos[0] < self.p3_card_x + w and self.p3_card_y < mousePos[1] < self.p3_card_y + h:
+                                victim = 3
+                            elif self.judge.isDead[3] == False and self.p4_card_x < mousePos[0] < self.p4_card_x + w and self.p4_card_y < mousePos[1] < self.p4_card_y + h:
+                                victim = 4
+                            else:
+                                click = True
             pygame.display.update()
-            return -1
+            return victim
+        elif cardvalue == 7 or cardvalue == 9:
+            w, h = 100, 50            
+            if self.judge.isDead[1] == False:
+                button(self.screen, "East",self.p2_card_x, self.p2_card_y, w, h, green, bright_green)
+            if self.judge.isDead[2] == False:
+                button(self.screen, "North",self.p3_card_x, self.p3_card_y, w, h, green, bright_green)
+            if self.judge.isDead[3] == False:
+                button(self.screen, "West", self.p4_card_x, self.p4_card_y, w, h, green, bright_green)
+            pygame.display.update()
+            click = True
+            while click:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        exit()
+                    if event.type == MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            click = False
+                            mousePos = pygame.mouse.get_pos()
+                            if self.judge.isDead[1] == False and self.p2_card_x < mousePos[0] < self.p2_card_x + w and self.p2_card_y < mousePos[1] < self.p2_card_y + h:
+                                victim = 2
+                            elif self.judge.isDead[2] == False and self.p3_card_x < mousePos[0] < self.p3_card_x + w and self.p3_card_y < mousePos[1] < self.p3_card_y + h:
+                                victim = 3
+                            elif self.judge.isDead[3] == False and self.p4_card_x < mousePos[0] < self.p4_card_x + w and self.p4_card_y < mousePos[1] < self.p4_card_y + h:
+                                victim = 4
+                            else:
+                                click = True
+            pygame.display.update()
+            return victim
+        elif cardvalue == 10 or cardvalue == 12:
+            w, h = 100, 50            
+            value = 10 if cardvalue == 10 else 20
+            button(self.screen, "+"+str(value), SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, red, bright_red)
+            button(self.screen, "-"+str(value), 2*SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, red, bright_red)
+            pygame.display.update()
+            click = True
+            while click:
+                for event in pygame.event.get():
+                    if event.type == QUIT:
+                        pygame.quit()
+                        exit()
+                    if event.type == MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            click = False
+                            mousePos = pygame.mouse.get_pos()
+                            if SCREEN_SIZE[0]/3-w/2 < mousePos[0] < SCREEN_SIZE[0]/3-w/2 + w and SCREEN_SIZE[1]/2 < mousePos[1] < SCREEN_SIZE[1]/2 + h:
+                                victim = -1
+                            elif 2*SCREEN_SIZE[0]/3-w/2 < mousePos[0] < 2*SCREEN_SIZE[0]/3-w/2 + w and SCREEN_SIZE[1]/2 < mousePos[1] < SCREEN_SIZE[1]/2 + h:
+                                victim = -2
+                            else:
+                                click = True
+            return victim
         return 2
-
-    def setVictim(self, victim):
-        # TODO Is this useful?? doing it...
-        return victim
-
-    def doAction(self):
-        # TODO
-        pass
-
-    def showCard(self):#show card after do anything
-        # TODO
-        pass
 
     def initGame(self):
         pygame.init()
@@ -396,20 +489,19 @@ class Bloody99:
         self.screen.fill(white)
 
         largeText = pygame.font.SysFont("comicsansms",115)
-        TextSurf, TextRect = text_objects("Game", largeText)
+        TextSurf, TextRect = text_objects("Bloody 99", largeText)
         TextRect.center = ((display_width/2),(display_height/2))
         self.screen.blit(TextSurf, TextRect)
 
         intro = True
         while intro:
             for event in pygame.event.get():
-                #print(event)
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
             # things need to update
-            button(self.screen, "GO!",150,450,100,50,green,bright_green,self.runGame)
-            button(self.screen, "Quit",550,450,100,50,red,bright_red,quitGame)
+            button(self.screen, "START!",150,450,100,50,green,bright_green,self.runGame)
+            button(self.screen, "QUIT",550,450,100,50,red,bright_red,quitGame)
             pygame.display.update()
             clock.tick(15)
 
