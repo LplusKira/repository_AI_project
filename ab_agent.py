@@ -5,6 +5,7 @@ import copy
 import action
 import operator
 import math
+from action import Action
 
 INF = 2147483647
 _CardNumPerType_ = 13
@@ -293,6 +294,9 @@ class HumanAgent(Agent):
          move = raw_input("The move index value is illegal, try again: ")                   
       print "The move you take is: ", state.myCard.moves[int(move)]
       return state.myCard.moves[int(move)]
+
+   def pygameGenmove(self, idx, cards_used):
+      return Action(idx, cards_used)
    
 
 class MonteAgent(Agent):
