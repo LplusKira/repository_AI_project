@@ -2,6 +2,7 @@ import random
 import time
 import copy
 import action
+from action import getCardsString
 from simJudge import JudgeState
 from simJudge import SimJudge
 INF = 2147483647
@@ -22,6 +23,8 @@ class ScoutAgent(Agent):
       self.i = i
       random.seed(time.time())
       self.evalName = 'dpeval1'
+      self.knownCard = [list() for i in range(4)]
+      self.lasti = 0
       #print "Constructing Alpha-Beta Agent, player id = ", self.i
 
    def genmove(self, state):
@@ -32,14 +35,44 @@ class ScoutAgent(Agent):
    def getKnownCards(self, s):
       restcard = [i+1 for i in range(52)]
       nonUsedCard = [i+1 for i in range(52)]# cards that never showed in this game, always in someone's hand
-      if len(s.smallh) >0:
-         print "smallh"
-         for a in s.smallh:
-            print a
-         print "action history"
-         for a in s.board.record:
-            print a
-         raw_input()
+      nowsmallhindex = 0
+      for i in range(self.lasti, len(s.board.record)):
+         a = s.board.record[i]
+         if a.user == 0: # randmountain
+            break
+         for c in a.cards_used: # remove used cards
+            if c in self.knownCard[a.user-1]:
+               self.knownCard[a.user-1].remove(c)
+         a.getCardValue()
+         if nowsmallhindex < len(s.smallh) and s.smallh[nowsmallhindex].victim/10 == i:
+            smalla = s.smallh[nowsmallhindex]
+            print "smalla" + str(smalla)
+            if smalla.victim%10 == 9:
+               self.knownCard[smalla.user-1] = smalla.cards_used[:]
+            else:
+               self.knownCard[smalla.user-1] += smalla.cards_used[:]
+            nowsmallhindex += 1
+            continue
+         if a.cardValue == 9: # card9 which is not related to me
+            self.knownCard[a.user-1], self.knownCard[a.victim-1] = self.knownCard[a.victim-1], self.knownCard[a.user-1]
+            # it works
+         elif a.cardValue == 7: # card7 which is not related to me
+            self.knownCard[a.victim-1] = []
+            
+         print "knowncards, after " + str(a)
+         for i in range(4):
+            print "player %d" % (i+1)
+            print action.getCardsString(self.knownCard[i])
+      for i in range(4):
+         if s.board.cardNum[i] == 0:
+            self.knownCard[i] = []
+      self.knownCard[self.i-1] = s.myCard.cards[:] # haha
+      if len(s.smallh) > 0:
+         print "knowncards"
+         for i in range(4):
+            print "player %d" % i
+            print action.getCardsString(self.knownCard[i])
+
       for c in s.myCard.cards:
          restcard.remove(c)
          nonUsedCard.remove(c)
@@ -54,51 +87,63 @@ class ScoutAgent(Agent):
          for c in s.board.record[i].cards_used:
             restcard.remove(c)
             
-
       if lastrand == -1:
          nonUsedCard = []
+      for i in range(4):
+         for c in self.knownCard[i]:
+            if c in restcard: restcard.remove(c)
+            if c in nonUsedCard: nonUsedCard.remove(c)
       for c in nonUsedCard:
          restcard.remove(c)
       random.shuffle(restcard)
-      return nonUsedCard, restcard
-      
+      self.nonUsedCard = nonUsedCard[:]
+      self.restcard = restcard[:]
+
    def fillstate(self, s):    #fill other's card, mountain
-      #nonUsedCard, restcard, fixedcard = self.getKnownCards(s)
-      nonUsedCard, restcard = self.getKnownCards(s)
-      print action.getCardsString(nonUsedCard)
+      nonUsedCard = self.nonUsedCard[:]
+      restcard = self.restcard[:]
+      knownCard = self.knownCard[:]
+      #print "nonusedcard " + getCardsString(nonUsedCard)
+      #print "restcard" + getCardsString(restcard)
+      
       unknownHandCardNum = 0
       for i in range(4):
          if i+1 != self.i:
-            unknownHandCardNum += s.board.cardNum[i]
-      handcard = nonUsedCard
+            unknownHandCardNum += s.board.cardNum[i] - len(knownCard[i])
+      handcard = nonUsedCard[:]
       while len(handcard) < unknownHandCardNum:
          handcard.append(restcard[-1])
          restcard.pop()
       random.shuffle(handcard)
-      mountain = restcard # rest
+      mountain = restcard[:] # rest
       cards = []
+      #print "handcard" + getCardsString(handcard)
       for i in range(4):
          if self.i == i+1:
             cards.append(s.myCard.cards)
          else:
-            playercard = []
-            for j in range(s.board.cardNum[i]):
+            playercard = self.knownCard[i][:]
+            for j in range(s.board.cardNum[i]-len(playercard)):
                playercard.append(handcard[-1])
                handcard.pop()
             cards.append(playercard)
-
+      if len(s.smallh)>0:
+         raw_input
       js = JudgeState(4, None, s.board.record, cards, mountain, s.board.nowPoint, s.board.order, self.i)
       return js
    
-   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 20):
-
+   def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 1):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.avgScore = {}
+      self.getKnownCards(state)
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
          self.judge = SimJudge(js, self.evalName)
+         if len(state.smallh)>0:
+            self.judge.printBoard()
+            #raw_input()
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
       for k,v in self.avgScore.iteritems():
@@ -112,6 +157,7 @@ class ScoutAgent(Agent):
       #if self.bestmove not in state.myCard.moves:
        #  print "abgenmove: no this move"
         # exit()
+      self.lasti = len(state.board.record)
       return self.bestmove #todo:
 
    # todo: remove redundant move from server(4h, 4s...) after getaction()
@@ -310,7 +356,7 @@ def getRelativeScore(scores, myid):
 class AllMaxHeuristicAgent(ScoutAgent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
-      random.seed(1)
+      random.seed(time.time())
       self.evalName = 'dpevalall'
 
    def genmove(self, state):

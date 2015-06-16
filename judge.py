@@ -101,7 +101,7 @@ class Judge:
                 self.changeNextPlayer()
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
-            
+            self.printBoard()
             #   TODO: call up the current player to generate move
             a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
@@ -209,6 +209,9 @@ class Judge:
         if not self.checkRule(a):
             print "illegal move"
             exit()
+
+        self.history.append(a)
+            
         isZero = False
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
@@ -251,7 +254,7 @@ class Judge:
             take_card = [self.card[a.victim-1][pick]]
             self.card[a.victim - 1].pop(pick)            
             #self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
-            new_action = Action(a.user, take_card, 7)
+            new_action = Action(a.user, take_card,  (len(self.history)-1)*10+7)
             self.Push_small_h(new_action, a.victim - 1)
             #self.card[a.victim - 1].pop(len(self.card[a.victim - 1]) - 1)
         elif actual_card % 13 == 9:
@@ -267,13 +270,13 @@ class Judge:
             for i in range(0, len(temp), 1):
                 self.card[a.victim - 1].append(temp[i])
             #   TODO: adding small history to the victim and sending him the hsitory
-            new_action = Action(a.user, self.card[a.user - 1], 9) # i want other player's card...
+            new_action = Action(a.user, self.card[a.user - 1], (len(self.history)-1)*10+9) # i want other player's card...
             self.Push_small_h(new_action, a.victim - 1)
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
         #   TODO: pop mountain, assign the card to current user
-        self.history.append(a)
+
         if not(actual_card % 13 == 7 or actual_card % 13 == 9):
             if len(self.mountain) == 0:#   if mountain is empty, "0 list() 0" will be inserted first
                 self.randMountain()
@@ -426,7 +429,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(1)
+    random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result

@@ -33,9 +33,9 @@ class PlayerState:
       self.counter = 0
       #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
       if the_specific_small_h is None:
-         self.the_specific_small_h = None
+         self.smallh = None
       else:   
-         self.the_specific_small_h = the_specific_small_h
+         self.smallh = the_specific_small_h
 
    def __str__(self):
       return str(self.myCard.moves)
@@ -283,6 +283,7 @@ class HumanAgent(Agent):
       for m in state.myCard.moves:
          moves.append(getMoveString(m) + ",\n")
       print "The card you have: ", s
+      print "other people's cardNum = %d, %d, %d" % (state.board.cardNum[1], state.board.cardNum[2], state.board.cardNum[3])
       print "The legal move you can take: "
       for i in range(0, len(moves)):
          print "move index:", i, moves[i], 

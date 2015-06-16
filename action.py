@@ -5,11 +5,22 @@ class Action:
         self.user = u
         self.cards_used = list(c) #_MaxCombCardNum_
         self.victim = v
+        self.cardValue = 0
+
+    def getCardValue(self):
+        value = 0
+        for card in self.cards_used:
+            v = 13 if (card % 13 == 0) else card % 13
+            value += v
+        self.cardValue = value
 
     def __str__(self):
         return "user id: " + str(self.user) \
              + " card: " + getCardsString(self.cards_used) \
+             + " cardvalue: " + str(self.cardValue) \
              + " victim id: " + str(self.victim)
+
+    
 
 cardType = ['♠ ', '♥ ', '♦ ', '♣ ']
 def getCardsString(l):
