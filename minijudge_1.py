@@ -11,6 +11,7 @@ _cardNum_ = 52
 _MaxActionLength_ = 20
 _MaxComb_ = 32
 
+
 import random
 import time
 import math
@@ -28,22 +29,14 @@ class PossibleCombination:
 
 iter_num = 1
 class MiniJudge:
-    def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
-        '''
-        when seed == 1
-        North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
-        East(id = 2):13♣ , 5♦ , 7♥ , 9♠ , 11♥ , 
-        South(id = 3):8♣ , 11♦ , 9♣ , 13♦ , 10♠ , 
-        West(id = 4):9♥ , 1♣ , 10♥ , 4♥ , 4♣ , 
-        '''
-
+    def __init__(self, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
+        
         players = list()
         players.append(HeuristicAgent(1))
         players.append(HeuristicAgent(2))
         players.append(HeuristicAgent(3))
         players.append(HeuristicAgent(4))
         self.player = players
-
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
@@ -60,65 +53,49 @@ class MiniJudge:
         else:
             self.mountain = m
 
-        self.point = p
-        self.clock_wise = cw
-        self.current_player = cp
-        
-        #   TODO: adding small history for players to remember cards (in case of 9 or 7 is enforced on any player)
         if small_h is None:
             self.small_h = [[] for i in range(_TotalPlayerNum_)]
         else:
             self.small_h = small_h
-        
+        self.point = p
+        self.clock_wise = cw
+        self.current_player = 1
+
         self._possibleActions_ = list()
-        self.winner = 0 # Monte
+        self.winner = 0
         self.initBoard()
         self.rand4Cards()
-        #self.printBoard()
-
-    def GameStart(self):
-
+        self.printBoard()
         
-        can_I_clean = list()
-        for i in range(_TotalPlayerNum_):
-            can_I_clean.append(0)
+    def GameStart(self):
 
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
+                print "%d is dead(cannot move). next one." % self.current_player
                 self.setDead(self.current_player)
                 self.changeNextPlayer()
                 continue
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
-            #   TODO: call up the current player to generate move
-            if self.current_player == 1:
-                a = self.player[self.current_player-1].genmove(state)
-            else:
-                a = self.player[self.current_player-1].genmove(state)
-            #   TODO: clean current player's small history
-            self.Empty_small_h(self.current_player-1)
-            try:
-                self.doAction(a)
-            except:
-                return 0
-
-
-        self.winner = 0
+            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h)
+            a = self.player[self.current_player-1].genmove(state)
+            self.doAction(a)
         for i in range(4):
             if self.isDead[i] == False:
                 self.winner = i
         return self.winner
 
+
     def rand4Cards(self):
         original_cards = list()
-        for i in range(_cardNum_):
+        random.seed(time.clock())
+    	for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
                 pick = random.randint(0,1024) % len(original_cards)
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
-        #   TODO:   set mountain
+        #	TODO:	set mountain
         for i in range(len(original_cards)):
             pick = random.randint(0, 1024) % len(original_cards)
             self.mountain.append(original_cards[pick])
@@ -146,15 +123,6 @@ class MiniJudge:
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
-        """
-        # check mountain is correct or not
-        for c in self.mountain:
-            for i in range(4):
-                if c in self.card[i]:
-                    print "illegal randmountain"
-                    exit()
-        """
-
     def initBoard(self):
         self.current_player = 1
         self.clock_wise = 1 #1 and -1
@@ -178,28 +146,11 @@ class MiniJudge:
             + "South(id = 3):" + (getCardsString(self.card[2])) + "\n"\
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
-    def Empty_small_h(self, which_player):
-        while len(self.small_h[which_player]) > 0:
-            self.small_h[which_player].pop()
-
-    def Push_small_h(self, new_action, victim):
-        #for card in range(len(residual_card)):
-        #    new_action.cards_used.append(residual_card[card]) 
-        self.small_h[victim].append(new_action)
-        """if victim == 0:
-                                    print "==========in judge========"
-                                    print "victim == " + str(victim)
-                                    for i in range(len(self.small_h[victim])):
-                                        print "usr == " + str(self.small_h[victim][i].user) + ", cards == "
-                                        for j in range(len(self.small_h[victim][i].cards_used)):
-                                            print  self.small_h[victim][i].cards_used[j]
-                                        print "operation == " + str(self.small_h[victim][i].victim)
-                                    #time.sleep(1)
-                                    print "========end judge========"
-        """
-
     def doAction(self, a):
         #   TODO: add effect by the returning action a
+        if not self.checkRule(a):
+            print "illegal move"
+            exit()
 
         self.history.append(a)
             
@@ -239,6 +190,7 @@ class MiniJudge:
         elif actual_card % 13 == 0:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
+            pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
             take_card = [self.card[a.victim-1][pick]]
@@ -298,7 +250,7 @@ class MiniJudge:
         self.current_player %= self.playerNum
         if self.current_player == 0:
             self.current_player += self.playerNum
-        #print "next player is %d" % self.current_player
+        print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
         card = self.card[self.current_player-1]
@@ -361,7 +313,7 @@ class MiniJudge:
                     av.append(a)
         random.shuffle(av)
         return av
-
+        
     def checkRule(self, a):                
         if a.user != self.current_player:
             return False
@@ -426,17 +378,13 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    parser = argparse.ArgumentParser(description='Bloody99 judge')
-    parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
-    parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
-    args = parser.parse_args()
-
-    f = open(args.file, "w")#clear
-    f.close()
-    
-    i = 1 # no iterate? # i dont know
-    log = logger(args.file)
-    for k in range(args.p):
+    if len(sys.argv) == 2: # usage: judge.py [gamenum]
+        totalgamenum = int(sys.argv[1]) # [0] is scriptname
+    else:
+        totalgamenum = 100
+    i = 1 # no iterate?
+    log = logger() 
+    for k in range(totalgamenum):
         j = Judge()
         players, winner = j.GameStart()
         g = Game(i, players, winner)

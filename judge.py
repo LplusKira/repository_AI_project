@@ -41,22 +41,19 @@ class Judge:
         '''
         if playerList is None:
             players = list()
+            #players.append(MonteAgent(1))
+            #players.append(ScoutAgent(1))
+            #players.append(ScoutAgent(2))
+            #players.append(CardNumberHeuristicAgent(1))
             #players.append(HumanAgent(1))
-            players.append(ScoutAgent(1))
-            #players.append(ScoutAgent(2))
-            players.append(HeuristicAgent(2))
-            players.append(ScoutAgent(3))
-            players.append(HeuristicAgent(4))
-            #players.append(RandomAgent(2))
-            #players.append(ScoutAgent(2))
-            #players.append(ScoutAgent(3))
-            #players.append(ScoutAgent(4))
-            #players.append(RandomAgent(3))
-            #layers.append(RandomAgent(4))
+            players.append(RandomAgent(1))
 
+            players.append(RandomAgent(2))
+            players.append(RandomAgent(3))
             #players.append(HeuristicAgent(2))
-            
-            #players.append(HeuristicAgent(4))
+            #players.append(HeuristicAgent(3))
+            #players.append(ScoutAgent(3))
+            players.append(AllMaxHeuristicAgent(4))
             self.player = players
         else: # specify agents
             self.player = playerList

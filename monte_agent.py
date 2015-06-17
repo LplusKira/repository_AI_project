@@ -4,8 +4,15 @@ import time
 import copy
 import action
 import operator
+import math
 from minijudge import MiniJudge
+
 INF = 2147483647
+_CardNumPerType_ = 13
+_Ordery_ = [10, 11,  9, 4,  3, 12, 1,  13,  5,  8,  6,  7,  2]
+_UpperBd_ = 100
+_HotThresh_ = 10
+_Step_ = 2
 
 class Agent:
    def __init__(self, index = 0):
@@ -15,7 +22,7 @@ class Agent:
       pass
 
 class PlayerState:
-   def __init__(self, history, leg, card, cardNum1, cardNum2, cardNum3, cardNum4, mountNum, point, order):
+   def __init__(self, history, leg, card, cardNum1, cardNum2, cardNum3, cardNum4, mountNum, point, order, the_specific_small_h):
       self.myCard = MyCard(leg, card)# var card non exist
       cardNum = list()
       cardNum.append(cardNum1)
@@ -23,8 +30,13 @@ class PlayerState:
       cardNum.append(cardNum3)
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
-      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100 ]
+      self.power = [30, 30, 20, 70, 80, 0, 150, 0, 50, 80, 60, 80, 100]
+      self.counter = 0
       #             1, 2,   3, 4,  5,   6, 7,   8, 9, 10, j, q, k
+      if the_specific_small_h is None:
+         self.smallh = None
+      else:   
+         self.smallh = the_specific_small_h
 
    def __str__(self):
       return str(self.myCard.moves)
@@ -91,7 +103,8 @@ class MonteAgent(Agent):
    """
    def __init__(self, i = 0):
       self.i = i
-      print "Constructing Montecaro Agent, id = ", self.i
+      self.count = 0
+      ##print "Constructing Montecaro Agent, id = ", self.i
 
    def genmove(self, state):
       # In any circumstance, when unknown_cards < 17, use monte carlo algorithm
@@ -104,20 +117,23 @@ class MonteAgent(Agent):
    
    def monteGenmove(self, state):
       # Find the unknown cards
-      print "========================================================================"
       win_rate = {}
       fullCard = self.fullCard()
       temp = self.usedCard(state)
       usedCard = []
+
       for i in temp:
          for j in i:
             usedCard.append(j)
       usedCard.extend(state.myCard.cards)
+      self.count = self.count + 1
       cards_unknown = [i for i in fullCard if i not in usedCard]
-
+      print "===============================SIMULATION START", self.count, "========================================="
       for candidate in state.myCard.moves:
+
          win_point = 0
-         for i in range(0, 1067):
+         for i in range(0, 400):
+            print "===============================QQQQQQQQQQQQQQQQQQ", i, "========================================="
             cards_1 = state.myCard.cards
 
             # Shuffle and deal cards
@@ -130,7 +146,7 @@ class MonteAgent(Agent):
             cards_4 = cards_unknown[dummy : dummy + state.board.cardNum[3]]
             dummy += state.board.cardNum[3]
             mountain = cards_unknown[dummy:]
-            
+
             # Play under certain condition
             # Build a simulation judge (mc_judge)
             mc_judge = MiniJudge()
@@ -138,30 +154,37 @@ class MonteAgent(Agent):
             mc_judge.point = state.board.nowPoint
             mc_judge.clock_wise = state.board.order
             mc_judge.history = state.board.record
+            mc_judge.smallh = state.smallh
+
             # write in the card distribution above
             mc_judge.card = []
             for i in [cards_1, cards_2, cards_3, cards_4]:
                hand = []
                for j in i:
                   hand.append(j)
-               mc_judge.card.append(hand) 
-            print mc_judge.card
+               mc_judge.card.append(hand)
+            #print "mc_judge.card", mc_judge.card
+
             #做出已經出完candidate牌的樣子?
-            mc_judge.doAction(candidate)      
+            #mc_judge.printBoard()
+            try:
+               mc_judge.doAction(candidate)
+            except:
+               win_point = win_point + 1
+               break
+            #print "==================DONE========================"
 
             # (Player1在模擬局中，出candidate，之後讓mc_judge自己跑ab_agent跑完全程，回傳輸贏）???
             winner = mc_judge.GameStart()
-            print "++++++++++++++++++++++++++++ SIMULATION END ++++++++++++++++++++++++++++++++"
-            #print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", winner
+            #print "++++++++++++++++++++++++++++ SIMULATION END ++++++++++++++++++++++++++++++++"
+            ##print "++++++++++++++++++++++++++++ WINNER ++++++++++++++++++++++++++++++++", winner
             if winner == 0: 
                win_point = win_point + 1
-               #print "++++++++++++++++++WIN POINT COUNT+++++++++++++++++++++++++", win_point
+               ##print "++++++++++++++++++WIN POINT COUNT+++++++++++++++++++++++++", win_point
             else:
                pass
          # find the win rate of a certain candidate, append it
          win_rate.update({candidate : win_point})
-      temp__A.append(str(win_rate))
-      print "++++++++++++++++++++++++ temp__A +++++++++++++++++++++++++++++", str(temp__A)
       decided_card = max(win_rate.iteritems(), key=operator.itemgetter(1))[0]
       return decided_card
 
@@ -183,20 +206,26 @@ class MonteAgent(Agent):
       if len(state.myCard.cards) == 1 or len(state.myCard.moves) == 1:
          return move
       if len(state.myCard.cards) == 2:
-         p = 0
-         for a in state.myCard.moves:
+         for a in range(0, len(state.myCard.moves)):
             m = 0
-            for c in a.cards_used:
+            for c in state.myCard.moves[a].cards_used:
                m = m + getCardValue(c)
-            if len(a.cards_used) == 2:
-               if m == 9:
-                  return a
-               else:
+            if len(state.myCard.moves[a].cards_used) == 2:
+               if m != 9:
                   continue
-            power = state.power[m-1]
-            if power > p:
-               p = power
-               move = a
+               else:
+                  movelist = [state.myCard.moves[a]]
+                  while a < len(state.myCard.moves)-1:
+                     a += 1
+                     n = 0
+                     for j in state.myCard.moves[a].cards_used:
+                        n = n + getCardValue(j)
+                     if n != 9:                       
+                        return state.myCard.moves[a-1]
+                     else:
+                        movelist.append(state.myCard.moves[a])
+                  return self.chooseMaxCard(state, movelist)
+                  #return random.choice(movelist)
       if len(state.myCard.cards) == 3:
          move = self.pickBest(state)
       if len(state.myCard.cards) > 3:         
@@ -208,13 +237,38 @@ class MonteAgent(Agent):
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
          move = self.pickBest(state)
+      #print "+++++++++++++++++++++++", move
+      move = self.pickBest(state)
       return move
+
+   def chooseMaxCard(self, state, movelist):
+      """ return the most-hand-card victim move"""
+      cardList = list(state.board.cardNum)
+      cardNumList = list(state.board.cardNum)
+      cardNumList.sort()      
+      cardNumList.reverse()
+      victim = list()
+      for c in range(0, len(cardNumList)):
+         victim.append(cardList.index(cardNumList[c]))
+         cardList.remove(cardNumList[c])
+      move = list()
+      for i in range(0, len(victim)):
+         if move == []:
+            for m in movelist:
+               if ((m.victim-1) == victim[i]):
+                  move.append(m)
+            if len(move) > 0:
+               break
+      if len(move) == 0:
+         move = movelist
+      return random.choice(move)
 
    def pickBest(self, state):
    # choose 1-card action only, by the card-power in class PlayerState
       p = 0
+      best = list()
       for a in state.myCard.moves:
-         best = a
+         best.append(a)         
          if len(a.cards_used) > 1:
             continue
          m = 0
@@ -222,9 +276,12 @@ class MonteAgent(Agent):
             m = m + getCardValue(c)
          power = state.power[m-1]
          if power > p:
+            best[:] = []
             p = power
-            best = a         
-      return best
+            best.append(a)
+         if power == p:
+            best.append(a)
+      return random.choice(best)
 
 def randomGenmove(state):
    a = len(state.myCard.moves)
@@ -252,6 +309,3 @@ if __name__ == "__main__":
    state2 = PlayerState(record, act,[4, 8], 3, 4, 0, 2, 33, 99, 1)
    b = human.genmove(state)
    c = heu.genmove(state2)
-   print c
-   #print "Simple agent's action " + ai.genmove(state)
-   #print "Human player's action ", human.genmove(state2)

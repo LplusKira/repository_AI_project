@@ -191,7 +191,7 @@ class Bloody99:
                                     elif self.judge.checkRule(a) == False and len(cards_used) > 0:
                                         font = pygame.font.Font(None, 40)
                                         text = font.render("ILLEGAL MOVE!!", 1, white)
-                                        self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y))   
+                                        self.window.blit(text, (self.desk_mid_x*2/3+20, self.desk_mid_y-50))   
                                         pygame.display.update()
                                         continue
                                     else:
@@ -226,12 +226,12 @@ class Bloody99:
             if self.judge.player[winner].__class__.__name__ == "HumanAgent":
                 font = pygame.font.Font(None, 40)
                 text = font.render("You Win!", 1, white)
-                self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y/2))   
+                self.window.blit(text, (self.desk_mid_x - 20, self.desk_mid_y/2+50))   
                 pygame.display.update()
             else:
                 font = pygame.font.Font(None, 40)
                 text = font.render(s + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
-                self.window.blit(text, (self.desk_mid_x*2/3, self.desk_mid_y/2))   
+                self.window.blit(text, (self.desk_mid_x*2/3-50, self.desk_mid_y/2+50))   
                 pygame.display.update()
             g = Game(i, self.judge.player, str(winner+1))
             log.logGame(g)
