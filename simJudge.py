@@ -163,6 +163,7 @@ class SimJudge: # new function: myeval
                 for card in self.card[myid]:
                     if getCardValue(card) == 9:      
                         nine += 1
+                    
                     score = score + self.power[getCardValue(card)]
                     #for i in range(4):
                     #score -= 60*(len(self.card[i]) - mycardlen)
@@ -415,19 +416,6 @@ class SimJudge: # new function: myeval
         card = copy.deepcopy(self.card[self.current_player-1])
         #remove the same value card
         #print card
-        '''valuelist = []
-        newcard = []
-        for c in card:
-            if c == 1:
-                newcard.append(1)
-            elif c%13 not in valuelist:
-                valuelist.append(c%13)
-                newcard.append(c)
-        #print "valuelist" + str(valuelist)
-                #print "newcard" + getCardsString(newcard)
-                #print getCardsString(self.card[self.current_player-1])
-        card = newcard'''
-
         isuse = [False]*len(card)
         av = list()
         a_template = Action(self.current_player)
@@ -486,7 +474,18 @@ class SimJudge: # new function: myeval
                     a.victim = 0
                     av.append(a)
                     #random.shuffle(av)
-        return av
+
+        # remove the same action
+        newav = []
+        actionattr = []
+        for a in av:
+            cardset = [getCardValue(c) for c in a.cards_used]
+            cardset.sort()
+            attr = [a.user, a.victim, cardset]
+            if attr not in actionattr:
+                actionattr.append(attr)
+                newav.append(a)
+        return newav
 
 def nextbool(vb, n):
     nowv = 0

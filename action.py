@@ -31,5 +31,8 @@ def getCardsString(l):
 def getCardString(cardIndex):
     cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
     return str(cardvalue) + cardType[(cardIndex-1)/13]
+def getCardValue(cardIndex):
+   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   return cardvalue
 
 

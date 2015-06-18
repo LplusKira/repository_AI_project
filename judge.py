@@ -46,14 +46,15 @@ class Judge:
             #players.append(ScoutAgent(2))
             #players.append(CardNumberHeuristicAgent(1))
             #players.append(HumanAgent(1))
-            players.append(RandomAgent(1))
-
+            players.append(AllMaxHeuristicAgent(1))
             players.append(RandomAgent(2))
+
             players.append(RandomAgent(3))
+            players.append(RandomAgent(4))
             #players.append(HeuristicAgent(2))
             #players.append(HeuristicAgent(3))
             #players.append(ScoutAgent(3))
-            players.append(AllMaxHeuristicAgent(4))
+
             self.player = players
         else: # specify agents
             self.player = playerList
@@ -374,8 +375,23 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-        random.shuffle(av)
-        return av
+        #random.shuffle(av)
+        '''print "actions before pruning"
+        for a in av:
+            print a'''
+        newav = []
+        actionattr = []
+        for a in av:
+            cardset = [getCardValue(c) for c in a.cards_used]
+            cardset.sort()
+            attr = [a.user, a.victim, cardset]
+            if attr not in actionattr:
+                actionattr.append(attr)
+                newav.append(a)
+        '''print "actions after pruning"
+        for a in newav:
+            print a'''
+        return newav
 
     def checkRule(self, a):
         if a.user != self.current_player:
@@ -434,7 +450,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(time.time())
+    random.seed(1234)
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
