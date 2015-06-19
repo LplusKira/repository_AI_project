@@ -30,7 +30,17 @@ class PlayerState:
       cardNum.append(cardNum3)
       cardNum.append(cardNum4)
       self.board = Board(history, mountNum, point, order, cardNum)
-      self.power = [50, 80, 90, 40, 10, 120, 0, 130, 0, 45, 10, 60, 10]
+      #self.power = [50, 80, 90, 40, 10, 120, 100, 130, 0, 45, 10, 60, 85] #.263
+      #self.power = [50, 80, 90, 40, 10, 120, 150, 130, 0, 45, 10, 60, 70] #.255
+      #self.power = [50, 80, 90, 40, 10, 130, 200, 140, 0, 45, 150, 160, 170] #.272 
+      #self.power = [50, 80, 90, 40, 10, 130, 200, 140, 210, 45, 150, 160, 170] #.245
+      #self.power = [50, 80, 90, 40, 10, 130, 200, 140, 0, 145, 150, 160, 170] #.258
+      self.power = [50, 80, 90, 40, 10, 130, 200, 140, 70, 145, 150, 160, 170] #.279 V
+      #self.power = [50, 80, 90, 40, 10, 130, 200, 140, 270, 145, 150, 160, 170] #.241
+      #self.power = [40, 50, 60, 30, 10, 130, 200, 140, 70, 145, 150, 160, 170] #.249
+      #self.power = [40, 50, 60, 70, 80, 110, 200, 120, 130, 140, 150, 160, 170] #.232
+      #self.power = [40, 50, 60, 70, 80, 100, 110, 120, 70, 140, 150, 160, 170] #.268
+      #self.power = [40, 50, 60, 70, 80, 100, 130, 120, 90, 140, 150, 160, 170] #.267
       self.counter = 0
       #             1,  2,  3,   4,  5,  6,   7,  8,   9, 10,  j,  q,   k
       if the_specific_small_h is None:
@@ -420,18 +430,33 @@ class HeuristicAgent(Agent):
                         movelist.append(state.myCard.moves[a])
                   return self.chooseMaxCard(state, movelist)
                   #return random.choice(movelist)
+      movelist = list()
       if len(state.myCard.cards) == 3:
+         for a in state.myCard.moves:
+            m = 0
+            for c in a.cards_used:
+               m = m + getCardValue(c)
+            handCards = len(state.myCard.cards) - len(a.cards_used) + 1
+            if handCards < 3 and m == 9:
+               movelist.append(a)
          move = self.pickBest(state)
+      movelist2 = list()
       if len(state.myCard.cards) > 3:         
          for a in state.myCard.moves:
             m = 0
             for c in a.cards_used:
                m = m + getCardValue(c)
-            handCards = len(state.myCard.cards) - len(a.cards_used)
-            if handCards == 3 and m != 9: # try to reduce cards to 3
-               return a            
+            handCards = len(state.myCard.cards) - len(a.cards_used) + 1
+            if handCards < 4 and m == 9:
+               movelist.append(a)
+            if handCards == 4 and m != 9: # try to reduce cards to 4
+               movelist2.append(a)
          move = self.pickBest(state)
       print "+++++++++++++++++++++++", move
+      if len(movelist) > 0:
+          return self.chooseMaxCard(state, movelist)
+      if len(movelist2) > 0:
+          return random.choice(movelist2)
       move = self.pickBest(state)
       return move
 
