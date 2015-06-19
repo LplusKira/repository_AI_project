@@ -323,10 +323,7 @@ class SimJudge: # new function: myeval
             + "West(id = 4):" + (getCardsString(self.card[3])) 
 
     def doAction(self, a):
-        #   TODO: add effect by the returning action a
-        #if not self.checkRule(a):
-         #   print "simjudge:illegal move"
-          #  exit()
+        # do not checkrule
         isZero = False
         if len(a.cards_used) == 1:
             actual_card = a.cards_used[0] % 13
@@ -352,37 +349,31 @@ class SimJudge: # new function: myeval
                 self.point -= 10           
         elif isZero:    #   else if the action is Spade 1 or 4, 5, 11, 13 
             self.point = 0
-        elif actual_card % 13 == 4:
+        elif actual_card == 4:
             self.clock_wise *= -1
-        elif actual_card % 13 == 5:
+        elif actual_card == 5:
             self.current_player = a.victim
-        elif actual_card % 13 == 11:
+        elif actual_card == 11:
             pass
-        elif actual_card % 13 == 0:
+        elif actual_card == 13:
             self.point = _MaxPoint_
-        elif actual_card % 13 == 7: #   else if the action is 7, 9
+        elif actual_card == 7: #   else if the action is 7, 9
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             self.card[a.victim - 1].pop(pick)
-        elif actual_card % 13 == 9:
+        elif actual_card == 9:
             self.card[a.user-1], self.card[a.victim-1] = self.card[a.victim-1], self.card[a.user-1]
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
-        #   TODO: pop mountain, assign the card to current user
-        if not(actual_card % 13 == 7 or actual_card % 13 == 9):
+        if not(actual_card == 7 or actual_card == 9):
             if len(self.mountain) == 0:
                 self.randMountain()
-                #print "randmountain, now len = %d" % len(self.mountain)
-            self.card[a.user - 1].append(self.mountain[len(self.mountain) - 1])
+            self.card[a.user - 1].append(self.mountain[-1])
             self.mountain.pop()
 
-        # check dead
         if a.victim > 0 and len(self.card[a.victim-1]) == 0 and not self.isDead[a.victim-1]:
-                #print "%d is dead(no card). next one." % (i+1)
             self.setDead(a.victim) # id
-        #   TODO: push action a into history
-        self.history.append(a)
         self.changeNextPlayer()
 
     def setDead(self, playerid):
@@ -403,11 +394,9 @@ class SimJudge: # new function: myeval
         #print "next player is %d" % self.current_player
         
     def getAction(self): # get legal action list
-        card = copy.deepcopy(self.card[self.current_player-1])
-        #remove the same value card
-        #print card
+        card = self.card[self.current_player-1]
         isuse = [False]*len(card)
-        av = list()
+        av = []
         a_template = Action(self.current_player)
         while nextbool(isuse, len(card)):
             a_card = copy.deepcopy(a_template)
@@ -420,14 +409,16 @@ class SimJudge: # new function: myeval
                         iszero = True
                     cv = 13 if (card[i]%13 == 0) else card[i]%13
                     nowv += cv
+                    if nowv > 13:
+                        break
                     a_card.cards_used.append(card[i])
 
+            if nowv > 13:
+                continue
             if len(a_card.cards_used) == 1 and iszero:#special case, space one
                 a = copy.deepcopy(a_card)
                 a.victim = 0
                 av.append(a)
-                continue
-            if nowv > 13:
                 continue
 
             if nowv == 7 or nowv == 9:
@@ -463,7 +454,6 @@ class SimJudge: # new function: myeval
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-
                     #random.shuffle(av)
 
         # remove the same action
