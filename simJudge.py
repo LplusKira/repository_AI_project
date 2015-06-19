@@ -20,11 +20,6 @@ import sys
 from action import *
 from logger import Game, logger
 
-def simulateAction(self,js,a): #describe how to use this judge
-    # js = judgestate(i use fillstate)
-    myjudge = SimJudge(js)
-    myjudge.doAction(a)
-
 class JudgeState:
     # add transform function in addfun
     def __init__(self,playerNum = 4, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1):
@@ -139,18 +134,50 @@ class SimJudge: # new function: myeval
             #score -= diff*30
         return score
 
-    def dpEvalAll(self):
+    def dpEvalAll_diff(self):
         #self.printBoard()
-        self.power = [0, 10, 10, 10, 60, 80, -40, 50, -55, 100, 80, 80, 70, 80]
+        self.power = [0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 80, 80, 70, 80]
+        #                   1, 2, 3, 4,  5,   6,  7   8,  9,  10,  j,  q,  k
+        self.endpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
+        scores= []
+
+        for myid in range(4):
+            if len(self.card[myid]) == 0:
+                scores.append(-200) # origin 200, 300
+                continue
+            diff = 0
+            for c in self.card:
+                diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
+
+            mycardlen = len(self.card[myid])
+            score = 200 * mycardlen  # allmax2.txt
+            nine = 0
+            if diff < 0 or mycardlen <= 2:
+                for card in self.card[myid]:
+                    if getCardValue(card) == 9:      
+                        nine += 1
+                    score = score + self.endpower[getCardValue(card)]
+            else:
+                for card in self.card[myid]:
+                    if getCardValue(card) == 9:      
+                        nine += 1
+                    score = score + self.power[getCardValue(card)]
+            scores.append(score)
+
+        return scores
+    
+    def dpEvalAll(self): #carvsallmax3.txt
+        #self.printBoard()
+        self.power = [0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 80, 80, 70, 80]
         #                   1, 2, 3, 4,  5,   6,  7   8,  9,  10,  j,  q,  k
         self.endpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
         scores= []
         for myid in range(4):
             if len(self.card[myid]) == 0:
-                scores.append(-200)
+                scores.append(-200) # origin 200, 300
                 continue
             mycardlen = len(self.card[myid])
-            score = 60 * mycardlen
+            score = 200 * mycardlen  # allmax2.txt
             nine = 0
             if mycardlen <= 2:
                 for card in self.card[myid]:
@@ -163,18 +190,25 @@ class SimJudge: # new function: myeval
                 for card in self.card[myid]:
                     if getCardValue(card) == 9:      
                         nine += 1
-                    
                     score = score + self.power[getCardValue(card)]
-                    #for i in range(4):
-                    #score -= 60*(len(self.card[i]) - mycardlen)
             scores.append(score)
+        return scores
+    
+    def cardEval(self, myid): #734 if diff
+        return len(self.card[myid-1])
+
+    def cardEvalAll(self):
+        #self.printBoard()
+        scores= []
+        for myid in range(4):
+            if len(self.card[myid]) == 0:
+                scores.append(-200)
+                continue
+            scores.append(len(self.card[myid]))
         #print scores
             #raw_input()
         return scores
-
-    def cardEval(self, myid):
-        return len(self.card[myid-1])
-
+    
     def powerEval(self, myid):
         self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
         score = 60 * mycardlen
@@ -212,16 +246,10 @@ class SimJudge: # new function: myeval
             return self.isDead[i-1]
 
     def __init__(self, s, evalName):
-        self.power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-        #                   1, 2,   3, 4,  5,   6,    7   8,  9,  10,  j,  q,  k
-        self.endpower = [0, 20, 10, 10, 60, 80, -30, 10, -50, 200, 80, 60, 100, 80]
-        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll}
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll, "cardevalall": self.cardEvalAll}
         self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()
-        #self.printBoard()
-        #self.action = a
-        #self.doAction(a)
 
     def input_state(self):
         self.playerNum = self.state.playerNum
@@ -248,31 +276,6 @@ class SimJudge: # new function: myeval
     def getJudgeState(self):
         self.output_state()
         return self.state
-
-
-    def GameStart(self):
-        self._possibleActions_ = list()
-        self.initBoard()
-        self.rand4Cards()
-        #self.printBoard()
-        
-        while not self.isGameFinished():
-            self._possibleActions_ = self.getAction()
-            if len(self._possibleActions_) == 0:
-                #print "%d is dead(cannot move). next one." % self.current_player
-                self.setDead(self.current_player)
-                self.changeNextPlayer()
-                continue
-            state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise) #get playerstate
-            a = self.player[self.current_player-1].genmove(state)
-            self.doAction(a)
-
-        winner = 0
-        for i in range(4):
-            if self.isDead[i] == False:
-                winner = i
-        #print "winner is " + str(winner+1)
-        return self.player, str(winner+1)
 
     def randMountain(self):
         #   TODO:   collecting remained cards into cards_remained
@@ -362,17 +365,7 @@ class SimJudge: # new function: myeval
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             self.card[a.victim - 1].pop(pick)
         elif actual_card % 13 == 9:
-            temp = list()
-            for i in range(0, len(self.card[a.user - 1]), 1):
-                temp.append(self.card[a.user - 1][i])
-            for i in range(0, len(self.card[a.user - 1]), 1):
-                self.card[a.user - 1].pop()
-            for i in range(0, len(self.card[a.victim - 1]), 1):
-                self.card[a.user - 1].append(self.card[a.victim - 1][i])
-            for i in range(0, len(self.card[a.victim - 1]), 1):
-                self.card[a.victim - 1].pop()
-            for i in range(0, len(temp), 1):
-                self.card[a.victim - 1].append(temp[i])
+            self.card[a.user-1], self.card[a.victim-1] = self.card[a.victim-1], self.card[a.user-1]
         else:                   #   else, cards in {1(not spade), 2, 3, 6, 8}
             self.point += actual_card
 
@@ -385,14 +378,11 @@ class SimJudge: # new function: myeval
             self.mountain.pop()
 
         # check dead
-        for i in range(self.playerNum):
-            if len(self.card[i]) == 0 and not self.isDead[i]:
+        if a.victim > 0 and len(self.card[a.victim-1]) == 0 and not self.isDead[a.victim-1]:
                 #print "%d is dead(no card). next one." % (i+1)
-                self.setDead(i+1) # id
-            
+            self.setDead(a.victim) # id
         #   TODO: push action a into history
         self.history.append(a)
-        #self.printBoard()
         self.changeNextPlayer()
 
     def setDead(self, playerid):
@@ -473,6 +463,7 @@ class SimJudge: # new function: myeval
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
+
                     #random.shuffle(av)
 
         # remove the same action
