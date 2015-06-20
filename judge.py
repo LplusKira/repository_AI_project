@@ -30,25 +30,18 @@ class PossibleCombination:
     def __init__(self, comb = list()):
         self.combination = comb
 
+totalAct = 0
+totalMove = 0
+
 iter_num = 1
 class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
-        '''
-        when seed == 1
-        North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
-        East(id = 2):13♣ , 5♦ , 7♥ , 9♠ , 11♥ , 
-        South(id = 3):8♣ , 11♦ , 9♣ , 13♦ , 10♠ , 
-        West(id = 4):9♥ , 1♣ , 10♥ , 4♥ , 4♣ , 
-        '''
         if playerList is None:
             players = list()
-            #players.append(MonteAgent(1))
-            #players.append(ScoutAgent(1))
             #players.append(ScoutAgent(2))
-            #players.append(CardNumberHeuristicAgent(1))
             #players.append(HumanAgent(1))
-            players.append(AllMaxHeuristicAgent(1))
-            players.append(CardNumberHeuristicAgent(2))
+            players.append(CardNumberHeuristicAgent(1))
+            players.append(AllMaxHeuristicAgent(2))
             players.append(CardNumberHeuristicAgent(3))
             players.append(CardNumberHeuristicAgent(4))
             #players.append(HeuristicAgent(2))
@@ -95,10 +88,6 @@ class Judge:
         self.rand4Cards()
         self.printBoard()
         
-        can_I_clean = list()
-        for i in range(_TotalPlayerNum_):
-            can_I_clean.append(0)
-
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
@@ -107,13 +96,11 @@ class Judge:
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
             #   TODO: call up the current player to generate move
-            if self.current_player == 1:
-                a = self.player[self.current_player-1].genmove(state)
-            else:
-                a = self.player[self.current_player-1].genmove(state)
+            a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
             self.doAction(a)
+            self.printBoard()
 
         winner = 0
         for i in range(4):
@@ -354,10 +341,6 @@ class Judge:
                     a = copy.deepcopy(a_card)
                     a.victim = 0
                     av.append(a)
-        #random.shuffle(av)
-        '''print "actions before pruning"
-        for a in av:
-            print a'''
         newav = []
         actionattr = []
         for a in av:
@@ -367,9 +350,11 @@ class Judge:
             if attr not in actionattr:
                 actionattr.append(attr)
                 newav.append(a)
-        '''print "actions after pruning"
-        for a in newav:
-            print a'''
+        random.shuffle(newav)
+        '''global totalMove, totalAct
+        totalAct += len(newav)
+        totalMove += 1'''
+
         return newav
 
     def checkRule(self, a):
@@ -435,14 +420,13 @@ if __name__ == "__main__" :
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
     args = parser.parse_args()
 
-    f = open(args.file, "w")#clear
+    f = open(args.file, "w") #clear
     f.close()
-    
-    i = 1 # no iterate? # i dont know
     log = logger(args.file)
     for k in range(args.p):
         j = Judge()
         players, winner = j.GameStart()
-        g = Game(i, players, winner)
+        g = Game(k, players, winner)
         log.logGame(g)
     print log
+    #print "average action per move = " + str(float(totalAct)/totalMove)

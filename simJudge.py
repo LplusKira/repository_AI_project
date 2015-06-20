@@ -150,13 +150,14 @@ class SimJudge: # new function: myeval
                 diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
 
             mycardlen = len(self.card[myid])
-            score = 200 * mycardlen  # allmax2.txt
+            score = 200 * mycardlen 
             nine = 0
             if diff < 0 or mycardlen <= 2:
                 for card in self.card[myid]:
                     if getCardValue(card) == 9:      
                         nine += 1
                     score = score + self.endpower[getCardValue(card)]
+                
             else:
                 for card in self.card[myid]:
                     if getCardValue(card) == 9:      
@@ -165,32 +166,77 @@ class SimJudge: # new function: myeval
             scores.append(score)
 
         return scores
-    
-    def dpEvalAll(self): #carvsallmax3.txt
-        #self.printBoard()
-        self.power = [0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 80, 80, 70, 80]
-        #                   1, 2, 3, 4,  5,   6,  7   8,  9,  10,  j,  q,  k
-        self.endpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
+
+    def dpEvalAll_dpeval1(self):
+        self.power = [0, 20, 10, 10, 70, 70, -30, 50, -50, 100, 90, 80, 90, 60]
+        #                1,  2,   3, 4,  5,   6,   7,  8,  9,  10,  j,  q,  k
+        self.endpower = [0, 20, 10, 10, 60, 80, -30, 40, -50, -200, 80, 60, 100, 80]
+
         scores= []
         for myid in range(4):
             if len(self.card[myid]) == 0:
                 scores.append(-200) # origin 200, 300
                 continue
-            mycardlen = len(self.card[myid])
-            score = 200 * mycardlen  # allmax2.txt
+
+            mycardlen = len(self.card[myid-1])
+            score = 199 * mycardlen
             nine = 0
+
             if mycardlen <= 2:
-                for card in self.card[myid]:
+                for card in self.card[myid-1]:
                     if getCardValue(card) == 9:      
                         nine += 1
-                    score = score + self.endpower[getCardValue(card)]
-                if nine > 0:
-                    score -= 120*(nine-1)
+                    if self.realplayer == myid+1:
+                        score = score + self.endpower[getCardValue(card)]
+                if nine == 1 and mycardlen == 1:
+                    score += 2000
             else:
+                for card in self.card[myid-1]:
+                    if self.realplayer == myid+1:
+                        score = score + self.power[getCardValue(card)]
+            scores.append(score)
+        return  scores
+    
+    def dpEvalAll(self):
+        # parameters
+        mypower = [0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 70, 80, 80, 70]
+        myendpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
+        mydeadvalue = -300
+        mycardvalue = 200
+        myninevalue = -180
+        scores= []
+
+        for myid in range(4):
+            if len(self.card[myid]) == 0:
+                scores.append(mydeadvalue)
+                continue
+            mycardlen = len(self.card[myid])
+            diff = 0
+            for i in range(4):
+                diff += mycardlen - len(self.card[i])
+            score = mycardvalue * mycardlen
+            nine = 0
+            '''if mycardlen == 1: now testing
                 for card in self.card[myid]:
-                    if getCardValue(card) == 9:      
-                        nine += 1
-                    score = score + self.power[getCardValue(card)]
+                    v = getCardValue(card)
+                    if v == 9: # check is drawn or not... need to label known cards
+                        score = 5000
+                    elif ((v <= 3 and card != 1) or v == 6 or v == 8) and self.point + v > 99:
+                        score = mydeadvalue
+                    else:
+                        score += myendpower[v]'''
+            if diff <= -3 and mycardlen <= 3:
+                if self.realplayer == myid+1:
+                    for card in self.card[myid]:
+                        if getCardValue(card) == 9:      
+                            nine += 1
+                        score = score + myendpower[getCardValue(card)]
+                    if nine > 0:
+                        score -= myninevalue*(nine-1)
+            else:
+                if self.realplayer == myid+1:
+                    for card in self.card[myid]:
+                        score = score + mypower[getCardValue(card)]
             scores.append(score)
         return scores
     
@@ -198,15 +244,12 @@ class SimJudge: # new function: myeval
         return len(self.card[myid-1])
 
     def cardEvalAll(self):
-        #self.printBoard()
         scores= []
         for myid in range(4):
             if len(self.card[myid]) == 0:
                 scores.append(-200)
                 continue
             scores.append(len(self.card[myid]))
-        #print scores
-            #raw_input()
         return scores
     
     def powerEval(self, myid):
@@ -216,37 +259,16 @@ class SimJudge: # new function: myeval
             for card in self.card[myid-1]:
                 score = score + self.endpower[getCardValue(card)]
         
-    def myEval(self, myid = -1):
-        if myid == -1:
-            return self.dpEval1(self.current_player-1)
-        else:
-            return self.dpEval1(myid)
-            
-        #print "card " + getCardString(card) + " get %d value" % self.power[getCardValue(card)]
-        #for i in range(4):
-            #self.isDead
-
-      # todo: specialcase9
-        '''if nine >= 1: #do something to consume cards
-            score -= 500*(nine-1) #only count one 9
-            if mycardlen == 1:
-                score += 500
-            elif mycardlen == 2: #todo:double9...
-                score += 300'''
-        '''diff = 0
-        for c in self.card:
-            diff += len(c)-len(self.card[myid-1]) # other's card is more than mycard
-        score = score - 60*diff'''
-        #return score
-    
     def checkLose(self, i = -1):
         if i == -1:
             return self.isDead[self.current_player-1]
         else:
             return self.isDead[i-1]
 
-    def __init__(self, s, evalName):
-        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll, "cardevalall": self.cardEvalAll}
+    def __init__(self, s, evalName, rp):
+        self.realplayer = rp
+
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll, "cardevalall": self.cardEvalAll, "dpevaldiff": self.dpEvalAll_diff}
         self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()

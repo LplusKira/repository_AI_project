@@ -1,4 +1,5 @@
 from collections import Counter
+import os
 
 class Game:
    def __init__(self, i, pl, win):
@@ -23,6 +24,8 @@ class logger:
       self.wingames = Counter()
       self.nowGameNum = 0
       self.filename = filename
+      #self.dirname = filename.split(".")[0])
+      #os.makedirs(self.dirname)
 
    def logGame(self, g):
       self.games.append(g)
@@ -44,5 +47,5 @@ class logger:
       #for g in self.games:
       #s = s + str(g)
       for player in self.wingames.most_common():
-         s += player[0] + " wins: " + str(player[1]) + " games\n"
+         s += player[0] + " wins: " + str(player[1]) + " games, winrate = %f\n" % float(player[1])/self.nowGameNum
       return s

@@ -41,14 +41,14 @@ class ScoutAgent(Agent):
          a = s.board.record[i]
          if a.user == 0: # randmountain
             continue
-         print "remove cards " + getCardsString(a.cards_used)
+         #print "remove cards " + getCardsString(a.cards_used)
          for c in a.cards_used: # remove used cards
             if c in self.knownCard[a.user-1]:
                self.knownCard[a.user-1].remove(c)
          a.getCardValue()
          if nowsmallhindex < len(s.smallh) and s.smallh[nowsmallhindex].victim/10 == i:
             smalla = s.smallh[nowsmallhindex]
-            print "smalla" + str(smalla)
+            #print "smalla" + str(smalla)
             if smalla.victim%10 == 9:
                self.knownCard[smalla.user-1] = smalla.cards_used[:]
             else:
@@ -61,20 +61,20 @@ class ScoutAgent(Agent):
          elif a.cardValue == 7: # card7 which is not related to me
             self.knownCard[a.victim-1] = []
             
-         print "knowncards, after " + str(a)
+         '''print "knowncards, after " + str(a)
          for i in range(4):
             print "player %d" % (i+1)
-            print action.getCardsString(self.knownCard[i])
+            print action.getCardsString(self.knownCard[i])'''
             
       for i in range(4):
          if s.board.cardNum[i] == 0:
             self.knownCard[i] = []
       self.knownCard[self.i-1] = s.myCard.cards[:] # haha
-      if len(s.smallh) > 0:
+      '''if len(s.smallh) > 0:
          print "knowncards"
          for i in range(4):
             print "player %d" % i
-            print action.getCardsString(self.knownCard[i])
+            print action.getCardsString(self.knownCard[i])'''
 
       for c in s.myCard.cards:
          restcard.remove(c)
@@ -108,8 +108,6 @@ class ScoutAgent(Agent):
       knownCard = self.knownCard[:]
       #print "nonusedcard " + getCardsString(nonUsedCard)
       #print "restcard" + getCardsString(restcard)
-
-
       unknownHandCardNum = 0
       for i in range(4):
          if i+1 != self.i:
@@ -145,13 +143,7 @@ class ScoutAgent(Agent):
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js, self.evalName)
-         #if len(state.smallh)>0:
-            #print "simjudge board"
-            #self.judge.printBoard()
-            #print "real"
-            #self.mystr()
-            #raw_input()
+         self.judge = SimJudge(js, self.evalName, self.i)
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
       '''for k,v in self.avgScore.iteritems(): # need to preserve previous sequence...
@@ -169,41 +161,8 @@ class ScoutAgent(Agent):
       self.lasti = len(state.board.record)
       return self.bestmove #todo:
 
-   # logs
-   # todo: remove redundant move from server(4h, 4s...) after getaction()
-   # todo: remember some structures(or rules) to win 
-   # fix: our opponent need to be simple agent(based on cardnum or cardvalue) instead random agent
-   # fix: every player have different evaluation value...
-   # idea: all max search for each player's evaluation
-           # not every player want to kill me...
-   # todo: check gameend when search
-   # because cardnum is very important, raise the weight of cardnum
-   '''
-   3 vs 1
-   CardNumberHeuristicAgent wins: 1569 games
-   AllMaxHeuristicAgent wins: 431 games
-   CardNumberHeuristicAgent wins: 1660 games
-   ScoutAgent wins: 340 games
-   CardNumberHeuristicAgent wins: 1623 games
-   HeuristicAgent wins: 377 games
-
-   
-   test result:
-   heuristic        depth result(2000times) techniques
-   cardnum            1   38.5%(6/18)
-   power              2   ?%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
-   dynamic-power      2   ?% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
-   dynamic-power      2   36.6% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
-   dynamic-power      1   37.7% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
-   dynamic-power      1   38% (% vs heuristic) self.dpeval1(), remember cards
-   dynamic-power      1   39.85% (% vs heuristic) self.dpeval1(), remember cards, no trim getaction in simjudge
-   dynamic-power      1   37.75% (% vs heuristic) self.dpeval1(), remember cards, no trim getaction in simjudge, improve fillstate...
-   '''
    def maxSearch(self, s, alpha, beta, depth, nowdepth):
-      #print "maxsearch"
       if s.checkLose(self.i):
-         #print "i am dead"
-         #s.printBoard()
          return -INF
       if depth == 0:
          s.printBoard()
@@ -247,7 +206,7 @@ class ScoutAgent(Agent):
          if nowdepth == 0:
             #print "search max move: " + str(a)  + "  score = " + str(m)
             
-            news.printBoard()
+            #news.printBoard()
             print "action = "+ str(a)+ " score = " + str(m)
 
             if str(a) in self.avgScore:
@@ -403,7 +362,7 @@ class AllMaxHeuristicAgent(ScoutAgent):
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js, self.evalName)
+         self.judge = SimJudge(js, self.evalName, self.i)
          alpha = [-INF]*4
          beta = [INF]*4
          alpha[self.i-1] = INF
@@ -419,9 +378,6 @@ class AllMaxHeuristicAgent(ScoutAgent):
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       wait_input()
-      #if self.bestmove not in state.myCard.moves:
-       #  print "abgenmove: no this move"
-        # exit()
       self.lasti = len(state.board.record)
       return self.bestmove #todo:
    
@@ -463,12 +419,14 @@ class AllMaxHeuristicAgent(ScoutAgent):
                   self.avgScore[str(a)][1] += m[:]
                else:
                   self.avgScore[str(a)] = [a, m[:]]
-               #print "move = " + str(a) + " score = " + str(getRelativeScore(self.avgScore[str(a)][1], self.i))
-#elif nowdepth == 0:
-            #print "move = " + str(a)
-
+               print "move = " + str(a) + " score = " + str(getRelativeScore(self.avgScore[str(a)][1], self.i))
       return m
 
+if __name__ == "__main__" :
+   pass
+   while True:
+      js = randomGenCards()
+      
       
 
       
