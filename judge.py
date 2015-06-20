@@ -20,6 +20,10 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
+<<<<<<< HEAD
+=======
+
+>>>>>>> be7a0d7d9a7c3477b8b04e9696a1e5690c557040
 from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
 #from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
@@ -41,10 +45,25 @@ class Judge:
         '''
         if playerList is None:
             players = list()
+<<<<<<< HEAD
             players.append(MonteAgent(1))
             players.append(RandomAgent(2))
             players.append(RandomAgent(3))
             players.append(RandomAgent(4))
+=======
+            #players.append(MonteAgent(1))
+            #players.append(ScoutAgent(1))
+            #players.append(ScoutAgent(2))
+            #players.append(CardNumberHeuristicAgent(1))
+            #players.append(HumanAgent(1))
+            players.append(AllMaxHeuristicAgent(1))
+            players.append(CardNumberHeuristicAgent(2))
+            players.append(CardNumberHeuristicAgent(3))
+            players.append(CardNumberHeuristicAgent(4))
+            #players.append(HeuristicAgent(2))
+            #players.append(HeuristicAgent(3))
+            #players.append(ScoutAgent(3))
+>>>>>>> be7a0d7d9a7c3477b8b04e9696a1e5690c557040
 
             self.player = players
         else: # specify agents
@@ -80,6 +99,7 @@ class Judge:
             self.small_h = small_h
         
     def GameStart(self):
+        self.record = []
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
@@ -149,15 +169,6 @@ class Judge:
             self.mountain.append(original_cards[pick])
             original_cards.pop(pick)
 
-        """
-        # check mountain is correct or not
-        for c in self.mountain:
-            for i in range(4):
-                if c in self.card[i]:
-                    print "illegal randmountain"
-                    exit()
-        """
-
     def initBoard(self):
         self.current_player = 1
         self.clock_wise = 1 #1 and -1
@@ -186,20 +197,7 @@ class Judge:
             self.small_h[which_player].pop()
 
     def Push_small_h(self, new_action, victim):
-        #for card in range(len(residual_card)):
-        #    new_action.cards_used.append(residual_card[card]) 
         self.small_h[victim].append(new_action)
-        """if victim == 0:
-                                    print "==========in judge========"
-                                    print "victim == " + str(victim)
-                                    for i in range(len(self.small_h[victim])):
-                                        print "usr == " + str(self.small_h[victim][i].user) + ", cards == "
-                                        for j in range(len(self.small_h[victim][i].cards_used)):
-                                            print  self.small_h[victim][i].cards_used[j]
-                                        print "operation == " + str(self.small_h[victim][i].victim)
-                                    #time.sleep(1)
-                                    print "========end judge========"
-        """
 
     def doAction(self, a):
         #   TODO: add effect by the returning action a
@@ -441,7 +439,7 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(1234)
+    random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result

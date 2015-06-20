@@ -138,6 +138,7 @@ class ScoutAgent(Agent):
    
    def scoutGenmove(self, state, depth = 1, maxTime = 100, replayNum = 1):
       startTime = time.time()
+      self.knownCard = [list() for i in range(4)]
       self.endTime = startTime + maxTime
       self.avgScore = {}
       self.getKnownCards(state)
@@ -168,6 +169,7 @@ class ScoutAgent(Agent):
       self.lasti = len(state.board.record)
       return self.bestmove #todo:
 
+   # logs
    # todo: remove redundant move from server(4h, 4s...) after getaction()
    # todo: remember some structures(or rules) to win 
    # fix: our opponent need to be simple agent(based on cardnum or cardvalue) instead random agent
@@ -175,10 +177,20 @@ class ScoutAgent(Agent):
    # idea: all max search for each player's evaluation
            # not every player want to kill me...
    # todo: check gameend when search
+   # because cardnum is very important, raise the weight of cardnum
    '''
+   3 vs 1
+   CardNumberHeuristicAgent wins: 1569 games
+   AllMaxHeuristicAgent wins: 431 games
+   CardNumberHeuristicAgent wins: 1660 games
+   ScoutAgent wins: 340 games
+   CardNumberHeuristicAgent wins: 1623 games
+   HeuristicAgent wins: 377 games
+
+   
    test result:
    heuristic        depth result(2000times) techniques
-   cardnum            1   38.35%
+   cardnum            1   38.5%(6/18)
    power              2   ?%              power = [0, 20, 10, 10, 60, 80, -30, 10, -50, 80, 80, 60, 100, 80]
    dynamic-power      2   ?% (56% vs heuristic) self.dpeval(), when card < 2, preserve 9 as killer.
    dynamic-power      2   36.6% (% vs heuristic) self.dpeval1(), when card < 2, preserve 9 as killer.
@@ -372,6 +384,7 @@ def getRelativeScore(scores, myid):
 class AllMaxHeuristicAgent(ScoutAgent):
    def __init__(self, i = 0): # only need to know id
       self.i = i
+      #self.evalName = 'dpevalall'
       self.evalName = 'dpevalall'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0
@@ -384,6 +397,7 @@ class AllMaxHeuristicAgent(ScoutAgent):
    def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 1):
       startTime = time.time()
       self.endTime = startTime + maxTime
+      self.knownCard = [list() for i in range(4)]
       self.avgScore = {}
       self.getKnownCards(state)
       for i in range(replayNum):

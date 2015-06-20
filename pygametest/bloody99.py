@@ -187,6 +187,13 @@ class Bloody99:
                                     a.victim = self.chooseVictim(a)
                                     if self.judge.checkRule(a) == True and len(cards_used) > 0:
                                         click = False
+                                        self.judge.doAction(a)                
+                                        self.fill_background()
+                                        self.resetCardPos()
+                                        self.display_allPlayers()
+                                        self.prevCard = a.cards_used
+                                        self.display_desktop(self.prevCard)
+                                        pygame.display.update()
                                         break
                                     elif self.judge.checkRule(a) == False and len(cards_used) > 0:
                                         font = pygame.font.Font(None, 40)
@@ -203,13 +210,14 @@ class Bloody99:
                                         continue
                 else:                          
                     a = self.judge.player[self.judge.current_player-1].genmove(state)
-                self.judge.doAction(a)                
-                self.fill_background()
-                self.resetCardPos()
-                self.display_allPlayers()
-                self.prevCard = a.cards_used
-                self.display_desktop(self.prevCard)
-                pygame.display.update()
+                    self.judge.doAction(a)                
+                    time.sleep(2)
+                    self.fill_background()
+                    self.resetCardPos()
+                    self.display_allPlayers()
+                    self.prevCard = a.cards_used
+                    self.display_desktop(self.prevCard)
+                    pygame.display.update()
                 
             winner = 0
             for i in range(4):
@@ -290,11 +298,8 @@ class Bloody99:
 
     def display_allPlayers(self):
         self.display_player1()
-        time.sleep(1)
         self.display_player2()
-        time.sleep(1)
         self.display_player3()
-        time.sleep(1)
         self.display_player4()
 
     def display_player1(self):
@@ -422,7 +427,6 @@ class Bloody99:
                             else:
                                 click = True
             pygame.display.update()
-<<<<<<< Updated upstream
             return victim
         elif cardvalue == 7 or cardvalue == 9:
             w, h = 100, 50            
@@ -476,15 +480,12 @@ class Bloody99:
                             else:
                                 click = True
             return victim
-=======
             return 2
         if cardvalue == 10 or cardvalue == 12:
             button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
             button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
             pygame.display.update()
             return -1
->>>>>>> Stashed changes
-        return 2
 
     def initGame(self):
         pygame.init()
