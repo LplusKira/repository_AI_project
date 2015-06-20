@@ -422,6 +422,7 @@ class Bloody99:
                             else:
                                 click = True
             pygame.display.update()
+<<<<<<< Updated upstream
             return victim
         elif cardvalue == 7 or cardvalue == 9:
             w, h = 100, 50            
@@ -475,6 +476,14 @@ class Bloody99:
                             else:
                                 click = True
             return victim
+=======
+            return 2
+        if cardvalue == 10 or cardvalue == 12:
+            button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
+            button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
+            pygame.display.update()
+            return -1
+>>>>>>> Stashed changes
         return 2
 
     def initGame(self):

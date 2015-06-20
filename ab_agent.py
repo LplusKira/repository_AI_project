@@ -47,8 +47,6 @@ class PlayerState:
    # TODO
    def simulateMove(self, action):
       move = 0
-      #print  "mycard: " + str(self.myCard.cards)
-      #print "card used: " + str(action.cards_used) 
       for c in action.cards_used:
          self.myCard.cards.remove(c)
          move = move + getCardValue(c)
@@ -65,7 +63,7 @@ class PlayerState:
             self.board.nowPoint -= move
       elif move == 4:
          self.order *= -1
-      #self.myCard.moves.remove(action)
+      self.myCard.moves.remove(action)
 
    def Eval(self, userid):
       score = 0
@@ -431,7 +429,7 @@ class HeuristicAgent(Agent):
             if handCards == 3 and m != 9: # try to reduce cards to 3
                return a            
          move = self.pickBest(state)
-      print "+++++++++++++++++++++++", move
+      #print "+++++++++++++++++++++++", move
       move = self.pickBest(state)
       return move
 

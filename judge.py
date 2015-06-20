@@ -20,9 +20,9 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-#from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
+from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
-from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
+#from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -41,19 +41,10 @@ class Judge:
         '''
         if playerList is None:
             players = list()
-            #players.append(MonteAgent(1))
-            #players.append(ScoutAgent(1))
-            #players.append(ScoutAgent(2))
-            #players.append(CardNumberHeuristicAgent(1))
-            #players.append(HumanAgent(1))
-            players.append(AllMaxHeuristicAgent(1))
+            players.append(MonteAgent(1))
             players.append(RandomAgent(2))
-
             players.append(RandomAgent(3))
             players.append(RandomAgent(4))
-            #players.append(HeuristicAgent(2))
-            #players.append(HeuristicAgent(3))
-            #players.append(ScoutAgent(3))
 
             self.player = players
         else: # specify agents
@@ -123,14 +114,14 @@ class Judge:
 
     def rand4Cards(self):
         original_cards = list()
-    	for i in range(_cardNum_):
+        for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
                 pick = random.randint(0,1024) % len(original_cards)
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
-        #	TODO:	set mountain
+        #   TODO:   set mountain
         for i in range(len(original_cards)):
             pick = random.randint(0, 1024) % len(original_cards)
             self.mountain.append(original_cards[pick])
