@@ -29,13 +29,6 @@ class PossibleCombination:
 iter_num = 1
 class MiniJudge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
-        '''
-        when seed == 1
-        North(id = 1):8♦ , 2♠ , 9♦ , 5♥ , 4♦ , 
-        East(id = 2):13♣ , 5♦ , 7♥ , 9♠ , 11♥ , 
-        South(id = 3):8♣ , 11♦ , 9♣ , 13♦ , 10♠ , 
-        West(id = 4):9♥ , 1♣ , 10♥ , 4♥ , 4♣ , 
-        '''
 
         players = list()
         players.append(HeuristicAgent(1))
@@ -78,11 +71,6 @@ class MiniJudge:
 
     def GameStart(self):
 
-        
-        can_I_clean = list()
-        for i in range(_TotalPlayerNum_):
-            can_I_clean.append(0)
-
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
             if len(self._possibleActions_) == 0:
@@ -97,12 +85,7 @@ class MiniJudge:
                 a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
-            try:
-                self.doAction(a)
-            except:
-                return 0
-
-
+            self.doAction(a)
         self.winner = 0
         for i in range(4):
             if self.isDead[i] == False:
@@ -239,10 +222,11 @@ class MiniJudge:
         elif actual_card % 13 == 0:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
+            pick = random.randint(0, len(self.card[a.victim - 1])-1)
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
             take_card = [self.card[a.victim-1][pick]]
-            self.card[a.victim - 1].pop(pick)            
+            self.card[a.victim - 1].pop(pick)          
             #self.card[a.victim - 1].append(self.card[a.user - 1][len(self.card[a.user - 1]) - 1])
             new_action = Action(a.user, take_card,  (len(self.history)-1)*10+7)
             self.Push_small_h(new_action, a.victim - 1)
