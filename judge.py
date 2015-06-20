@@ -20,10 +20,9 @@ import sys
 import argparse
 from action import *
 from ab_agent import PlayerState
-
 from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
-from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
+#from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -38,6 +37,7 @@ class Judge:
     def __init__(self, playerList = None, h = None, c = None, m=None, p=0, cw=1, cp=1, small_h = None):
         if playerList is None:
             players = list()
+
             #players.append(ScoutAgent(2))
             #players.append(HumanAgent(1))
             players.append(CardNumberHeuristicAgent(1))
@@ -111,14 +111,14 @@ class Judge:
 
     def rand4Cards(self):
         original_cards = list()
-    	for i in range(_cardNum_):
+        for i in range(_cardNum_):
             original_cards.append(i + 1)
         for i in range(_TotalPlayerNum_):
             for counter in range(_InitCardsPerPlayer_):
                 pick = random.randint(0,1024) % len(original_cards)
                 self.card[i][counter] = original_cards[pick]
                 original_cards.pop(pick)
-        #	TODO:	set mountain
+        #   TODO:   set mountain
         for i in range(len(original_cards)):
             pick = random.randint(0, 1024) % len(original_cards)
             self.mountain.append(original_cards[pick])
