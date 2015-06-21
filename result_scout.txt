@@ -54,6 +54,7 @@
                         score += myendpower[v]
 
 	[:] is shallow copy...
+	死掉　smallh
    use random gen cards to test bestmove is correct or not
    add known cards to dpevalall
    

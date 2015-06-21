@@ -22,7 +22,7 @@ from action import *
 from ab_agent import PlayerState
 from monte_agent import MonteAgent # I change scoutagent to scoutagent.py
 from ab_agent import HeuristicAgent, HumanAgent, ScoutTestAgent, ExpAgent, RandomAgent
-#from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
+from scoutagent import ScoutAgent, CardNumberHeuristicAgent, AllMaxHeuristicAgent
 from logger import Game, logger
 
 class PossibleCombination:
@@ -40,8 +40,8 @@ class Judge:
 
             #players.append(ScoutAgent(2))
             #players.append(HumanAgent(1))
-            players.append(CardNumberHeuristicAgent(1))
-            players.append(AllMaxHeuristicAgent(2))
+            players.append(AllMaxHeuristicAgent(1))
+            players.append(CardNumberHeuristicAgent(2))
             players.append(CardNumberHeuristicAgent(3))
             players.append(CardNumberHeuristicAgent(4))
             #players.append(HeuristicAgent(2))
@@ -86,7 +86,7 @@ class Judge:
         self._possibleActions_ = list()
         self.initBoard()
         self.rand4Cards()
-        self.printBoard()
+        ##self.printBoard()
         
         while not self.isGameFinished():
             self._possibleActions_ = self.getAction()
@@ -96,11 +96,12 @@ class Judge:
                 continue
             state = PlayerState(self.history, self._possibleActions_, self.card[self.current_player-1], len(self.card[0]), len(self.card[1]), len(self.card[2]), len(self.card[3]), len(self.mountain), self.point, self.clock_wise, self.small_h[self.current_player-1]) #get playerstate
             #   TODO: call up the current player to generate move
+            self.printBoard()
             a = self.player[self.current_player-1].genmove(state)
             #   TODO: clean current player's small history
             self.Empty_small_h(self.current_player-1)
             self.doAction(a)
-            self.printBoard()
+            
 
         winner = 0
         for i in range(4):

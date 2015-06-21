@@ -350,10 +350,30 @@ class AllMaxHeuristicAgent(ScoutAgent):
       
    def genmove(self, state):
       self.state = state
-      a = self.scoutGenmove(state)
+      a = self.scoutGenmove_replay(state)
       return a
 
-   def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 10):
+   def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 1):
+      startTime = time.time()
+      self.endTime = startTime + maxTime
+      self.knownCard = [list() for i in range(4)]
+      self.avgScore = {}
+      self.getKnownCards(state)
+      bestmoveCounter = Counter()
+      
+      js = self.fillstate(state) # does it changed?
+      self.bestmove = state.myCard.moves[0]
+      self.judge = SimJudge(js, self.evalName, self.i, self.knownCard)
+      alpha = [-INF]*4; alpha[self.i-1] = INF
+      beta = [INF]*4; beta[self.i-1] = -INF
+      score = self.allmaxSearch(self.judge, alpha, beta, depth, 0)
+      
+      print "use " + str(time.time()-startTime) + "time"
+      print "bestmove = " + str(self.bestmove)
+      self.lasti = len(state.board.record)
+      return self.bestmove #todo:
+
+   def scoutGenmove_replay(self, state, depth = 3, maxTime = 100, replayNum = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.knownCard = [list() for i in range(4)]
