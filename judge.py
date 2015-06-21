@@ -51,10 +51,6 @@ class Judge:
             self.player = players
         else: # specify agents
             self.player = playerList
-            pass
-            random.shuffle(p)
-            for player in p:
-                players.append()
 
         # because this attribute is mutable, use this way
         # http://stackoverflow.com/questions/2681243/how-should-i-declare-default-values-for-instance-variables-in-python
@@ -415,7 +411,6 @@ def nextbool(vb, n):
     return True
 
 if __name__ == "__main__" :
-    random.seed(time.time())
     parser = argparse.ArgumentParser(description='Bloody99 judge')
     parser.add_argument("-p", help="number of games to run", type=int, default=_TestGameNum_)
     parser.add_argument('-f', '--file', metavar="", help="logger file name", default="bloody99log.txt") # can use 'tail -f <file>' to see the result
@@ -423,11 +418,33 @@ if __name__ == "__main__" :
 
     f = open(args.file, "w") #clear
     f.close()
-    log = logger(args.file)
-    for k in range(args.p):
-        j = Judge()
-        players, winner = j.GameStart()
-        g = Game(k, players, winner)
-        log.logGame(g)
-    print log
+
+    mypowers = [[0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 70, 80, 80, 70],\
+                [0, 20, 20, 20, 80, 90, -60, 20, -80, 100, 70, 80, 80, 70]\
+                ]
+    myendpowers = [[0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80],\
+                       [0, 20, 30, 40, 60, 80, -20, 40, -45, -200, 70, 70, 90, 70],\
+                       [0, 0, 0, 0, 100, 120, -20, 40, -20, -200, 70, 70, 90, 70]\
+                  ]
+    mydeadvalues = [-200, -300]
+    mycardvalues = [200]
+    myninevalues = [-180, -250]
+
+    for d in mydeadvalues:
+        for c in mycardvalues:
+            for n in myninevalues:
+                for p in mypowers:
+                    for e in myendpowers:
+                        random.seed(time.time())
+                        playerlist =  [CardNumberHeuristicAgent(1), AllMaxHeuristicAgent(2, p, e, d, c, n), CardNumberHeuristicAgent(3), CardNumberHeuristicAgent(4)]
+                        log = logger(args.file)
+                        for k in range(args.p):
+                            j = Judge(playerlist)
+                            players, winner = j.GameStart()
+                            g = Game(k, players, winner)
+                            log.logGame(g)
+                        fpara = open("parameter_test.txt", "a")
+                        fpara.write(str(p) + "\n" +str(e) + "\n" + str(d) + "\n" +str(c) + "\n" +str(n) + str(log) + "\n")
+                        fpara.close()
+
     #print "average action per move = " + str(float(totalAct)/totalMove)

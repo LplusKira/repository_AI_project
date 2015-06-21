@@ -341,16 +341,21 @@ def getRelativeScore(scores, myid):
    return newscore
    
 class AllMaxHeuristicAgent(ScoutAgent):
-   def __init__(self, i = 0): # only need to know id
+   def __init__(self, i = 0, p = [], e = [], d = 0, c = 0, n = 0): # only need to know id
       self.i = i
       #self.evalName = 'dpevalall'
       self.evalName = 'dpevalall'
       self.knownCard = [list() for i in range(4)]
       self.lasti = 0
+      self.mypower = p
+      self.myendpower = e
+      self.mydeadvalue = d
+      self.mycardvalue = c
+      self.myninevalue = n
       
    def genmove(self, state):
       self.state = state
-      a = self.scoutGenmove_replay(state)
+      a = self.scoutGenmove(state)
       return a
 
    def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 1):
@@ -364,6 +369,7 @@ class AllMaxHeuristicAgent(ScoutAgent):
       js = self.fillstate(state) # does it changed?
       self.bestmove = state.myCard.moves[0]
       self.judge = SimJudge(js, self.evalName, self.i, self.knownCard)
+      self.judge.initParameter(self.mypower, self.myendpower, self.mydeadvalue, self.mycardvalue, self.myninevalue)
       alpha = [INF]*4; alpha[self.i-1] = -INF # the worse
       beta = [-INF]*4; beta[self.i-1] = INF # the best
       score = self.allmaxSearch(self.judge, alpha, beta, depth, 0)

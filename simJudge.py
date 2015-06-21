@@ -235,24 +235,33 @@ class SimJudge: # new function: myeval
             scores.append(score)
         return scores
 
-    def dpEvalAll_realp(self):
+    class Parameter:
+        def __init__(self, p, e, d, c, n):
+            self.mypower = para.mypower[0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 70, 80, 80, 70]
+            self.myendpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
+            self.mydeadvalue = -300
+            self.mycardvalue = 200
+            self.myninevalue = -180                    
+    
+    def initParameter(self, p, e, d, c, n):
         # parameters
-        mypower = [0, 10, 10, 10, 60, 80, -60, 50, -80, 100, 70, 80, 80, 70]
-        myendpower = [0, -30, -30, -20, 60, 80, -40, 50, -55, -200, 80, 80, 100, 80]
-        mydeadvalue = -300
-        mycardvalue = 200
-        myninevalue = -180
+        self.mypower = p
+        self.myendpower = e
+        self.mydeadvalue = d
+        self.mycardvalue = c
+        self.myninevalue = n
+    
+    def dpEvalAll_realp(self):
         scores= []
-
         for myid in range(4):
             if len(self.card[myid]) == 0:
-                scores.append(mydeadvalue)
+                scores.append(self.mydeadvalue)
                 continue
             mycardlen = len(self.card[myid])
             diff = 0
             for i in range(4):
                 diff += mycardlen - len(self.card[i])
-            score = mycardvalue * mycardlen
+            score = self.mycardvalue * mycardlen
             nine = 0
             if diff <= -3 and mycardlen <= 3:
                 for card in self.card[myid]:
@@ -260,17 +269,17 @@ class SimJudge: # new function: myeval
                         v = getCardValue(card)
                         if v == 9:      
                             nine += 1
-                        score = score + myendpower[v]
+                        score = score + self.myendpower[v]
                     else:
-                        score = score + float(myendpower[getCardValue(card)])/(len(self.mountain)+1)
+                        score = score + float(self.myendpower[getCardValue(card)])/(len(self.mountain)+1)
                 if nine > 0:
-                    score -= myninevalue*(nine-1)
+                    score -= self.myninevalue*(nine-1)
             else:
                 for card in self.card[myid]:
                     if myid+1 == self.realplayer:
-                        score = score + mypower[getCardValue(card)]
+                        score = score + self.mypower[getCardValue(card)]
                     else:
-                        score = score + float(mypower[getCardValue(card)])/(len(self.mountain)+1)
+                        score = score + float(self.mypower[getCardValue(card)])/(len(self.mountain)+1)
             scores.append(score)
         return scores
     
@@ -303,7 +312,7 @@ class SimJudge: # new function: myeval
     def __init__(self, s, evalName, rp, knowncard):
         self.realplayer = rp
         self.knownCard = knowncard
-        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll, "cardevalall": self.cardEvalAll, "dpevaldiff": self.dpEvalAll_diff}
+        self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll_realp, "cardevalall": self.cardEvalAll, "dpevaldiff": self.dpEvalAll_diff}
         self.myEval = self.evalList[evalName]
         self.state = s
         self.input_state()
