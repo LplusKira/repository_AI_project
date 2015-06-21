@@ -364,8 +364,8 @@ class AllMaxHeuristicAgent(ScoutAgent):
       js = self.fillstate(state) # does it changed?
       self.bestmove = state.myCard.moves[0]
       self.judge = SimJudge(js, self.evalName, self.i, self.knownCard)
-      alpha = [-INF]*4; alpha[self.i-1] = INF
-      beta = [INF]*4; beta[self.i-1] = -INF
+      alpha = [INF]*4; alpha[self.i-1] = -INF # the worse
+      beta = [-INF]*4; beta[self.i-1] = INF # the best
       score = self.allmaxSearch(self.judge, alpha, beta, depth, 0)
       
       print "use " + str(time.time()-startTime) + "time"
