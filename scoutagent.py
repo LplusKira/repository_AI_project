@@ -5,8 +5,8 @@ import action
 from action import getCardsString
 from simJudge import JudgeState
 from simJudge import SimJudge
+from collections import Counter
 INF = 2147483647
-_LuckySeed_ = 21126
 
 def wait_input():
    #raw_input()
@@ -69,7 +69,7 @@ class ScoutAgent(Agent):
       for i in range(4):
          if s.board.cardNum[i] == 0:
             self.knownCard[i] = []
-      self.knownCard[self.i-1] = s.myCard.cards[:] # haha
+      self.knownCard[self.i-1] = copy.deepcopy(s.myCard.cards) # haha
       '''if len(s.smallh) > 0:
          print "knowncards"
          for i in range(4):
@@ -105,7 +105,7 @@ class ScoutAgent(Agent):
    def fillstate(self, s):    #fill other's card, mountain
       nonUsedCard = self.nonUsedCard[:]
       restcard = self.restcard[:]
-      knownCard = self.knownCard[:]
+      knownCard = copy.deepcopy(self.knownCard)
       #print "nonusedcard " + getCardsString(nonUsedCard)
       #print "restcard" + getCardsString(restcard)
       unknownHandCardNum = 0
@@ -143,7 +143,7 @@ class ScoutAgent(Agent):
       for i in range(replayNum):
          js = self.fillstate(state)
          self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js, self.evalName, self.i)
+         self.judge = SimJudge(js, self.evalName, self.i, self.knownCard)
          score = self.maxSearch(self.judge, -INF, INF, depth, 0)
       maxscore = -INF
       '''for k,v in self.avgScore.iteritems(): # need to preserve previous sequence...
@@ -165,8 +165,8 @@ class ScoutAgent(Agent):
       if s.checkLose(self.i):
          return -INF
       if depth == 0:
-         s.printBoard()
-         print "this board score = " + str(s.myEval(self.i))
+         #s.printBoard()
+         #print "this board score = " + str(s.myEval(self.i))
          return s.myEval(self.i)
       if nowdepth == 0:
          moves = self.state.myCard.moves
@@ -207,7 +207,7 @@ class ScoutAgent(Agent):
             #print "search max move: " + str(a)  + "  score = " + str(m)
             
             #news.printBoard()
-            print "action = "+ str(a)+ " score = " + str(m)
+            #print "action = "+ str(a)+ " score = " + str(m)
 
             if str(a) in self.avgScore:
                self.avgScore[str(a)][1] += m
@@ -273,8 +273,8 @@ class ScoutAgent(Agent):
 
    def search(self, s, alpha, beta, depth, nowdepth): # fail soft negascout
       if s.checkLose(self.i):
-         print "i am dead"
-         s.printBoard()
+         ##print "i am dead"
+         ##s.printBoard()
          return -INF
       #if depth == 0 or self.timeUp(): # or some heuristic
       if depth == 0:
@@ -304,7 +304,7 @@ class ScoutAgent(Agent):
             if nowdepth == 0:
                self.bestmove = a
          if nowdepth == 0:
-            print "search move: " + str(a)  + "  score = " + str(tmp)
+            ##print "search move: " + str(a)  + "  score = " + str(tmp)
             wait_input()
          if m >= beta: # cut off
             return m 
@@ -353,28 +353,23 @@ class AllMaxHeuristicAgent(ScoutAgent):
       a = self.scoutGenmove(state)
       return a
 
-   def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 1):
+   def scoutGenmove(self, state, depth = 3, maxTime = 100, replayNum = 10):
       startTime = time.time()
       self.endTime = startTime + maxTime
       self.knownCard = [list() for i in range(4)]
       self.avgScore = {}
       self.getKnownCards(state)
+      bestmoveCounter = Counter()
       for i in range(replayNum):
-         js = self.fillstate(state)
+         js = self.fillstate(state) # does it changed?
          self.bestmove = state.myCard.moves[0]
-         self.judge = SimJudge(js, self.evalName, self.i)
-         alpha = [-INF]*4
-         beta = [INF]*4
-         alpha[self.i-1] = INF
-         beta[self.i-1] = -INF
+         self.judge = SimJudge(js, self.evalName, self.i, self.knownCard)
+         alpha = [INF]*4; alpha[self.i-1] = -INF
+         beta = [-INF]*4; beta[self.i-1] = INF
          score = self.allmaxSearch(self.judge, alpha, beta, depth, 0)
-      maxscore = [INF]*4
-      '''for k,v in self.avgScore.iteritems():
-         print str(v[0]) + "\t" + str(v[1])
-         if checkscore(v[1], maxscore, self.i):
-            maxscore = v[1]
-            self.bestmove = v[0]
-            print "better score!"'''
+         bestmoveCounter[self.bestmove] += 1
+      self.bestmove = random.choice(bestmoveCounter.most_common(1))[0]
+      
       print "use " + str(time.time()-startTime) + "time"
       print "bestmove = " + str(self.bestmove)
       wait_input()
@@ -382,9 +377,8 @@ class AllMaxHeuristicAgent(ScoutAgent):
       return self.bestmove #todo:
    
    def allmaxSearch(self, s, alpha, beta, depth, nowdepth):
-      if depth == 0 or s.checkLose():
-         #s.printBoard()
-         #print "score = %d" % getRelativeScore(s.myEval(), self.i)
+      if depth == 0 or s.checkLose() or s.isGameFinished():
+         # getRelativeScore(s.myEval(), s.current_player)
          return s.myEval()
       if nowdepth == 0:
          moves = self.state.myCard.moves
@@ -419,7 +413,7 @@ class AllMaxHeuristicAgent(ScoutAgent):
                   self.avgScore[str(a)][1] += m[:]
                else:
                   self.avgScore[str(a)] = [a, m[:]]
-               print "move = " + str(a) + " score = " + str(getRelativeScore(self.avgScore[str(a)][1], self.i))
+               ##print "move = " + str(a) + " score = " + str(getRelativeScore(self.avgScore[str(a)][1], self.i))
       return m
 
 if __name__ == "__main__" :

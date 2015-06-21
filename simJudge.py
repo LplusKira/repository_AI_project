@@ -216,27 +216,22 @@ class SimJudge: # new function: myeval
                 diff += mycardlen - len(self.card[i])
             score = mycardvalue * mycardlen
             nine = 0
-            '''if mycardlen == 1: now testing
+            if diff <= -3 and mycardlen <= 3:
                 for card in self.card[myid]:
                     v = getCardValue(card)
-                    if v == 9: # check is drawn or not... need to label known cards
-                        score = 5000
-                    elif ((v <= 3 and card != 1) or v == 6 or v == 8) and self.point + v > 99:
-                        score = mydeadvalue
-                    else:
-                        score += myendpower[v]'''
-            if diff <= -3 and mycardlen <= 3:
-                if self.realplayer == myid+1:
-                    for card in self.card[myid]:
-                        if getCardValue(card) == 9:      
-                            nine += 1
-                        score = score + myendpower[getCardValue(card)]
-                    if nine > 0:
-                        score -= myninevalue*(nine-1)
+                    if v == 9:      
+                        nine += 1
+                    score = score + myendpower[v]
+                    #else:
+                     #   score = score + float(myendpower[getCardValue(card)])/(len(self.mountain)+1)
+                if nine > 0:
+                    score -= myninevalue*(nine-1)
             else:
-                if self.realplayer == myid+1:
-                    for card in self.card[myid]:
-                        score = score + mypower[getCardValue(card)]
+                for card in self.card[myid]:
+                    #if myid+1 == self.realplayer:
+                    score = score + mypower[getCardValue(card)]
+                    #else:
+                     #   score = score + float(mypower[getCardValue(card)])/(len(self.mountain)+1)
             scores.append(score)
         return scores
     
@@ -265,9 +260,9 @@ class SimJudge: # new function: myeval
         else:
             return self.isDead[i-1]
 
-    def __init__(self, s, evalName, rp):
+    def __init__(self, s, evalName, rp, knowncard):
         self.realplayer = rp
-
+        self.knownCard = knowncard
         self.evalList = {"dpeval": self.dpEval, "dpeval1": self.dpEval1, "cardeval": self.cardEval, "dpevalall": self.dpEvalAll, "cardevalall": self.cardEvalAll, "dpevaldiff": self.dpEvalAll_diff}
         self.myEval = self.evalList[evalName]
         self.state = s
@@ -505,5 +500,5 @@ def nextbool(vb, n):
     return True
 
 def getCardValue(cardIndex):
-   cardvalue = 13 if (cardIndex % 13 == 0) else cardIndex % 13
-   return cardvalue
+   return 13 if (cardIndex % 13 == 0) else cardIndex % 13
+   

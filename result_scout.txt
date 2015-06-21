@@ -33,16 +33,27 @@
    mydeadvalue = -300
    mycardvalue = 200
    myninevalue = -180
-     good
        without diff: 32.3%(646/2000)
        if diff <= -6 or mycardlen <= 2: 31.4%(156/500)
+       if diff <= -3 :                    bad
        if diff <= -3 and mycardlen <= 3: 33.8%(380/1124)
          only count realplayer's cardvalue: 36.8%(184/500)
+	 only count knowncards' cardvalue: 34.2%(183/535)
+	 count knowncard with higher value, unknown card with lower(1/mountain length): 35.4%(354/1000)
+	 count realplayer with higher value, unknown card with lower(1/mountain length): 37.5%(518/1381)
+	 count knowncard or realplayer with higher value, unknown card with lower(1/mountain length): bad, about 30%
 	 add heursitic in mycardlen = 1:  31.2% (312/1000)
-     bad
-       if diff <= -3 x
-       
+	     if  mycardlen == 1: now testing
+                for card in self.card[myid]:
+                    v = getCardValue(card)
+                    if v == 9: # check is drawn or not... need to label known cards
+                        score = 5000
+                    elif ((v <= 3 and card != 1) or v == 6 or v == 8) and self.point + v > 99:
+                        score = mydeadvalue
+                    else:
+                        score += myendpower[v]
 
+	[:] is shallow copy...
    use random gen cards to test bestmove is correct or not
    add known cards to dpevalall
    
