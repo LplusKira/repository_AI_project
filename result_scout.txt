@@ -42,6 +42,8 @@
 	 count knowncard with higher value, unknown card with lower(1/mountain length): 35.4%(354/1000)
 	 count realplayer with higher value, unknown card with lower(1/mountain length): 37.5%(518/1381)
 	 count knowncard or realplayer with higher value, unknown card with lower(1/mountain length): bad, about 30%
+	 add replay to vote(scoutgenmove_replay): 34.3% 459/1336
+	 
 	 add heursitic in mycardlen = 1:  31.2% (312/1000)
 	     if  mycardlen == 1: now testing
                 for card in self.card[myid]:
