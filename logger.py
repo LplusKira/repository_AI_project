@@ -47,5 +47,5 @@ class logger:
       #for g in self.games:
       #s = s + str(g)
       for player in self.wingames.most_common():
-         s += player[0] + " wins: " + str(player[1]) + " games, winrate = %f\n" % float(player[1])/self.nowGameNum
+         s += player[0] + " wins: " + str(player[1]) + " games, winrate = %f\n" % (float(player[1])/self.nowGameNum)
       return s
