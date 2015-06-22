@@ -16,18 +16,15 @@ block_color = (53,115,255)
 bright_green = (124,252,0)
 bright_red = (170,1,20)
 
-display_width = 500
-display_height = 200
+display_width = 800
+display_height = 600
 
-SCREEN_SIZE = (800, 600) 
+SCREEN_SIZE = (788, 788) 
 
 clock = pygame.time.Clock()
 
 cardImg = pygame.image.load('yuki_for_steam.bmp')
 car_width = 73
-#monkey_head_file_name = "yuki_for_steam.bmp"
-#bg_file_name = "1227798240162.jpg"
-#xd_file_name = "test.png"
 
 def text_objects(text, font):
     textSurface = font.render(text, True, black)
@@ -67,6 +64,7 @@ class Bloody99:
 
     def loadImg(self):
         self.background_img_file = 'Image/Nostalgy.gif'
+        self.beginning_bg_file = 'Image/AIposter.gif'
         self.cardImgFileName = list()
         self.cardImgFileName.append('Image/01s.gif')
         self.cardImgFileName.append('Image/02s.gif')
@@ -123,6 +121,7 @@ class Bloody99:
         self.iBack_Card = 'Image/back101.gif'
         # load the image
         self.background = pygame.image.load(self.background_img_file).convert()
+        self.beginning_bg = pygame.image.load(self.beginning_bg_file).convert()
         self.cardImg = list()
         for i in range(0, len(self.cardImgFileName)):
             self.cardImg.append(pygame.image.load(self.cardImgFileName[i]).convert())
@@ -238,37 +237,14 @@ class Bloody99:
                 pygame.display.update()
             else:
                 font = pygame.font.Font(None, 40)
-                text = font.render(s + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
+                #text = font.render(s + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
+                text = font.render(s + " is the WINNER!!", 1, white)
                 self.window.blit(text, (self.desk_mid_x*2/3-50, self.desk_mid_y/2+50))   
                 pygame.display.update()
             g = Game(i, self.judge.player, str(winner+1))
             log.logGame(g)
-        '''x = (display_width * 0.45)
-        y = (display_height * 0.8)
-
-        x_change = 0
-        gameExit = False
-
-        while not gameExit:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    quit()
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        x_change = -5
-                    if event.key == pygame.K_RIGHT:
-                        x_change = 5
-                if event.type == pygame.KEYUP:
-                    x_change = 0
-            x += x_change
-
-            self.screen.fill(white)
-            car(x,y)
-
-            if x > display_width - car_width or x < 0:
-                crash()'''
-
+        time.sleep(3)
+        self.screen.blit(self.beginning_bg, (0, 0))
         pygame.display.update()
         clock.tick(60)
 
@@ -491,17 +467,12 @@ class Bloody99:
         pygame.init()
         pygame.display.set_caption('Bloody99')
 
-        self.window = pygame.display.set_mode((800, 600))
+        self.window = pygame.display.set_mode((SCREEN_SIZE[0], SCREEN_SIZE[1]))
         self.screen = pygame.display.get_surface()
         self.loadImg()
         self.initPos()
         pos = (0, 0)
-        self.screen.fill(white)
-
-        largeText = pygame.font.SysFont("comicsansms",115)
-        TextSurf, TextRect = text_objects("Bloody 99", largeText)
-        TextRect.center = ((display_width/2),(display_height/2))
-        self.screen.blit(TextSurf, TextRect)
+        self.screen.blit(self.beginning_bg, (0, 0))
 
         intro = True
         while intro:
@@ -510,8 +481,8 @@ class Bloody99:
                     pygame.quit()
                     quit()
             # things need to update
-            button(self.screen, "START!",150,450,100,50,green,bright_green,self.runGame)
-            button(self.screen, "QUIT",550,450,100,50,red,bright_red,quitGame)
+            button(self.screen, "START!",100,400,200,50,green,bright_green,self.runGame)
+            button(self.screen, "QUIT",100,500,200,50,red,bright_red,quitGame)
             pygame.display.update()
             clock.tick(15)
 
