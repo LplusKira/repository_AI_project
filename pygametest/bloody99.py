@@ -1,4 +1,4 @@
-import pygame, sys, os, math, random, time
+import pygame, sys, os, math, random
 from pygame.locals import *
 sys.path.append("../")
 from judge import Judge
@@ -138,6 +138,7 @@ class Bloody99:
         self.p3_card_y = 10 
         self.p4_card_x = 10
         self.p4_card_y = SCREEN_SIZE[1]/2 - self.cardImg[0].get_height()
+        self.click_move_x = self.cardImg[0].get_width()/6
         self.click_move_y = self.cardImg[0].get_height()/6
 
     def num_to_cards(self, num):
@@ -156,7 +157,14 @@ class Bloody99:
             self.judge.rand4Cards()
             self.fill_background()
             self.resetCardPos()
-            self.display_allPlayers()
+            if self.judge.isDead[0] == False:
+                self.display_player1()
+            elif self.judge.isDead[1] == False:
+                self.display_player2()
+            elif self.judge.isDead[2] == False:
+                self.display_player3()
+            elif self.judge.isDead[3] == False:
+                self.display_player4()
             pygame.display.update()
             
             while not self.judge.isGameFinished():
@@ -165,6 +173,11 @@ class Bloody99:
                     self.judge.setDead(self.judge.current_player)
                     self.judge.changeNextPlayer()
                     continue
+                self.fill_background()
+                self.resetCardPos()
+                self.display_allPlayers()
+                self.display_desktop(self.prevCard)
+                pygame.display.update()
                 state = PlayerState(self.judge.history, self.judge._possibleActions_, self.judge.card[self.judge.current_player-1], len(self.judge.card[0]), len(self.judge.card[1]), len(self.judge.card[2]), len(self.judge.card[3]), len(self.judge.mountain), self.judge.point, self.judge.clock_wise, self.judge.small_h[self.judge.current_player-1]) #get playerstate
                 
                 if self.judge.player[self.judge.current_player-1].__class__.__name__ == "HumanAgent":
@@ -183,10 +196,26 @@ class Bloody99:
                                         if self.card_clicked_list[cardIdx] == 1:
                                             cards_used.append(self.judge.card[self.judge.current_player-1][cardIdx])
                                     a = self.judge.player[self.judge.current_player-1].pygameGenmove(self.judge.current_player, cards_used)
+                                    a.user = self.judge.current_player
                                     a.victim = self.chooseVictim(a)
                                     if self.judge.checkRule(a) == True and len(cards_used) > 0:
                                         click = False
+                                        for v in a.cards_used:
+                                            a.cardValue += 13 if (v % 13 == 0) else v % 13
+                                        self.fill_background()
+                                        self.resetCardPos()
+                                        self.display_allPlayers()
+                                        self.display_desktop(self.prevCard)
+                                        pygame.display.update()       
+                                        if a.cardValue == 9:
+                                            self.exchangeCards(a.user, a.victim, a.cards_used)
+                                            pygame.time.delay(300) 
                                         self.judge.doAction(a)                
+                                        if a.cardValue == 7:
+                                            self.pickOneCard(a.user, a.victim)
+                                            pygame.time.delay(300) 
+                                            self.getOneCard(a.user, a.victim)
+                                            pygame.time.delay(300) 
                                         self.fill_background()
                                         self.resetCardPos()
                                         self.display_allPlayers()
@@ -209,8 +238,24 @@ class Bloody99:
                                         continue
                 else:                          
                     a = self.judge.player[self.judge.current_player-1].genmove(state)
+                    for v in a.cards_used:
+                        a.cardValue += 13 if (v % 13 == 0) else v % 13
+                    self.fill_background()
+                    self.resetCardPos()
+                    self.display_allPlayers()
+                    self.display_desktop(self.prevCard)
+                    pygame.display.update()       
+                    if a.cardValue == 9:
+                        self.exchangeCards(a.user, a.victim, a.cards_used)
+                        pygame.time.delay(300) 
                     self.judge.doAction(a)                
-                    time.sleep(2)
+                    if a.cardValue == 7:
+                        self.pickOneCard(a.user, a.victim)
+                        pygame.time.delay(600) 
+                        self.getOneCard(a.user, a.victim)
+                        pygame.time.delay(600) 
+                    else:
+                        pygame.time.delay(1500) 
                     self.fill_background()
                     self.resetCardPos()
                     self.display_allPlayers()
@@ -223,13 +268,13 @@ class Bloody99:
                 if self.judge.isDead[i] == False:
                     winner = i
             if winner == 0:
-                s = "South: "
+                s = "South "
             elif winner == 1:
-                s = "East: "
+                s = "East "
             elif winner == 2:
-                s = "North: "
+                s = "North "
             else:
-                s = "West: "
+                s = "West "
             if self.judge.player[winner].__class__.__name__ == "HumanAgent":
                 font = pygame.font.Font(None, 40)
                 text = font.render("You Win!", 1, white)
@@ -237,13 +282,13 @@ class Bloody99:
                 pygame.display.update()
             else:
                 font = pygame.font.Font(None, 40)
-                #text = font.render(s + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
-                text = font.render(s + " is the WINNER!!", 1, white)
+                #text = font.render(s + ": " + self.judge.player[winner].__class__.__name__ + " is the WINNER!!", 1, white)
+                text = font.render(s + "is the WINNER!!", 1, white)
                 self.window.blit(text, (self.desk_mid_x*2/3-50, self.desk_mid_y/2+50))   
                 pygame.display.update()
             g = Game(i, self.judge.player, str(winner+1))
             log.logGame(g)
-        time.sleep(3)
+        pygame.time.delay(2500) 
         self.screen.blit(self.beginning_bg, (0, 0))
         pygame.display.update()
         clock.tick(60)
@@ -278,36 +323,84 @@ class Bloody99:
         self.display_player3()
         self.display_player4()
 
-    def display_player1(self):
-        for x in range(0, len(self.judge.card[0])):
-            self.window.blit(self.num_to_cards(self.judge.card[0][x]), (self.player_card_pos[x][0], self.player_card_pos[x][1]))
+    def display_player1(self, skipIdx = list()):        
+        if len(skipIdx) > 0:
+            for x in range(0, len(self.judge.card[0])):
+                skip = False
+                for i in range(0, len(skipIdx)):
+                    if skipIdx[i] != x:
+                        continue
+                    else:
+                        skip = True
+                        break
+                if skip != True:
+                    self.window.blit(self.num_to_cards(self.judge.card[0][x]), (self.player_card_pos[x][0], self.player_card_pos[x][1]))
+        else:
+            for x in range(0, len(self.judge.card[0])):
+                self.window.blit(self.num_to_cards(self.judge.card[0][x]), (self.player_card_pos[x][0], self.player_card_pos[x][1]))
         font = pygame.font.Font(None, 30)
         if self.judge.current_player == 1:
             word = "South: " + self.judge.player[0].__class__.__name__ 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.player_card_x,self.player_card_y-50))
 
-    def display_player2(self):
-        for x in range(0, len(self.judge.card[1])):
-            self.window.blit(self.Back_Card90, (self.p2_card_pos[x][0], self.p2_card_pos[x][1]))
+    def display_player2(self, skipIdx = list()):
+        if len(skipIdx) > 0:
+            for x in range(0, len(self.judge.card[1])):
+                skip = False
+                for i in range(0, len(skipIdx)):
+                    if skipIdx[i] != x:
+                        continue
+                    else:
+                        skip = True
+                        break
+                if skip != True:
+                    self.window.blit(self.Back_Card90, (self.p2_card_pos[x][0], self.p2_card_pos[x][1]))
+        else:
+            for x in range(0, len(self.judge.card[1])):
+                self.window.blit(self.Back_Card90, (self.p2_card_pos[x][0], self.p2_card_pos[x][1]))
         if self.judge.current_player == 2:
             font = pygame.font.Font(None, 30)
             word = "East: " + self.judge.player[1].__class__.__name__ 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.p2_card_x-80, self.p2_card_y-50))
 
-    def display_player3(self):
-        for x in range(0, len(self.judge.card[2])):
-            self.window.blit(self.Back_Card, (self.p3_card_pos[x][0], self.p3_card_pos[x][1]))
+    def display_player3(self, skipIdx = list()):
+        if len(skipIdx) > 0:
+            for x in range(0, len(self.judge.card[2])):
+                skip = False
+                for i in range(0, len(skipIdx)):
+                    if skipIdx[i] != x:
+                        continue
+                    else:
+                        skip = True
+                        break
+                if skip != True:
+                    self.window.blit(self.Back_Card, (self.p3_card_pos[x][0], self.p3_card_pos[x][1]))
+        else:
+            for x in range(0, len(self.judge.card[2])):
+                self.window.blit(self.Back_Card, (self.p3_card_pos[x][0], self.p3_card_pos[x][1]))
         if self.judge.current_player == 3:
             font = pygame.font.Font(None, 30)
             word = "North: " + self.judge.player[2].__class__.__name__ 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.p3_card_x, self.p3_card_y + self.Back_Card90.get_width()))
 
-    def display_player4(self):
-        for x in range(0, len(self.judge.card[3])):
-            self.window.blit(self.Back_Cardn90, (self.p4_card_pos[x][0], self.p4_card_pos[x][1]))
+    def display_player4(self, skipIdx = list()):
+        if len(skipIdx) > 0:
+            for x in range(0, len(self.judge.card[3])):
+                skip = False
+                for i in range(0, len(skipIdx)):
+                    if skipIdx[i] != x:
+                        continue
+                    else:
+                        skip = True
+                        break
+                if skip != True:
+                    self.window.blit(self.Back_Cardn90, (self.p4_card_pos[x][0], self.p4_card_pos[x][1]))
+        else:
+            for x in range(0, len(self.judge.card[3])):
+                self.window.blit(self.Back_Cardn90, (self.p4_card_pos[x][0], self.p4_card_pos[x][1]))
         if self.judge.current_player == 4:
             font = pygame.font.Font(None, 30)
             word = "West: " + self.judge.player[3].__class__.__name__ 
@@ -337,29 +430,123 @@ class Bloody99:
                 if self.card_clicked_list[i] == 0:
                     # choose the card
                     if self.player_card_y <= mousePos[1] < self.player_card_y + self.cardImg[0].get_height():
-                        self.moveCard([0,-1], i)
+                        self.moveCard_player([0,-1], i)
                         self.card_clicked_list[i] = 1
                         break                
                 elif self.card_clicked_list[i] == 1:
                     # cancel the choosed card
                     if self.player_card_y - self.click_move_y <= mousePos[1] < self.player_card_y - self.click_move_y + self.cardImg[0].get_height():
-                        self.moveCard([0,1], i)
+                        self.moveCard_player([0,1], i)
                         self.card_clicked_list[i] = 0
                         break
 
-    def moveCard(self, dist, idx):
+    def moveCard_player(self, dist, idx, skipIdx = list(), skipDuo = (-1,list())):
         oldy = self.player_card_pos[idx][1]
         while abs(self.player_card_pos[idx][1] - oldy) <= self.click_move_y:
             self.player_card_pos[idx][0] += dist[0]
             self.player_card_pos[idx][1] += dist[1]
+            self.fill_background()
+            self.display_player1(skipIdx)
+            if skipDuo[0] == -1:
+                self.display_player2()
+                self.display_player3()
+                self.display_player4()
+            elif skipDuo[0] == 2:
+                self.display_player2(skipDuo[1])
+                self.display_player3()
+                self.display_player4()
+            elif skipDuo[0] == 3:
+                self.display_player3(skipDuo[1])
+                self.display_player2()
+                self.display_player4()
+            elif skipDuo[0] == 4:
+                self.display_player4(skipDuo[1])
+                self.display_player2()
+                self.display_player3()
+            self.display_desktop(self.prevCard)
+            clock.tick(60)
+            pygame.display.update()
 
-        self.fill_background()
-        self.display_player1()
-        self.display_player2()
-        self.display_player3()
-        self.display_player4()
-        self.display_desktop(self.prevCard)
-        pygame.display.update()
+    def moveCard_p2(self, dist, idx, skipIdx = list(), skipDuo = (-1,list())):
+        oldx = self.p2_card_pos[idx][0]
+        while abs(self.p2_card_pos[idx][0] - oldx) <= self.click_move_x:
+            self.p2_card_pos[idx][0] += dist[0]
+            self.p2_card_pos[idx][1] += dist[1]
+            self.fill_background()
+            self.display_player2(skipIdx)
+            if skipDuo[0] == -1:
+                self.display_player1()
+                self.display_player3()
+                self.display_player4()
+            elif skipDuo[0] == 1:
+                self.display_player1(skipDuo[1])
+                self.display_player3()
+                self.display_player4()
+            elif skipDuo[0] == 3:
+                self.display_player3(skipDuo[1])
+                self.display_player1()
+                self.display_player4()
+            elif skipDuo[0] == 4:
+                self.display_player4(skipDuo[1])
+                self.display_player1()
+                self.display_player3()
+            self.display_desktop(self.prevCard)
+            clock.tick(60)
+            pygame.display.update()
+
+    def moveCard_p3(self, dist, idx, skipIdx = list(), skipDuo = (-1,list())):
+        oldy = self.p3_card_pos[idx][1]
+        while abs(self.p3_card_pos[idx][1] - oldy) <= self.click_move_y:
+            self.p3_card_pos[idx][0] += dist[0]
+            self.p3_card_pos[idx][1] += dist[1]
+            self.fill_background()
+            self.display_player3(skipIdx)
+            if skipDuo[0] == -1:
+                self.display_player1()
+                self.display_player2()
+                self.display_player4()
+            elif skipDuo[0] == 1:
+                self.display_player1(skipDuo[1])
+                self.display_player2()
+                self.display_player4()
+            elif skipDuo[0] == 2:
+                self.display_player2(skipDuo[1])
+                self.display_player1()
+                self.display_player4()
+            elif skipDuo[0] == 4:
+                self.display_player4(skipDuo[1])
+                self.display_player1()
+                self.display_player2()
+            self.display_desktop(self.prevCard)
+            clock.tick(60)
+            pygame.display.update()
+
+    def moveCard_p4(self, dist, idx, skipIdx = list(), skipDuo = (-1,list())):
+        oldx = self.p4_card_pos[idx][0]
+        while abs(self.p4_card_pos[idx][0] - oldx) <= self.click_move_x:
+            self.p4_card_pos[idx][0] += dist[0]
+            self.p4_card_pos[idx][1] += dist[1]
+            self.fill_background()
+            self.display_player4(skipIdx)
+            if skipDuo[0] == -1:
+                self.display_player1()
+                self.display_player2()
+                self.display_player3()
+            elif skipDuo[0] == 1:
+                self.display_player1(skipDuo[1])
+                self.display_player2()
+                self.display_player3()
+            elif skipDuo[0] == 2:
+                self.display_player2(skipDuo[1])
+                self.display_player1()
+                self.display_player3()
+            elif skipDuo[0] == 3:
+                self.display_player3(skipDuo[1])
+                self.display_player1()
+                self.display_player2()
+            self.display_desktop(self.prevCard)
+            clock.tick(60)
+            pygame.display.update()
 
     def chooseVictim(self, action):
         # 5 7 9(!= user)  10 12 (-1 -2) click the button then set the action.victim to it.
@@ -436,8 +623,8 @@ class Bloody99:
         elif cardvalue == 10 or cardvalue == 12:
             w, h = 100, 50            
             value = 10 if cardvalue == 10 else 20
-            button(self.screen, "+"+str(value), SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, red, bright_red)
-            button(self.screen, "-"+str(value), 2*SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, red, bright_red)
+            button(self.screen, "+"+str(value), SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, green, bright_green)
+            button(self.screen, "-"+str(value), 2*SCREEN_SIZE[0]/3-w/2, SCREEN_SIZE[1]/2 , w, h, green, bright_green)
             pygame.display.update()
             click = True
             while click:
@@ -456,12 +643,92 @@ class Bloody99:
                             else:
                                 click = True
             return victim
-            return 2
         if cardvalue == 10 or cardvalue == 12:
-            button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
-            button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, red, bright_red)
+            button(self.screen, "-"+str(cardvalue), SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, green, bright_green)
+            button(self.screen, "+"+str(cardvalue), 2*SCREEN_SIZE[1]/3, SCREEN_SIZE[0]/2 , 100, 50, green, bright_green)
             pygame.display.update()
             return -1
+
+    def pickOneCard(self, userIdx, victim):
+        i = self.judge.p
+        if victim == 1:
+            self.moveCard_player([0,-1], i, [], [userIdx, [len(self.judge.card[userIdx-1])-1]])
+        elif victim == 2:
+            self.moveCard_p2([-1,0], i, [], [userIdx, [len(self.judge.card[userIdx-1])-1]])
+        elif victim == 3:
+            self.moveCard_p3([0,1], i, [], [userIdx, [len(self.judge.card[userIdx-1])-1]])
+        elif victim == 4:
+            self.moveCard_p4([1,0], i, [], [userIdx, [len(self.judge.card[userIdx-1])-1]])
+
+    def getOneCard(self, userIdx, victim):
+        self.fill_background()
+        self.resetCardPos()
+        self.display_desktop(self.prevCard)
+        if userIdx == 1:
+            self.player_card_pos[len(self.judge.card[userIdx-1])-1][1] -= self.click_move_y * 3
+            self.display_player1()
+            self.display_player2()
+            self.display_player3()
+            self.display_player4()
+            self.moveCard_player([0,1], len(self.judge.card[0])-1)
+        elif userIdx == 2:
+            self.p2_card_pos[len(self.judge.card[userIdx-1])-1][0] -= self.click_move_x * 3
+            self.display_player1()
+            self.display_player2()
+            self.display_player3()
+            self.display_player4()
+            self.moveCard_p2([1,0], len(self.judge.card[1])-1)
+        elif userIdx == 3:
+            self.p3_card_pos[len(self.judge.card[userIdx-1])-1][1] += self.click_move_x * 3
+            self.display_player1()
+            self.display_player2()
+            self.display_player3()
+            self.display_player4()
+            self.moveCard_p3([0,-1], len(self.judge.card[2])-1)
+        elif userIdx == 4:
+            self.p4_card_pos[len(self.judge.card[userIdx-1])-1][0] += self.click_move_x * 3
+            self.display_player1()
+            self.display_player2()
+            self.display_player3()
+            self.display_player4()
+            self.moveCard_p4([-1,0], len(self.judge.card[3])-1)
+        pygame.display.update()
+    
+    def exchangeCards(self, userIdx, victim, cards_used):
+        self.fill_background()
+        self.prevCard = cards_used
+        userSkipCard = list()
+        for x in range(0, len(self.judge.card[userIdx-1])):
+            for y in range(0, len(cards_used)):
+                if self.judge.card[userIdx-1][x] == cards_used[y]:
+                    userSkipCard.append(x)
+        self.resetCardPos()
+        self.display_desktop(self.prevCard)
+        if userIdx == 1:
+            for i in range(0, len(self.judge.card[userIdx-1])):
+                self.moveCard_player([0,-1], i, userSkipCard)
+        elif userIdx == 2:
+            for i in range(0, len(self.judge.card[userIdx-1])):
+                self.moveCard_p2([-1,0], i, userSkipCard)
+        elif userIdx == 3:
+            for i in range(0, len(self.judge.card[userIdx-1])):
+                self.moveCard_p3([0,1], i, userSkipCard)
+        elif userIdx == 4:
+            for i in range(0, len(self.judge.card[userIdx-1])):
+                self.moveCard_p4([1,0], i, userSkipCard)
+        if victim == 1:
+            for i in range(0, len(self.judge.card[victim-1])):
+                self.moveCard_player([0,-1], i, [], [userIdx, userSkipCard])
+        elif victim == 2:
+            for i in range(0, len(self.judge.card[victim-1])):
+                self.moveCard_p2([-1,0], i, [], [userIdx, userSkipCard])
+        elif victim == 3:
+            for i in range(0, len(self.judge.card[victim-1])):
+                self.moveCard_p3([0,1], i, [], [userIdx, userSkipCard])
+        elif victim == 4:
+            for i in range(0, len(self.judge.card[victim-1])):
+                self.moveCard_p4([1,0], i, [], [userIdx, userSkipCard])
+        pygame.display.update()       
 
     def initGame(self):
         pygame.init()

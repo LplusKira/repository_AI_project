@@ -39,13 +39,13 @@ class Judge:
             players = list()
 
             #players.append(ScoutAgent(2))
-            #players.append(HumanAgent(1))
-            players.append(AllMaxHeuristicAgent(1))
-            players.append(CardNumberHeuristicAgent(2))
-            players.append(CardNumberHeuristicAgent(3))
+            players.append(HumanAgent(1))
+            #players.append(AllMaxHeuristicAgent(1))
+            #players.append(CardNumberHeuristicAgent(1))
+            #players.append(CardNumberHeuristicAgent(3))
+            players.append(HeuristicAgent(2))
+            players.append(HeuristicAgent(3))
             players.append(CardNumberHeuristicAgent(4))
-            #players.append(HeuristicAgent(2))
-            #players.append(HeuristicAgent(3))
             #players.append(ScoutAgent(3))
 
             self.player = players
@@ -222,6 +222,7 @@ class Judge:
             self.point = _MaxPoint_
         elif actual_card % 13 == 7: #   else if the action is 7, 9
             pick = random.randint(0, len(self.card[a.victim - 1])-1)
+            self.p = pick
             self.card[a.user - 1].append(self.card[a.victim - 1][pick])
             #   TODO: adding small history to the victim and sending him the hsitory; the last card is the one picked
             take_card = [self.card[a.victim-1][pick]]
