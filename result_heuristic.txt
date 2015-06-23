@@ -1,0 +1,10 @@
+1 HeuristicAgent v.s. 3 RandomAgent
+TotalGameNum = 2000
+RandomAgent wins: 1387 games, winrate = 0.693500
+HeuristicAgent wins: 613 games, winrate = 0.306500
+
+1 HeuristicAgent v.s. 3 CardNumberHeuristicAgent
+TotalGameNum = 2000
+CardNumberHeuristicAgent wins: 1441 games, winrate = 0.720500
+HeuristicAgent wins: 559 games, winrate = 0.279500
+
