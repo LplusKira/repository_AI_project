@@ -361,7 +361,8 @@ class Bloody99:
                 self.window.blit(self.Back_Card90, (self.p2_card_pos[x][0], self.p2_card_pos[x][1]))
         if self.judge.current_player == 2:
             font = pygame.font.Font(None, 30)
-            word = "East: " + self.judge.player[1].__class__.__name__ 
+            #word = "East: " + self.judge.player[1].__class__.__name__ 
+            word = "East" 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.p2_card_x-80, self.p2_card_y-50))
 
@@ -382,7 +383,8 @@ class Bloody99:
                 self.window.blit(self.Back_Card, (self.p3_card_pos[x][0], self.p3_card_pos[x][1]))
         if self.judge.current_player == 3:
             font = pygame.font.Font(None, 30)
-            word = "North: " + self.judge.player[2].__class__.__name__ 
+            #word = "North: " + self.judge.player[2].__class__.__name__ 
+            word = "North" 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.p3_card_x, self.p3_card_y + self.Back_Card90.get_width()))
 
@@ -403,7 +405,8 @@ class Bloody99:
                 self.window.blit(self.Back_Cardn90, (self.p4_card_pos[x][0], self.p4_card_pos[x][1]))
         if self.judge.current_player == 4:
             font = pygame.font.Font(None, 30)
-            word = "West: " + self.judge.player[3].__class__.__name__ 
+            #word = "West: " + self.judge.player[3].__class__.__name__ 
+            word = "West" 
             text = font.render(word, 1, blue)
             self.window.blit(text, (self.p4_card_x, self.p4_card_y-50))
 
